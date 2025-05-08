@@ -17,3 +17,4 @@ info_label.pack(pady=20)
 exit_button.pack(pady=10)
 
 fenster.mainloop()
+
