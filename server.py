@@ -62,11 +62,5 @@ def start_discovery_responder(listen_port=5000):
             print(f"Anfrage von {addr} erhalten")
             sock.sendto(b"DISCOVER_RESPONSE", addr)
 
-if __name__ == "__main__":
-    # Starte den TCP-Server
-    server = Server('127.0.0.1', 12345)
-    server.start()
-    threading.Thread(target=server.accept_connection).start()
-
     # Starte den UDP-Discovery-Responder
     start_discovery_responder(5000)
