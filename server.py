@@ -1,37 +1,53 @@
 import socket
+import threading
 
+#Konstruktor eines Servers
 class Server:
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+#Methode zum starten des Servers
     def start(self):
         self.socket.bind((self.ip, self.port))
+        self.socket.listen(5)
         print(f"Server gebunden an {self.ip}:{self.port}")
 
-    def listen(self):
-        self.socket.listen()
-        print("Server wartet auf Verbindung")
-        
+#Methode zum akzeptieren von Verbindungen
     def accept_connection(self):
+        while True:
             client_socket, client_address = self.socket.accept()
             print(f"Verbindung erfolgreich hergestellt mit {client_address}")
+            # Einen neuen Thread starten, um die Kommunikation mit dem Client zu behandeln
+            threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
+#Methode zum behandeln der Kommunikation mit dem Client
+    def handle_client(self, client_socket):
+        try:
+            # Empfange Daten vom Client
+            data = self.recv_data(client_socket)
+            print(f"Empfangene Daten: {data.decode()}")
+            # Sende eine Antwort
+            client_socket.send(b"Antwort vom Server")
+        finally:
+            client_socket.close()
+            print("Verbindung zum Client geschlossen.")
+
+#Methode zum empfangen von Daten
     def recv_data(self, client_socket):
         alleDaten = b''
         while True:
-            
             daten = client_socket.recv(1024)
-            alleDaten += daten
             if not daten:
                 break
+            alleDaten += daten
         return alleDaten
-    
+
     def close(self):
         self.socket.close()
         print("Server geschlossen")
-    
+
 # UDP-Responder fuer Discovery
 def start_discovery_responder(listen_port=5000):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -44,3 +60,12 @@ def start_discovery_responder(listen_port=5000):
         if data == b"DISCOVER_SERVICE":
             print(f"Anfrage von {addr} erhalten")
             sock.sendto(b"DISCOVER_RESPONSE", addr)
+
+if __name__ == "__main__":
+    # Starte den TCP-Server
+    server = Server('127.0.0.1', 12345)
+    server.start()
+    threading.Thread(target=server.accept_connection).start()
+
+    # Starte den UDP-Discovery-Responder
+    start_discovery_responder(5000)
