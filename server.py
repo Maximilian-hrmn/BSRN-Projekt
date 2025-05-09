@@ -32,7 +32,7 @@ class Server:
         self.socket.close()
         print("Server geschlossen")
     
-# Discovery-Responder
+# UDP-Responder fuer Discovery
 def start_discovery_responder(listen_port=5000):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', listen_port)) 
