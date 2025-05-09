@@ -21,6 +21,7 @@ class Server:
     def recv_data(self, client_socket):
         alleDaten = b''
         while True:
+            
             daten = client_socket.recv(1024)
             alleDaten += daten
             if not daten:
