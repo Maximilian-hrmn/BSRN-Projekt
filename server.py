@@ -29,6 +29,7 @@ class Server:
             header = client_socket.recv(1024).decode().strip()
             print(f"Empfangener Header: {header}")
 
+            #Wenn der Header mit IMG beginnt, dann ist es eine Bildnachricht
             if header.startswith("IMG"):
                 parts = header.split(" ")
                 if len(parts) != 3:
@@ -49,7 +50,7 @@ class Server:
 
                 # Bestätigungsnachricht an den Client senden
                 client_socket.send(b"IMG_RECEIVED")
-
+            #Wenn nicht dann ist es eine andere Nachricht
             else:
                 # Andere Nachrichten (JOIN, MSG, etc.)
                 print(f"Empfangene Daten: {header}")
