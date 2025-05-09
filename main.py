@@ -6,7 +6,7 @@ def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
         try:
             config = toml.load("config.toml")
-            print("Konfigurationsdatei geladen...")
+            print("Konfigurationsdatei geladen.")
         
         except FileNotFoundError: 
             print("Konfigurationsdatei nicht gefunden.")
@@ -16,7 +16,7 @@ def main():
             print("Fehler beim Dekodieren der Konfigurationsdatei.")
             return
         
-        
+
 
 
 	
