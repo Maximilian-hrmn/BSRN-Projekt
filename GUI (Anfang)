@@ -1,21 +1,24 @@
-#Fenster erstellen 
+import tkinter as tk
 from tkinter import Tk, Label, Button, StringVar, Entry, messagebox
+
+#Fenster erstellen 
 fenster = Tk()
 fenster.title("Chatbox")
 fenster.configure(bg="white")
-fenster.geometry("500x200")
+fensterBreite = fenster.winfo_screenwidth()
+fensterHoehe = fenster.winfo_screenheight()
+fenster.geometry(f"{fensterBreite}x{fensterHoehe}+0+0")
 
-#Button erstellen
-exit_button =  Button(fenster, text="Exit", command=fenster.quit)
+#Eingabe und Button Frame erstellen
+frameUnten = tk.Frame(fenster, bg="white")
+frameUnten.pack(side="bottom", fill="x", padx=10, pady=5)
 
+#Senden Button erstellen
+sendenButton =  Button(frameUnten, text="Senden")
+sendenButton.grid(row=0, column=1, padx=10, pady=10)
 
-#Label erstellen
-info_label = Label(fenster, text="Der Beenden Button schließt das Fenster", fg="blue", bg ="black", font=("Arial", 12))
-
-#Button und Label im Fenster platzieren
-info_label.pack(pady=20)
-exit_button.pack(pady=10)
+#Eingabefeld erstellen
+eingabe = tk.Entry(frameUnten, width=100)  
+eingabe.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
 fenster.mainloop()
- 
-
