@@ -1,14 +1,14 @@
 import socket
 import threading
 
-#Konstruktor eines Servers
+#Konstruktor eines Servers, er braucht dafür eine IP-Adresse und einen Port
 class Server:
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-#Methode zum starten des Servers
+#Methode zum starten des Servers. Danach "lauscht" der Server nach Verbindungen
     def start(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
@@ -43,12 +43,13 @@ class Server:
                 break
             alleDaten += daten
         return alleDaten
-
+    
+#Schließt den Server
     def close(self):
         self.socket.close()
         print("Server geschlossen")
 
-# UDP-Responder fuer Discovery
+#UDP-Responder fuer Discovery
 def start_discovery_responder(listen_port=5000):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', listen_port)) 
@@ -60,12 +61,6 @@ def start_discovery_responder(listen_port=5000):
         if data == b"DISCOVER_SERVICE":
             print(f"Anfrage von {addr} erhalten")
             sock.sendto(b"DISCOVER_RESPONSE", addr)
-
-if __name__ == "__main__":
-    # Starte den TCP-Server
-    server = Server('127.0.0.1', 12345)
-    server.start()
-    threading.Thread(target=server.accept_connection).start()
 
     # Starte den UDP-Discovery-Responder
     start_discovery_responder(5000)
