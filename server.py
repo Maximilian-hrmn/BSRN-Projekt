@@ -32,3 +32,15 @@ class Server:
         self.socket.close()
         print("Server geschlossen")
     
+# UDP-Responder fuer Discovery
+def start_discovery_responder(listen_port=5000):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(('', listen_port)) 
+
+    print(f"Discovery-Responder läuft auf UDP-Port {listen_port}")
+
+    while True:
+        data, addr = sock.recvfrom(1024)
+        if data == b"DISCOVER_SERVICE":
+            print(f"Anfrage von {addr} erhalten")
+            sock.sendto(b"DISCOVER_RESPONSE", addr)
