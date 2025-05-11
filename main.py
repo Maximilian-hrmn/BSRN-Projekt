@@ -1,5 +1,6 @@
 import toml
 import socket
+from discovery_service import discover_peers
 
 def main():
 	
@@ -16,6 +17,8 @@ def main():
             print("Fehler beim Dekodieren der Konfigurationsdatei.")
             return
         
+        discover_peers(config['discovery']['timeout'], config['discovery']['port'])
+        # Hier wird die Konfiguration verwendet
 
 
 
