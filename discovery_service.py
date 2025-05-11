@@ -21,7 +21,8 @@ def discover_peers(timeout=2, discovery_port=5000):
             if data == b"DISCOVER_RESPONSE":
                 found_peers.append(addr[0])
                 print(f"Peer gefunden: {addr[0]}")
-        except socket.timeout:
+        except socket.timeout: 
+            print("Discovery-Zeitüberschreitung.")
             break
 
     sock.close()
