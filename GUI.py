@@ -42,7 +42,7 @@ class Ui_MainWindow(object):
         self.listView_2.setObjectName("listView_2")
         self.horizontalLayout_2.addWidget(self.listView_2)
         self.horizontalLayout_2.setStretch(0, 70)
-        self.horizontalLayout_2.setStretch(1, 31)
+        self.horizontalLayout_2.setStretch(0, 30)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
