@@ -5,7 +5,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(830, 575)
 
-        # MainWindow SizePolicy
+        # MainWindow
         mainSizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         mainSizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
         MainWindow.setSizePolicy(mainSizePolicy)
@@ -21,24 +21,23 @@ class Ui_MainWindow(object):
         # Main Layout
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
         self.verticalLayout.setObjectName("verticalLayout")
 
-        # Top horizontal layout with two list views
+        # horizontales layout (Chat-Fenster und Liste der Verbindungen)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
 
-        # ListView 1
+        # Chat-Fenster
         self.listView = QtWidgets.QListView(self.centralwidget)
         listViewPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.listView.setSizePolicy(listViewPolicy)
         self.listView.setObjectName("listView")
         self.horizontalLayout_2.addWidget(self.listView)
 
-        # ListView 2
+        # Liste der Verbindungen
         self.listView_2 = QtWidgets.QListView(self.centralwidget)
         listView2Policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.listView_2.setSizePolicy(listView2Policy)
@@ -50,13 +49,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
-        # Bottom horizontal layout with text box and buttons
+        # Unteres Layout mit Eingabefeld, Bilder Button und Senden Button
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName("horizontalLayout")
 
-        # TextEdit
+        # Eingabefeld
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
         textEditPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.textEdit.setSizePolicy(textEditPolicy)
@@ -66,14 +65,14 @@ class Ui_MainWindow(object):
         self.textEdit.setObjectName("textEdit")
         self.horizontalLayout.addWidget(self.textEdit)
 
-        # ToolButton
+        # Bilder Button
         self.toolButton = QtWidgets.QToolButton(self.centralwidget)
         toolButtonPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.toolButton.setSizePolicy(toolButtonPolicy)
         self.toolButton.setObjectName("toolButton")
         self.horizontalLayout.addWidget(self.toolButton)
 
-        # PushButton
+        # Senden Button
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         pushButtonPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.pushButton.setSizePolicy(pushButtonPolicy)
@@ -86,7 +85,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        # Stretch between layouts
+        # Stretch zwischen layouts
         self.verticalLayout.setStretch(0, 5)  # Top ListViews
         self.verticalLayout.setStretch(1, 1)  # Bottom Controls
 
