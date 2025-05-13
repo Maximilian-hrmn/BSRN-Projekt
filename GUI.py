@@ -71,6 +71,7 @@ class Ui_MainWindow(object):
         self.toolButton.setSizePolicy(toolButtonPolicy)
         self.toolButton.setObjectName("toolButton")
         self.horizontalLayout.addWidget(self.toolButton)
+        self.toolButton.setToolTip("Bild auswählen oder hochladen")
 
         # Senden Button
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
@@ -84,6 +85,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setStretch(2, 20)
 
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.pushButton.setToolTip("Nachricht senden")
 
         # Stretch zwischen layouts
         self.verticalLayout.setStretch(0, 5)  # Top ListViews
@@ -105,7 +107,9 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("Messenger", "Messenger"))
         self.toolButton.setText(_translate("MainWindow", "..."))
+        self.toolButton.setAccessibleDescription("Klick zum Auswählen eines Bildes")
         self.pushButton.setText(_translate("MainWindow", "Senden"))
+        self.pushButton.setAccessibleDescription("Klick zum Senden der Nachricht")
 
 
 if __name__ == "__main__":
