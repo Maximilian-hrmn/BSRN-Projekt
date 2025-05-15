@@ -1,0 +1,5 @@
+handle = "username"
+port = 111
+whoisport = 222
+autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
+image = "images\"
