@@ -17,15 +17,30 @@ def main():
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return
-        
-    discover_peers()
-    # discovery-service.py starten
 
-    Server.server.start()
-    # server.py starten
+    try:
+        discover_peers()
+        # discovery-service.py starten   
+    
+    except socket.error as e:
+        print(f"Fehler beim Senden der Discovery-Anfrage: {e}")
+        return
 
-    CLI.CLI.start()
-    # UI gestartet
+    try:
+        Server.server.start()
+        # server.py starten
+    
+    except Exception as e:
+        print(f"Fehler beim Starten des Servers: {e}")
+        return
+
+    try:
+        CLI.CLI.start()
+        # UI gestartet
+    
+    except Exception as e:
+        print(f"Fehler beim Starten der CLI: {e}")
+        return
 
 
 
