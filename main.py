@@ -1,6 +1,8 @@
 import toml
 import socket
 from discovery_service import discover_peers
+from server import Server
+from CLI import CLI
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -16,8 +18,19 @@ def main():
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return
         
-    discover_peers(config['discovery']['timeout'], config['discovery']['port'])
-    # Hier wird die Konfiguration verwendet
+    discover_peers()
+    # discovery-service.py starten
+
+    Server.server.start()
+    # server.py starten
+
+    CLI.CLI.start()
+    # UI gestartet
+
+
+
+
+
 
 if __name__ == "__main__":
     main()
