@@ -1,73 +1,90 @@
 import socket
 import threading
 
-# Konstruktor eines Servers, er braucht dafür eine IP-Adresse und einen Port
 class Server:
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clients = {}  # client_socket: username
 
-    # Methode zum starten des Servers. Danach "lauscht" der Server nach Verbindungen
     def start(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
-        print(f"Server gebunden an {self.ip}:{self.port}")
+        print(f"[TCP] Server gestartet auf {self.ip}:{self.port}")
+        threading.Thread(target=self.accept_connection).start()
 
-    # Methode zum akzeptieren von Verbindungen
     def accept_connection(self):
         while True:
             client_socket, client_address = self.socket.accept()
-            print(f"Verbindung erfolgreich hergestellt mit {client_address}")
-            # Einen neuen Thread starten, um die Kommunikation mit dem Client zu behandeln
+            print(f"[TCP] Verbindung hergestellt mit {client_address}")
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
-    # Methode zum behandeln der Kommunikation mit dem Client
     def handle_client(self, client_socket):
+        username = None
         try:
-            # 1. Zuerst den Header der Nachricht lesen (Bsp.: "IMG alice 1024\n")
-            header = client_socket.recv(1024).decode().strip()
-            print(f"Empfangener Header: {header}")
+            while True:
+                header = client_socket.recv(1024).decode().strip()
+                if not header:
+                    break
 
-            #Wenn der Header mit IMG beginnt, dann ist es eine Bildnachricht
-            if header.startswith("IMG"):
+                print(f"[TCP] Header erhalten: {header}")
                 parts = header.split(" ")
-                if len(parts) != 3:
-                    print("Ungültige IMG-Nachricht")
-                    return
 
-                sender = parts[1]
-                size = int(parts[2])
-                print(f"Bild von {sender}, Größe: {size} Bytes")
+                if parts[0] == "JOIN" and len(parts) == 2:
+                    username = parts[1]
+                    self.clients[client_socket] = username
+                    print(f"[JOIN] {username} beigetreten.")
+                    self.broadcast(f"[SERVER] {username} ist dem Chat beigetreten.", client_socket)
 
-                # 2. Bilddaten empfangen
-                image_data = self.recv_exact_bytes(client_socket, size)
+                elif parts[0] == "MSG" and len(parts) >= 3:
+                    sender = parts[1]
+                    message = " ".join(parts[2:])
+                    print(f"[MSG] {sender}: {message}")
+                    self.broadcast(f"{sender}: {message}", client_socket)
 
-                # 3. Bild speichern (optional)
-                with open(f"empfangenes_bild_{sender}.jpg", "wb") as f:
-                    f.write(image_data)
-                print("Bild gespeichert.")
+                elif parts[0] == "IMG" and len(parts) == 3:
+                    sender = parts[1]
+                    size = int(parts[2])
+                    print(f"[IMG] Bild von {sender}, {size} Bytes")
+                    image_data = self.recv_exact_bytes(client_socket, size)
 
-                # Bestätigungsnachricht an den Client senden
-                client_socket.send(b"IMG_RECEIVED")
-            #Wenn nicht dann ist es eine andere Nachricht
-            else:
-                # Andere Nachrichten (JOIN, MSG, etc.)
-                print(f"Empfangene Daten: {header}")
-                client_socket.send(b"Antwort vom Server")
+                    # Bild speichern (optional)
+                    with open(f"empfangenes_bild_{sender}.jpg", "wb") as f:
+                        f.write(image_data)
+                    print("[IMG] Bild gespeichert.")
 
+                    # Nachricht an andere Clients
+                    self.broadcast(f"[SERVER] {sender} hat ein Bild gesendet ({size} Bytes).", client_socket)
+
+                    client_socket.send(b"IMG_RECEIVED")
+
+                elif parts[0] == "LEAVE":
+                    print(f"[LEAVE] {username} hat den Chat verlassen.")
+                    self.broadcast(f"[SERVER] {username} hat den Chat verlassen.", client_socket)
+                    break
+
+                else:
+                    client_socket.send(b"Unbekannter Befehl")
         except Exception as e:
-            print(f"Fehler beim Bearbeiten des Clients: {e}")
-        
+            print(f"[ERROR] Fehler: {e}")
         finally:
+            if client_socket in self.clients:
+                left_user = self.clients.pop(client_socket)
+                print(f"[DISCONNECT] {left_user} getrennt.")
+                self.broadcast(f"[SERVER] {left_user} hat die Verbindung getrennt.", client_socket)
             client_socket.close()
-            print("Verbindung zum Client geschlossen.")
 
-    # Methode, um exakt eine bestimmte Anzahl von Bytes zu empfangen
+    def broadcast(self, message, sender_socket):
+        for client in self.clients:
+            if client != sender_socket:
+                try:
+                    client.send(message.encode())
+                except:
+                    client.close()
+                    self.clients.pop(client, None)
+
     def recv_exact_bytes(self, client_socket, total_bytes):
-        """
-        Empfängt exakt total_bytes vom Socket, auch wenn recv in kleinen Stücken kommt.
-        """
         data = b''
         while len(data) < total_bytes:
             chunk = client_socket.recv(min(4096, total_bytes - len(data)))
@@ -76,33 +93,28 @@ class Server:
             data += chunk
         return data
 
-    # Methode zum empfangen von Daten
-    def recv_data(self, client_socket):
-        alleDaten = b''
-        while True:
-            daten = client_socket.recv(1024)
-            if not daten:
-                break
-            alleDaten += daten
-        return alleDaten
-    
-    # Schließt den Server
     def close(self):
         self.socket.close()
-        print("Server geschlossen")
+        print("[TCP] Server geschlossen")
+
 
 # UDP-Responder für Discovery
 def start_discovery_responder(listen_port=5000):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('', listen_port)) 
-
-    print(f"Discovery-Responder läuft auf UDP-Port {listen_port}")
+    sock.bind(('', listen_port))
+    print(f"[UDP] Discovery-Responder läuft auf Port {listen_port}")
 
     while True:
         data, addr = sock.recvfrom(1024)
         if data == b"DISCOVER_SERVICE":
-            print(f"Anfrage von {addr} erhalten")
+            print(f"[UDP] DISCOVER von {addr}")
             sock.sendto(b"DISCOVER_RESPONSE", addr)
 
-# Starte den UDP-Discovery-Responder
-start_discovery_responder(5000)
+
+# Server starten
+if __name__ == "__main__":
+    server = Server("0.0.0.0", 12345)
+    server.start()
+
+    # UDP parallel starten
+    threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()
