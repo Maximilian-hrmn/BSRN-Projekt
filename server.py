@@ -2,24 +2,28 @@ import socket
 import threading
 
 class Server:
+    
     #Server Kontruktor und Initialisierung mit der Ip und dem Port
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.clients = {}  # client_socket: username
+        self.clients = {} 
+
     # Server starten Methode
     def start(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
         print(f"[TCP] Server gestartet auf {self.ip}:{self.port}")
         threading.Thread(target=self.accept_connection).start()
+
     # Methode um Verbindungen zu akzeptieren
     def accept_connection(self):
         while True:
             client_socket, client_address = self.socket.accept()
             print(f"[TCP] Verbindung hergestellt mit {client_address}")
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
+
     # Methode um mit dem Client zu kommunizieren
     def handle_client(self, client_socket):
         username = None
@@ -85,6 +89,7 @@ class Server:
                     client.close()
                     self.clients.pop(client, None)
 
+    # Diese Methode wird verwendet, um sicherzustellen, dass die gesamte Bilddatei empfangen wird
     def recv_exact_bytes(self, client_socket, total_bytes):
         data = b''
         while len(data) < total_bytes:
@@ -93,7 +98,7 @@ class Server:
                 raise ConnectionError("Verbindung unterbrochen während Bildübertragung")
             data += chunk
         return data
-
+    # Methode um den Server zu schließen
     def close(self):
         self.socket.close()
         print("[TCP] Server geschlossen")
