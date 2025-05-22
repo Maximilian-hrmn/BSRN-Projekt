@@ -3,6 +3,7 @@ import socket
 from discovery_service import discover_peers
 from server import Server
 from CLI import CLI
+import threading
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -26,13 +27,19 @@ def main():
         print(f"Fehler beim Senden der Discovery-Anfrage: {e}")
         return
 
-    try:
-        Server.server.start()
-        # server.py starten
     
-    except Exception as e:
-        print(f"Fehler beim Starten des Servers: {e}")
-        return
+    if __name__ == "__main__":
+        try:
+            # Server starten
+            server = Server("0.0.0.0", 12345)
+            server.start()
+
+            # UDP parallel starten
+            threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()
+        
+        except Exception as e:
+            print(f"Fehler beim Starten des Servers: {e}")
+            return
 
     try:
         CLI.CLI.start()
@@ -41,12 +48,3 @@ def main():
     except Exception as e:
         print(f"Fehler beim Starten der CLI: {e}")
         return
-
-
-# Server starten
-if __name__ == "__main__":
-    server = Server("0.0.0.0", 12345)
-    server.start()
-
-    # UDP parallel starten
-    threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()
