@@ -1,4 +1,5 @@
 """
+
 Kurzbeschreibung des SLCP Handlers
 
 
@@ -23,8 +24,7 @@ ABLAUF des Programms in 4 Schritten
             (.WORK IN PROGRESS.)
 
                 5.Strukturierte Rückgabe der ursprünglichen Nachricht:
-                Beispiel: return {"command": "MSG", "handle": "bob", "text": "Hallo Welt!"}
-
+                Beispiel: return {"command": "MSG", "handle": "bob", "text": "Hallo!"}
 
 """
 
@@ -70,6 +70,8 @@ class SLCPHandler:
             port: Port, auf dem der Client lauscht
         """
         # Validiere Input, um Fehler frühzeitig zu erkennen
+        # Konstruktor
+
         if not handle or not isinstance(handle, str):
             raise ValueError("Handle muss ein gültiger String sein")
         if not isinstance(port, int) or port <= 0 or port > 65535:
@@ -78,6 +80,11 @@ class SLCPHandler:
         self.handle = handle  # Speichere Benutzername
         self.port = port      # Speichere Port
 
+   
+   
+   
+   
+   
     # --- 1. Nachrichtenerstellung ---
     # Jede Methode erstellt eine formatierte Nachricht gemäß SLCP-Protokoll
     
@@ -174,6 +181,12 @@ class SLCPHandler:
             
         return f"IAM {self.handle} {ip} {self.port}\n"
 
+   
+   
+   
+   
+   
+   
     # --- 2. Nachricht parsing ---
     def parse_message(self, raw_message: str) -> Dict[str, Any]:
         """
@@ -272,6 +285,9 @@ class SLCPHandler:
         except Exception as e:
             # Fange alle anderen Ausnahmen ab und gib sie als Fehler zurück
             return {"command": "ERROR", "error": str(e), "raw": raw_message}
+        
+
+        
 
     def _reconstruct_message(self, parts: List[str]) -> str:
         """
