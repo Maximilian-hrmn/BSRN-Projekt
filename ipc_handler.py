@@ -1,17 +1,27 @@
 import socket
 import json
 from slcp_handler import SLCPHandler
-
+"""
+Der slcp_handler wird instanziert, damit der ipc_handler auf dessen Protokoll zugreifen kann. 
+"""
 class IPCHandler:
+
+    # Konstruktor 
     def __init__(self, handle, port):
         self.slcp = SLCPHandler(handle, port)
+
         # IPC Socket für Kommunikation mit UI
+
         self.ipc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ipc_socket.bind(('localhost', 9999))  # IPC Port
-        
+    # Methode die nach Befhelen aus der UI "scannt"
+
     def listen_for_ui_commands(self):
+
         """Lauscht auf Befehle vom UI über IPC"""
+
         self.ipc_socket.listen(1)
+
         while True:
             conn, addr = self.ipc_socket.accept()
             
@@ -20,6 +30,7 @@ class IPCHandler:
             ui_data = json.loads(ui_command)
             
             # Verwende SLCP Handler zum Formatieren
+            
             if ui_data['action'] == 'send_message':
                 slcp_message = self.slcp.create_msg(
                     ui_data['target'], 
@@ -29,6 +40,7 @@ class IPCHandler:
                 
             elif ui_data['action'] == 'join_network':
                 slcp_message = self.slcp.create_join()
+
                 # Sende über Netzwerk...
     
     def send_to_ui(self, parsed_message):
