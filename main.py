@@ -43,9 +43,10 @@ def main():
         return
 
 
-
-
-
-
+# Server starten
 if __name__ == "__main__":
-    main()
+    server = Server("0.0.0.0", 12345)
+    server.start()
+
+    # UDP parallel starten
+    threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()

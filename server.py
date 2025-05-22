@@ -2,24 +2,25 @@ import socket
 import threading
 
 class Server:
+    #Server Kontruktor und Initialisierung mit der Ip und dem Port
     def __init__(self, ip, port):
         self.ip = ip
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = {}  # client_socket: username
-
+    # Server starten Methode
     def start(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
         print(f"[TCP] Server gestartet auf {self.ip}:{self.port}")
         threading.Thread(target=self.accept_connection).start()
-
+    # Methode um Verbindungen zu akzeptieren
     def accept_connection(self):
         while True:
             client_socket, client_address = self.socket.accept()
             print(f"[TCP] Verbindung hergestellt mit {client_address}")
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
-
+    # Methode um mit dem Client zu kommunizieren
     def handle_client(self, client_socket):
         username = None
         try:
@@ -110,11 +111,3 @@ def start_discovery_responder(listen_port=5000):
             print(f"[UDP] DISCOVER von {addr}")
             sock.sendto(b"DISCOVER_RESPONSE", addr)
 
-
-# Server starten
-if __name__ == "__main__":
-    server = Server("0.0.0.0", 12345)
-    server.start()
-
-    # UDP parallel starten
-    threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()
