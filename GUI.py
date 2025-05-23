@@ -52,7 +52,6 @@ class Ui_MainWindow(object):
         # Unteres Layout mit Eingabefeld, Bilder Button und Senden Button
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
-        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName("horizontalLayout")
 
         # Eingabefeld
