@@ -4,7 +4,7 @@ import discovery_service #Importiert die disovery_servive Datei, wird benötigt 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
-class CLI(cmd.Cmd):
+class CLIchat(cmd.Cmd):
     #Begrüßungstext 
     anfang = "Willkomen zum P2P Chat! Tippe 'help' oder '?' für Befehle. \n" 
     #Eingabeaufforderung
