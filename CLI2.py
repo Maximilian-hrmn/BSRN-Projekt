@@ -4,11 +4,11 @@ import discovery_service #Importiert die disovery_servive Datei, wird benötigt 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
-class CLIchat(cmd.Cmd):
+class ChatCLI(cmd.Cmd):
     #Begrüßungstext 
-    anfang = "Willkomen zum P2P Chat! Tippe 'help' oder '?' für Befehle. \n" 
+    intro = "Willkommen zum P2P Chat! Tippe 'help' oder '?' für Befehle. \n" 
     #Eingabeaufforderung
-    promt = "P2P-Chat: "
+    prompt = "P2P-Chat: "
 
     #Konstruktor von der Klasse CLI 
     def __init__(self): 
@@ -17,7 +17,7 @@ class CLIchat(cmd.Cmd):
         #Lädt die Konfiguartionsdaten aus der Datei (TOML)
         self.config = self.load_config()
 
-        #Prüft, ob 'handle' in der Konfiguration vorhanden ist – wenn nicht, bricht das Programm mit Fehlermeldung ab
+        #Prüft, ob 'handle' in der Konfiguration vorhanden ist wenn nicht, bricht das Programm mit Fehlermeldung ab
         if "handle" not in self.config:
             raise ValueError("Fehlender 'handle' in config.toml")
 
@@ -25,6 +25,8 @@ class CLIchat(cmd.Cmd):
         if "port" not in self.config:
             raise ValueError("Fehlender 'port' in config.toml")
         #Setz den Prompt auf den Benutzernamen 
+        self.handle = self.config["handle"]
+        self.port = int(self.config["port"])
         self.prompt = f"[{self.handle}]> "
         
         #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
