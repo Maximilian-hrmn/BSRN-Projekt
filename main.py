@@ -24,6 +24,13 @@ def main():
         print(f"Fehler beim Senden der Discovery-Anfrage: {e}")
         return
     
+    try:    
+        # UDP parallel starten
+        threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
+
+    except Exception as e:
+        print(f"Fehler beim Starten des Discovery-Dienstes: {e}")
+    
     try:
         client = SLCPClient(config["peer_ip"], config["peer_port"])
         print("[MAIN] SLCP Client erstellt und bereit.")
@@ -32,15 +39,12 @@ def main():
 
     try:
         # UI gestartet
-        CLI.start()
+        CLI.CLI.start()
     except Exception as e:
         print(f"Fehler beim Starten der CLI: {e}")
 
 
     try:    
-        # UDP parallel starten
-        threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
-
         # Server starten
         server = Server("0.0.0.0", 12345)
         server.start()
