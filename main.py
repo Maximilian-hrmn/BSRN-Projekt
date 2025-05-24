@@ -1,11 +1,12 @@
 import toml
 import socket
-from discovery_service import discover_peers
+import server
 from server import Server
-import sys
 import threading
-from discovery_service import start_discovery_responder
+import discovery_service 
+from discovery_service import discover_peers
 from multiprocessing import Queue
+import sys
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -37,7 +38,7 @@ def main():
             server.start()
 
             # UDP parallel starten
-            threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()
+            threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
         
         except Exception as e:
             print(f"Fehler beim Starten des Servers: {e}")
