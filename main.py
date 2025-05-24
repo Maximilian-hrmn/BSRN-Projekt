@@ -7,6 +7,7 @@ import discovery_service
 from discovery_service import discover_peers
 from multiprocessing import Queue
 import sys
+import CLI
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
