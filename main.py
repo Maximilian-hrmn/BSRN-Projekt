@@ -34,13 +34,21 @@ def main():
     
     if __name__ == "__main__":
         try:
+            # UDP parallel starten
+            threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
+            
             # Server starten
             server = Server("0.0.0.0", 12345)
             server.start()
 
-            # UDP parallel starten
-            threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
-        
+            while True:
+                pass
+
+        except KeyboardInterrupt:
+            print("\n[MAIN] Server wird beendet.")
+            server.close()
+            return
+
         except Exception as e:
             print(f"Fehler beim Starten des Servers: {e}")
             return
@@ -48,6 +56,7 @@ def main():
     try:
         CLI.CLI.start()
         # UI gestartet
+
     
     except Exception as e:
         print(f"Fehler beim Starten der CLI: {e}")
