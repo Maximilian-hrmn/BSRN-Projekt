@@ -44,7 +44,7 @@ class Ui_MainWindow(object):
         self.listView_2.setObjectName("listView_2")
         self.horizontalLayout_2.addWidget(self.listView_2)
 
-        self.horizontalLayout_2.setStretch(0, 70)
+        self.horizontalLayout_2.setStretch(0, 69)
         self.horizontalLayout_2.setStretch(1, 30)
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -87,7 +87,7 @@ class Ui_MainWindow(object):
         self.pushButton.setToolTip("Nachricht senden")
 
         # Stretch zwischen layouts
-        self.verticalLayout.setStretch(0, 5)  # Top ListViews
+        self.verticalLayout.setStretch(0, 9)  # Top ListViews
         self.verticalLayout.setStretch(1, 1)  # Bottom Controls
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
