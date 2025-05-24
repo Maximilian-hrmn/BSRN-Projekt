@@ -43,7 +43,7 @@ class CLIInterface:
                 print("\n[⚠] Programm wird beendet...")
                 sys.exit(0)
 
-    def _process_input(self, input_str: str):
+    def process_input(self, input_str: str):
         """
         Zentrale Steuerung für Benutzereingaben.
         Entscheidet, welcher Befehl ausgeführt wird.
@@ -98,13 +98,13 @@ class CLIInterface:
         except ValueError:
             print("[✘] Format: /img <Handle> <Bildpfad>")
 
-    def _handle_who(self):
+    def handle_who(self):
         """Fordert die aktuelle Teilnehmerliste an"""
         # Sendet WHO-Befehl an Netzwerkprozess
         self.message_queue.put("WHO")
         print("[⌛] WHO-Anfrage gesendet.")
 
-    def _handle_leave(self):
+    def handle_leave(self):
         """Beendet das Programm und sendet Leave-Benachrichtigung"""
         # Informiert Netzwerkprozess über das Verlassen
         self.message_queue.put("LEAVE")
@@ -124,7 +124,7 @@ Befehle:
 """
         print(help_text)
 
-    def _start_receiver_thread(self):
+    def start_receiver_thread(self):
         """
         Startet einen Hintergrund-Thread für den Nachrichtenempfang.
         Der Thread läuft parallel zur Eingabeschleife.
