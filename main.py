@@ -1,12 +1,9 @@
 import toml
 import socket
-import server
 from server import Server
+from client import SLCPClient
 import threading
-import discovery_service 
 from discovery_service import discover_peers
-from multiprocessing import Queue
-import sys
 import CLI
 
 def main():
@@ -22,42 +19,46 @@ def main():
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return
-
-    try:
-        discover_peers()
-        # discovery-service.py starten   
     
     except socket.error as e:
         print(f"Fehler beim Senden der Discovery-Anfrage: {e}")
         return
-
     
-    if __name__ == "__main__":
-        try:
-            # UDP parallel starten
-            threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
-            
-            # Server starten
-            server = Server("0.0.0.0", 12345)
-            server.start()
-
-            while True:
-                pass
-
-        except KeyboardInterrupt:
-            print("\n[MAIN] Server wird beendet.")
-            server.close()
-            return
-
-        except Exception as e:
-            print(f"Fehler beim Starten des Servers: {e}")
-            return
+    try:
+        client = SLCPClient(config["peer_ip"], config["peer_port"])
+        print("[MAIN] SLCP Client erstellt und bereit.")
+    except Exception as e:
+        print(f"[MAIN] Fehler beim Starten des Clients: {e}")
 
     try:
-        CLI.CLI.start()
         # UI gestartet
-
-    
+        CLI.start()
     except Exception as e:
         print(f"Fehler beim Starten der CLI: {e}")
+
+
+    try:    
+        # UDP parallel starten
+        threading.Thread(target=discover_peers, args=(5000,), daemon=True).start()
+
+        # Server starten
+        server = Server("0.0.0.0", 12345)
+        server.start()
+
+        while True:
+            pass
+
+    except KeyboardInterrupt:
+        print("\n[MAIN] Server wird beendet.")
+        server.close()
         return
+
+    except Exception as e:
+        print(f"Fehler beim Starten des Servers: {e}")
+    return   
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n[MAIN] Beendet durch Benutzer.")
