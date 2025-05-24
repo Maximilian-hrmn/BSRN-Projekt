@@ -82,7 +82,4 @@ class ChatCLI(cmd.Cmd):
     def do_exit(self, arg):
         "Programm beenden"
         return self.do_leave(arg)
-
-# Startet das CLI, wenn das Skript direkt ausgeführt wird
-if __name__ == '__main__':
-    ChatCLI().cmdloop()  # Startet die Eingabeschleife für die Kommandozeile
+    

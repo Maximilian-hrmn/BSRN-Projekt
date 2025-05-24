@@ -4,6 +4,7 @@ from server import Server
 from client import SLCPClient
 import threading
 from discovery_service import discover_peers
+from CLI2 import ChatCLI 
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -55,3 +56,9 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print("\n[MAIN] Beendet durch Benutzer.")
+
+    try:
+        cli = ChatCLI()
+        cli.cmdloop()
+    except Exception as e:
+        print(f"[MAIN] Fehler beim Starten der CLI: {e}")
