@@ -4,6 +4,7 @@ from discovery_service import discover_peers
 from server import Server
 from CLI import CLI
 import threading
+from discovery_service import start_discovery_responder
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
