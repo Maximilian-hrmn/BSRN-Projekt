@@ -107,9 +107,7 @@ class ChatCLI(cmd.Cmd):
     # Wenn der Nutzer "exit" eingibt, wird 'leave' aufgerufen und das Programm beendet
     def do_exit(self, arg):
         "Programm beenden"
-        return self.do_leave(arg)
-<<<<<<< HEAD
-=======
+        return self.do_leave(arg)  
     
     #Wenn der benutzer "img" einigbt wird ein Bild gesendet 
     def do_img(self, arg):
@@ -119,6 +117,3 @@ class ChatCLI(cmd.Cmd):
             client.send_img(user, filepath)
         except ValueError:
             print("Benutzung: img <Benutzer> <Dateipfad>")
-
-    
->>>>>>> 9a6b29565b1782812ca10cfac5af6f7da2a17fab
