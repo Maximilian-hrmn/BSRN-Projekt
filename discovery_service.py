@@ -2,9 +2,8 @@ import socket
 import time
 
 class DiscoveryService:
-    def __init__(self, timeout=3, discovery_port=5000):
+    def __init__(self, discovery_port=5000):
         # Initialisierung der Klassenvariablen
-        self.timeout = timeout
         self.discovery_port = discovery_port
         self.found_peers = []
         

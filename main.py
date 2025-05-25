@@ -2,7 +2,6 @@ import toml
 import socket
 from server import Server
 from client import SLCPClient
-import threading
 from discovery_service import DiscoveryService
 from CLI2 import ChatCLI 
 
@@ -26,7 +25,7 @@ def main():
     
     try:    
          # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=3, discovery_port=int(config["peer_port"]))
+        discovery = DiscoveryService(discovery_port=int(config["peer_port"]))
         peers = discovery.discover_peers()
     except Exception as e:
         print(f"Fehler beim Starten des Discovery Services: {e}")
