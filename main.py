@@ -1,8 +1,10 @@
 import toml
 import socket
-from discovery_service import discover_peers
 from server import Server
-from CLI import CLI
+from client import SLCPClient
+import threading
+from discovery_service import discover_peers
+from CLI2 import ChatCLI 
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -17,36 +19,46 @@ def main():
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return
-
-    try:
-        discover_peers()
-        # discovery-service.py starten   
     
     except socket.error as e:
         print(f"Fehler beim Senden der Discovery-Anfrage: {e}")
         return
-
-    try:
-        Server.server.start()
-        # server.py starten
+    
+    try:    
+        # Discovery Service starten
+        discover_peers(config["peer_ip"], config["peer_port"])
     
     except Exception as e:
-        print(f"Fehler beim Starten des Servers: {e}")
+        print(f"Fehler beim Starten des Discovery Services: {e}")
         return
-
-    try:
-        CLI.CLI.start()
-        # UI gestartet
     
-    except Exception as e:
-        print(f"Fehler beim Starten der CLI: {e}")
-        return
-
-
-# Server starten
-if __name__ == "__main__":
+try:
+    # Server starten
     server = Server("0.0.0.0", 12345)
     server.start()
 
-    # UDP parallel starten
-    threading.Thread(target=start_discovery_responder, args=(5000,), daemon=True).start()
+except KeyboardInterrupt:
+    print("\n[MAIN] Server wird beendet.")
+    server.close()
+
+except Exception as e:
+    print(f"Fehler beim Starten des Servers: {e}")
+
+try:
+    client = SLCPClient("peer_ip", "peer_port")
+    print("[MAIN] SLCP Client erstellt und bereit.")
+except Exception as e:
+    print(f"[MAIN] Fehler beim Starten des Clients: {e}")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n[MAIN] Beendet durch Benutzer.")
+
+    try:
+        cli = ChatCLI()
+        cli.cmdloop()
+    except Exception as e:
+        print(f"[MAIN] Fehler beim Starten der CLI: {e}")

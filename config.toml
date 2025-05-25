@@ -3,3 +3,5 @@ port = 111
 whoisport = 222
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
 image = "images/"
+peer_ip = "192.168.0.100"
+peer_port = 12345
