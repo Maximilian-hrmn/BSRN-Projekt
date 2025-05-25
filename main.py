@@ -4,7 +4,7 @@ from server import Server
 from client import SLCPClient
 import threading
 from discovery_service import DiscoveryService
-from CLI import ChatCLI 
+from CLI2 import ChatCLI 
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
