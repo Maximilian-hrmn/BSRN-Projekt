@@ -37,14 +37,16 @@ try:
     server = Server("0.0.0.0", 12345)
     server.start()
 
+    #Abbruch mit Strg+C abfangen
 except KeyboardInterrupt:
     print("\n[MAIN] Server wird beendet.")
     server.close()
-
+    #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
 except Exception as e:
     print(f"Fehler beim Starten des Servers: {e}")
 
 try:
+    # SLCP Client erstellen und verbinden
     client = SLCPClient("peer_ip", "peer_port")
     print("[MAIN] SLCP Client erstellt und bereit.")
 except Exception as e:

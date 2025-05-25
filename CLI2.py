@@ -31,6 +31,23 @@ class ChatCLI(cmd.Cmd):
         
         #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
 
+        #Implementation des SLCP Handler 
+        try:
+            self.slcp_handler = SLCPHandler(
+                handle=self.handle,
+                port=self.port
+            )
+            print(f"[SLCP] Handler erstellt für Benutzer '{self.handle}' auf Port {self.port}")
+            
+            # Sende JOIN-Nachricht beim Start
+            join_message = self.slcp_handler.create_join()
+            print(f"[SLCP] JOIN-Nachricht bereit: {join_message.strip()}")
+            # Hier könntest du die JOIN-Nachricht an entdeckte Peers senden
+            
+        except ValueError as e:
+            print(f"[SLCP] Fehler beim Erstellen des Handlers: {e}")
+            raise
+                
 
 
     #Diese Funktion lädt die Konfiguration aus der TOML-Datei
