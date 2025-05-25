@@ -26,7 +26,7 @@ def main():
     
     try:    
          # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=3, discovery_port=int(config["peer_port"]))
+        discovery = DiscoveryService(discovery_port=int(config["peer_port"]))
         peers = discovery.discover_peers()
     except Exception as e:
         print(f"Fehler beim Starten des Discovery Services: {e}")
