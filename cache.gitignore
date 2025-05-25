@@ -1,8 +1,0 @@
-# Bytecode-Dateien ignorieren
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-# VSCode und Codespace-spezifische Dateien ignorieren
-.vscode/
-*.code-workspace

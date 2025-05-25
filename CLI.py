@@ -1,152 +1,124 @@
-# # Importiert das sys-Modul für Systemfunktionen wie Programmabbruch
-# import sys
-# # Importiert die Queue-Klasse für Interprozesskommunikation
-# from multiprocessing import Queue
+import cmd #Importiert das cmd-Modul für die CLI 
+import client #Importiert die Client.py Datei, wird benötigt für send und leave 
+from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
+import tomllib #benötigt zum Parsen von TOML-Datein 
 
-# class CLIInterface:
-#     """
-#     Implementiert die Kommandozeilen-Schnittstelle (CLI) für den Chat-Client.
-#     Verantwortlich für:
-#     - Entgegennahme von Benutzereingaben
-#     - Darstellung von Nachrichten
-#     - Kommunikation mit dem Netzwerkprozess über eine Queue
-#     """
+#Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
+class ChatCLI(cmd.Cmd):
+    #Begrüßungstext 
+    intro = "Willkommen zum P2P Chat! Tippe 'help' oder '?' für Befehle. \n" 
+    #Eingabeaufforderung
+    prompt = "P2P-Chat: "
 
-#     def __init__(self, config: dict, message_queue: Queue):
-#         """
-#         Initialisiert die CLI-Komponente.
-        
-#         Args:
-#             config: Dictionary mit Konfiguration aus der TOML-Datei
-#             message_queue: Kommunikationskanal zum Netzwerkprozess
-#         """
-#         self.config = config  # Speichert Konfiguration (Benutzername, Ports etc.)
-#         self.message_queue = message_queue  # IPC-Warteschlange für Nachrichten
+    #Konstruktor von der Klasse CLI 
+    def __init__(self): 
+        #Ruft den Konstuktor der Elternklasse auf (cmd)
+        super().__init__() 
+        #Lädt die Konfiguartionsdaten aus der Datei (TOML)
+        self.config = self.load_config()
 
-#     def start(self):
-#         """Startet die CLI und Haupt-Eingabeschleife."""
-#         # Begrüßungsnachricht mit konfiguriertem Benutzernamen
-#         print(f"Willkommen, {self.config['handle']}! Tippe '/help' für Befehle.")
-        
-#         # Startet Hintergrund-Thread für Nachrichtenempfang
-#         self._start_receiver_thread()
-        
-#         # Haupt-Eingabeschleife (läuft bis zum Programmende)
-#         while True:
-#             try:
-#                 # Liest Benutzereingabe von der Kommandozeile
-#                 user_input = input("> ")
-#                 # Verarbeitet die Eingabe
-#                 self._process_input(user_input)
-#             except KeyboardInterrupt:
-#                 # Fängt Strg+C ab und beendet das Programm sauber
-#                 print("\n[⚠] Programm wird beendet...")
-#                 sys.exit(0)
+        #Prüft, ob 'handle' in der Konfiguration vorhanden ist wenn nicht, bricht das Programm mit Fehlermeldung ab
+        if "handle" not in self.config:
+            raise ValueError("Fehlender 'handle' in config.toml")
 
-#     def process_input(self, input_str: str):
-#         """
-#         Zentrale Steuerung für Benutzereingaben.
-#         Entscheidet, welcher Befehl ausgeführt wird.
+        #Prüft, ob 'port' vorhanden ist – andernfalls Abbruch
+        if "port" not in self.config:
+            raise ValueError("Fehlender 'port' in config.toml")
+        #Setz den Prompt auf den Benutzernamen 
+        self.handle = self.config["handle"]
+        self.port = int(self.config["port"])
+        self.prompt = f"[{self.handle}]> "
         
-#         Args:
-#             input_str: Roheingabe des Benutzers (z.B. "/msg Bob Hallo")
-#         """
-#         # Extrahiert den Basisbefehl (erstes Wort der Eingabe)
-#         command = input_str.split()[0].lower() if input_str else ""
-        
-#         # Verteilt die Verarbeitung an spezialisierte Methoden
-#         if command == "/msg":
-#             self._handle_msg(input_str)
-#         elif command == "/img":
-#             self._handle_img(input_str)
-#         elif command == "/who":
-#             self._handle_who()
-#         elif command == "/leave":
-#             self._handle_leave()
-#         elif command == "/help":
-#             self._show_help()
-#         else:
-#             print("Unbekannter Befehl. Tippe '/help' für Hilfe.")
+        #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
 
-#     def _handle_msg(self, input_str: str):
-#         """Verarbeitet Textnachrichten-Befehle im Format '/msg <Handle> <Text>'"""
-#         try:
-#             # Zerlegt die Eingabe in Bestandteile
-#             # _ ignoriert das erste Element ("/msg")
-#             # handle: Empfänger-Name
-#             # *text: Rest der Nachricht (kann Leerzeichen enthalten)
-#             _, handle, *text = input_str.split(" ", 2)
+        #Implementation des SLCP Handler 
+        try:
+            self.slcp_handler = SLCPHandler(
+                handle=self.handle,
+                port=self.port
+            )
+            print(f"[SLCP] Handler erstellt für Benutzer '{self.handle}' auf Port {self.port}")
             
-#             # Erstellt SLCP-konforme Nachricht
-#             msg = f"MSG {handle} {' '.join(text)}"
+            # Sende JOIN-Nachricht beim Start
+            join_message = self.slcp_handler.create_join()
+            print(f"[SLCP] JOIN-Nachricht bereit: {join_message.strip()}")
+            # Hier könntest du die JOIN-Nachricht an entdeckte Peers senden
             
-#             # Sendet Nachricht an Netzwerkprozess über die Queue
-#             self.message_queue.put(msg)
-#             print(f"[✔] Nachricht an {handle} gesendet.")
-            
-#         except ValueError:
-#             # Fehlerbehandlung bei falscher Parameteranzahl
-#             print("[✘] Format: /msg <Handle> <Text>")
+        except ValueError as e:
+            print(f"[SLCP] Fehler beim Erstellen des Handlers: {e}")
+            raise
+                
 
-#     def _handle_img(self, input_str: str):
-#         """Platzhalter für Bildversand (aktuell nicht implementiert)"""
-#         try:
-#             # Extrahiert Parameter (Implementierung folgt später)
-#             _, handle, img_path = input_str.split(" ", 2)
-#             print(f"[✘] Bildversand noch nicht implementiert. (Pfad: {img_path})")
-            
-#         except ValueError:
-#             print("[✘] Format: /img <Handle> <Bildpfad>")
 
-#     def handle_who(self):
-#         """Fordert die aktuelle Teilnehmerliste an"""
-#         # Sendet WHO-Befehl an Netzwerkprozess
-#         self.message_queue.put("WHO")
-#         print("[⌛] WHO-Anfrage gesendet.")
-
-#     def handle_leave(self):
-#         """Beendet das Programm und sendet Leave-Benachrichtigung"""
-#         # Informiert Netzwerkprozess über das Verlassen
-#         self.message_queue.put("LEAVE")
-#         # Beendet das Programm mit Exit-Code 0 (erfolgreich)
-#         print("[⚠] Verlasse den Chat...")
-#         sys.exit(0)
-
-#     def _show_help(self):
-#         """Zeigt alle verfügbaren Befehle an"""
-#         help_text = """
-# Befehle:
-#   /msg <Handle> <Text>   – Textnachricht senden
-#   /img <Handle> <Pfad>   – Bild senden (.png/.jpg)
-#   /who                   – Aktive Teilnehmer anzeigen
-#   /leave                 – Chat verlassen
-#   /help                  – Diese Hilfe anzeigen
-# """
-#         print(help_text)
-
-#     def start_receiver_thread(self):
-#         """
-#         Startet einen Hintergrund-Thread für den Nachrichtenempfang.
-#         Der Thread läuft parallel zur Eingabeschleife.
-#         """
-#         import threading
+    #Diese Funktion lädt die Konfiguration aus der TOML-Datei
+    def load_config(self):
+        #Öffnet die Datei 'config.toml' im Binärmodus zum Lesen
+        with open("config.toml", "rb") as f:
+            #Lädt den Inhalt als Dictionary mit tomllib
+            return tomllib.load(f)
         
-#         def message_listener():
-#             """
-#             Kontinuierlicher Nachrichtenempfang.
-#             Wartet auf Nachrichten in der Queue und zeigt sie an.
-#             """
-#             while True:
-#                 # Prüft auf neue Nachrichten
-#                 if not self.message_queue.empty():
-#                     # Holt Nachricht aus der Queue
-#                     msg = self.message_queue.get()
-#                     # Formatierte Ausgabe mit Zeilenumbruch vor der Nachricht
-#                     print(f"\n[NEUE NACHRICHT] {msg}")
-        
-#         # Erstellt und startet Daemon-Thread
-#         # daemon=True: Thread wird automatisch beendet, wenn Hauptprogramm endet
-#         threading.Thread(
-#             target=message_listener,  # Auszuführende Funktion
-#             daemon=True
-#         ).start()
+    def do_who(self, arg):
+        """Teilnehmer im Netzwerk entdecken"""
+        discovery_service = DiscoveryService()
+        peers = discovery_service.discover_peers()
+        if peers:
+            print("Gefundene Peers:")
+            for peer in peers:
+                # Korrekter Aufruf von send_who mit nur einem Parameter
+                info = discovery_service.send_who(peer)  # peer ist die Adresse
+                if info:
+                    print(f"  - {peer}: {info}")
+        else:
+            print("Keine Peers gefunden.")
+
+
+
+
+
+
+#HIER WEITERARBEITEN 
+
+    # Diese Methode wird aufgerufen, wenn der Nutzer "msg <Benutzer> <Text>" eintippt
+    def do_msg(self, arg):
+        "Nachricht senden: msg <Benutzer> <Text>"
+        try:
+            # Zerlegt den String in zwei Teile: Empfänger und Nachricht
+            user, message = arg.split(" ", 1)
+            # Schickt die Nachricht mit Hilfe eurer client.py
+            client.send_msg(user, message)
+        except ValueError:
+            # Falls der Benutzer das Kommando falsch verwendet
+            print("Benutzung: msg <Benutzer> <Text>")
+
+    # Diese Methode wird aufgerufen, wenn der Nutzer "leave" eingibt
+    def do_leave(self, arg):
+        "Den Chat verlassen"
+        # Sendet die LEAVE-Nachricht über client.py
+        client.send_leave(self.handle)
+        print("Verlassen...")
+        return True  # Beendet das CLI-Programm
+
+    # Zeigt die aktuelle Konfiguration an
+    def do_config(self, arg):
+        "Zeige aktuelle Konfiguration"
+        for key, value in self.config.items():
+            print(f"{key} = {value}")
+
+    # Wenn der Nutzer "exit" eingibt, wird 'leave' aufgerufen und das Programm beendet
+    def do_exit(self, arg):
+        "Programm beenden"
+        return self.do_leave(arg)
+<<<<<<< HEAD
+=======
+    
+    #Wenn der benutzer "img" einigbt wird ein Bild gesendet 
+    def do_img(self, arg):
+        "Bild senden: img <Benutzer> <Dateipfad>"
+        try:
+            user, filepath = arg.split(" ", 1)
+            client.send_img(user, filepath)
+        except ValueError:
+            print("Benutzung: img <Benutzer> <Dateipfad>")
+
+    
+>>>>>>> 9a6b29565b1782812ca10cfac5af6f7da2a17fab
