@@ -1,4 +1,5 @@
 import socket
+import os
 
 class SLCPClient:
 
@@ -25,6 +26,30 @@ class SLCPClient:
         except Exception as e:
             print(f"[Fehler] Verbindung zu {self.peer_ip}:{self.peer_port} fehlgeschlagen:", e)
             return None
+        
+    def send_image(self, empfänger, bildpfad):
+        try:
+            bildname = os.path.basename(bildpfad)
+            bildgröße = os.path.getsize(bildpfad)
+
+            with open(bildpfad, 'rb') as f:
+                bilddaten = f.read()
+
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((self.peer_ip, self.peer_port))
+
+                # Kopfzeile mit Empfänger, Bildname, Größe
+                header = f"IMG {empfänger} {bildname} {bildgröße}\n"
+                s.sendall(header.encode('utf-8'))
+
+                # Bilddaten senden
+                s.sendall(bilddaten)
+
+                # Antwort empfangen (optional)
+                response = s.recv(1024).decode('utf-8').strip()
+                print(f"[Antwort vom Peer]: {response}")
+        except Exception as e:
+            print(f"[Fehler beim Bildversand]: {e}")
 
 # ========== HIER KOMMEN DIE FUNKTIONEN, die CLI aufruft ==========
 
