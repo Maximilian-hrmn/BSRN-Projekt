@@ -29,7 +29,6 @@ ABLAUF des Programms in 4 Schritten
 
 """
 
-
 from typing import Dict, List, Union, Optional, Any
 import re
 
@@ -82,9 +81,7 @@ class SLCPHandler:
         self.port = port      # Speichere Port
 
    
-   
-   
-   
+
    
     # --- 1. Nachrichtenerstellung ---
     # Jede Methode erstellt eine formatierte Nachricht gemäß SLCP-Protokoll
@@ -182,11 +179,6 @@ class SLCPHandler:
             
         return f"IAM {self.handle} {ip} {self.port}\n"
 
-   
-   
-   
-   
-   
    
     # --- 2. Nachricht parsing ---
     def parse_message(self, raw_message: str) -> Dict[str, Any]:

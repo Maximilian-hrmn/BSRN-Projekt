@@ -91,3 +91,17 @@ class ChatCLI(cmd.Cmd):
     def do_exit(self, arg):
         "Programm beenden"
         return self.do_leave(arg)
+<<<<<<< HEAD
+=======
+    
+    #Wenn der benutzer "img" einigbt wird ein Bild gesendet 
+    def do_img(self, arg):
+        "Bild senden: img <Benutzer> <Dateipfad>"
+        try:
+            user, filepath = arg.split(" ", 1)
+            client.send_img(user, filepath)
+        except ValueError:
+            print("Benutzung: img <Benutzer> <Dateipfad>")
+
+    
+>>>>>>> 9a6b29565b1782812ca10cfac5af6f7da2a17fab
