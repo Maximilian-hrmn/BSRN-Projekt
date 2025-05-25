@@ -1,6 +1,6 @@
 import cmd #Importiert das cmd-Modul für die CLI 
 import client #Importiert die Client.py Datei, wird benötigt für send und leave 
-import discovery_service #Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
+from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
@@ -58,9 +58,18 @@ class ChatCLI(cmd.Cmd):
             return tomllib.load(f)
         
     def do_who(self, arg):
-        "Teilnehmer im Netzwerk entdecken"
-        discovery_service.send_who()  # Ruft eure Funktion aus discovery_service.py auf MUSS MARIUS IN SEINEM CODE MACHEN
-
+        """Teilnehmer im Netzwerk entdecken"""
+        discovery_service = DiscoveryService()
+        peers = discovery_service.discover_peers()
+        if peers:
+            print("Gefundene Peers:")
+            for peer in peers:
+                # Korrekter Aufruf von send_who mit nur einem Parameter
+                info = discovery_service.send_who(peer)  # peer ist die Adresse
+                if info:
+                    print(f"  - {peer}: {info}")
+        else:
+            print("Keine Peers gefunden.")
 
 
 
@@ -99,6 +108,8 @@ class ChatCLI(cmd.Cmd):
     def do_exit(self, arg):
         "Programm beenden"
         return self.do_leave(arg)
+<<<<<<< HEAD
+=======
     
     #Wenn der benutzer "img" einigbt wird ein Bild gesendet 
     def do_img(self, arg):
@@ -110,3 +121,4 @@ class ChatCLI(cmd.Cmd):
             print("Benutzung: img <Benutzer> <Dateipfad>")
 
     
+>>>>>>> 9a6b29565b1782812ca10cfac5af6f7da2a17fab
