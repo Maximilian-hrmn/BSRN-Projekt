@@ -2,8 +2,6 @@
 
 Kurzbeschreibung des SLCP Handlers
 
-
-
 ABLAUF des Programms in 4 Schritten
 
 1. Initialisierung des Handlers:
@@ -22,6 +20,9 @@ ABLAUF des Programms in 4 Schritten
             Die Methode erhält zunächst einen String wie z.B.: "JOIN alice 8080", dann wird dieser String "bereinigt" (mit .strip()). 
             Anschließend wird der Befhlt der Nachricht identifiziert, durch command = parts[0].upper(), je nach Befehlstyp wird die Nachricht unterschiedlich verarbeitet:
             (.WORK IN PROGRESS.)
+            Im Wesentlichen wird eine Textzeile wie "MSG alice "Wie geht's dir?"" in ein strukturiertes 
+            Objekt {"command": "MSG", "handle": "alice", "text": "Wie geht's dir?"} umgewandelt, das dann für die weitere Verarbeitung im 
+            Programm verwendet werden kann.
 
                 5.Strukturierte Rückgabe der ursprünglichen Nachricht:
                 Beispiel: return {"command": "MSG", "handle": "bob", "text": "Hallo!"}
@@ -192,7 +193,7 @@ class SLCPHandler:
         """
         Parsed eine SLCP-Nachricht und gibt ein Dictionary zurück.
         
-        Args:
+        Ausgangslage:
             raw_message: Die zu parsende SLCP-Nachricht
             
         Returns:
@@ -240,6 +241,7 @@ class SLCPHandler:
                     return {"command": "ERROR", "error": "Ungültiges MSG-Format", "raw": raw_message}
                     
                 handle = match.group(1)  # Erstes Capture-Group ist der Handle
+
                 # Ersetze escaped quotes zurück zu normalen Anführungszeichen
                 message = match.group(2).replace('\\"', '"')  # Zweite Capture-Group ist die Nachricht
                 return {"command": "MSG", "handle": handle, "text": message}
