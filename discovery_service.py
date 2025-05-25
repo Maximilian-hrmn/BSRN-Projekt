@@ -1,7 +1,7 @@
 import socket
 import time
 
-def discover_peers(timeout=2, discovery_port=5000):
+def discover_peers(timeout=30, discovery_port=5000):
     # Erstellt einen UDP-Socket für Broadcast-Nachrichten
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # Aktiviert die Broadcast-Option für den Socket
