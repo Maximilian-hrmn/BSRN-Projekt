@@ -10,7 +10,6 @@ def main():
     try:
         config = toml.load("config.toml")
         print("Konfigurationsdatei geladen.")
-        return config # Konfigurationsdatei erfolgreich geladen
         
     except FileNotFoundError: 
         print("Konfigurationsdatei nicht gefunden.")
@@ -62,6 +61,6 @@ def main():
         try:
             cli = ChatCLI()
             cli.cmdloop()
-            
+
         except Exception as e:
          print(f"[MAIN] Fehler beim Starten der CLI: {e}")
