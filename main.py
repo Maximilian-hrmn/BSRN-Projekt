@@ -56,19 +56,13 @@ def main():
         print(f"Fehler beim Starten des Servers: {e}")
 
     try:
-        # SLCP Client erstellen und verbinden
         client = SLCPClient("peer_ip", "peer_port")
         print("[MAIN] SLCP Client erstellt und bereit.")
 
-    except Exception as e:
-        print(f"[MAIN] Fehler beim Starten des Clients: {e}")
-
-    try:
         cli = ChatCLI()
         cli.cmdloop()
-
     except Exception as e:
-        print(f"[MAIN] Fehler beim Starten der CLI: {e}")
+        print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
 if __name__ == "__main__":
     try:
