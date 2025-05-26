@@ -82,20 +82,13 @@ class ChatCLI(cmd.Cmd):
         else:
             print("Keine Peers gefunden.")
 
-
-
-
-
-
-#HIER WEITERARBEITEN 
-
     # Diese Methode wird aufgerufen, wenn der Nutzer "msg <Benutzer> <Text>" eintippt
     def do_msg(self, arg):
         "Nachricht senden: msg <Benutzer> <Text>"
         try:
             # Zerlegt den String in zwei Teile: Empfänger und Nachricht
             user, message = arg.split(" ", 1)
-            # Schickt die Nachricht mit Hilfe eurer client.py
+            # Schickt die Nachricht mit Hilfe der client.py
             client.send_msg(user, message)
         except ValueError:
             # Falls der Benutzer das Kommando falsch verwendet
