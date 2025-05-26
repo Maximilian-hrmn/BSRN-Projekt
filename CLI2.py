@@ -3,6 +3,7 @@ import client #Importiert die Client.py Datei, wird benötigt für send und leav
 from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 from slcp_handler import SLCPHandler  # Importiere SLCPHandler-Klasse
+from client import SLCPClient
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
 class ChatCLI(cmd.Cmd):
@@ -31,6 +32,18 @@ class ChatCLI(cmd.Cmd):
         self.prompt = f"[{self.handle}]> "
         
         #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
+
+        #     # === automatischer JOIN ===
+        # bootstrap_ip   = self.config["peer_ip"]      # aus config.toml
+        # bootstrap_port = int(self.config["peer_port"])
+
+        # # SLCPClient initialisieren und JOIN senden
+        # slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
+        # response = slcp_client.send_message(join_message.strip())
+
+        # print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
+        # print(f"[SLCP] Antwort: {response}")
+        # # === Ende automatischer JOIN ===
 
         #Implementation des SLCP Handler 
         try:
