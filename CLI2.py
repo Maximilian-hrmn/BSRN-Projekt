@@ -33,17 +33,17 @@ class ChatCLI(cmd.Cmd):
         
         #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
 
-        #     # === automatischer JOIN ===
-        # bootstrap_ip   = self.config["peer_ip"]      # aus config.toml
-        # bootstrap_port = int(self.config["peer_port"])
+            # === automatischer JOIN ===
+        bootstrap_ip   = self.config["peer_ip"]      # aus config.toml
+        bootstrap_port = int(self.config["peer_port"])
 
-        # # SLCPClient initialisieren und JOIN senden
-        # slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
-        # response = slcp_client.send_message(join_message.strip())
+        # SLCPClient initialisieren und JOIN senden
+        slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
+        response = slcp_client.send_message(join_message.strip())
 
-        # print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
-        # print(f"[SLCP] Antwort: {response}")
-        # # === Ende automatischer JOIN ===
+        print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
+        print(f"[SLCP] Antwort: {response}")
+        # === Ende automatischer JOIN ===
 
         #Implementation des SLCP Handler 
         try:
