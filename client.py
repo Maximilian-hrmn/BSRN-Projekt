@@ -55,7 +55,7 @@ class SLCPClient:
 
 # Fester Ziel-Peer (später dynamisch mit WHO!)
 PEER_IP = "127.0.0.1"
-PEER_PORT = 111
+PEER_PORT = 5000
 
 # Diese Funktion wird von CLI.py aufgerufen
 def send_msg(empfänger, text):
