@@ -2,6 +2,7 @@ import cmd #Importiert das cmd-Modul für die CLI
 import client #Importiert die Client.py Datei, wird benötigt für send und leave 
 from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
 import tomllib #benötigt zum Parsen von TOML-Datein 
+from slcp_handler import SLCPHandler  # Importiere SLCPHandler-Klasse
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
 class ChatCLI(cmd.Cmd):
@@ -33,10 +34,7 @@ class ChatCLI(cmd.Cmd):
 
         #Implementation des SLCP Handler 
         try:
-            self.slcp_handler = SLCPHandler(
-                handle=self.handle,
-                port=self.port
-            )
+            self.slcp_handler = SLCPHandler(handle=self.handle, port=self.port)
             print(f"[SLCP] Handler erstellt für Benutzer '{self.handle}' auf Port {self.port}")
             
             # Sende JOIN-Nachricht beim Start
