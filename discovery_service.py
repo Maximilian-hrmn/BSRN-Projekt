@@ -33,35 +33,37 @@ class DiscoveryService:
         return None
 
     def discover_peers(self):
-        """Sucht nach verfügbaren Peers im Netzwerk"""
+        """Sucht nach verfügbaren Peers im Netzwerk für eine bestimmte Zeit"""
         message = b"DISCOVERY_SERVICE"
         found_peers = []
         
         # Socket für Broadcast konfigurieren
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind(('', self.discovery_port))  # Wichtig: Bind auf allen Interfaces
-    
-        print("Sende Discovery-Anfrage...")
+        self.sock.bind(('', self.discovery_port))
+
+        print(f"Starte Peer-Suche (Timeout: {self.timeout} Sekunden)...")
         
         try:
-            while True:  # Äußere Schleife für Wiederholung
-                # Sende Discovery Nachricht
-                self.sock.sendto(message, ('255.255.255.255', self.discovery_port))
-                
+            # Sende Discovery Nachricht
+            self.sock.sendto(message, ('255.255.255.255', self.discovery_port))
+            
+            # Warte auf Antworten bis Timeout
+            start_time = time.time()
+            while (time.time() - start_time) < self.timeout:
                 try:
-                    while True:
-                        data, addr = self.sock.recvfrom(1024)
-                        if data == b"DISCOVER_RESPONSE":
-                            if addr[0] not in found_peers:
-                                found_peers.append(addr[0])
-                                print(f"Peer gefunden: {addr[0]}")
+                    data, addr = self.sock.recvfrom(1024)
+                    if data == b"DISCOVER_RESPONSE":
+                        if addr[0] not in found_peers:
+                            found_peers.append(addr[0])
+                            print(f"Peer gefunden: {addr[0]}")
                 except socket.timeout:
-                    print("Timeout - Starte neue Suche...")
-                    continue  # Startet die äußere Schleife neu
-                    
+                    # Timeout für einen einzelnen Empfangsversuch
+                    continue
+                
         except KeyboardInterrupt:
             print("\nSuche wurde vom Benutzer beendet.")
         finally:
+            print(f"\nSuche beendet nach {time.time() - start_time:.1f} Sekunden.")
             self.sock.close()
             
         return found_peers
