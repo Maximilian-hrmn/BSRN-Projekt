@@ -9,13 +9,22 @@ class Server:
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clients = {} 
+        self.discovery_thread = None  # Für den Discovery-Responder
 
     # Server starten Methode
     def start(self):
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
         print(f"[TCP] Server gestartet auf {self.ip}:{self.port}")
+        
+        # TCP Connection Handler starten
         threading.Thread(target=self.accept_connection).start()
+        
+        # Discovery Responder in eigenem Thread starten
+        self.discovery_thread = threading.Thread(target=start_discovery_responder)
+        self.discovery_thread.daemon = True  # Thread beendet sich mit Hauptprogramm
+        self.discovery_thread.start()
+        print("[UDP] Discovery-Responder gestartet")
 
     # Methode um Verbindungen zu akzeptieren
     def accept_connection(self):
