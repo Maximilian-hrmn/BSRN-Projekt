@@ -33,7 +33,7 @@ def main():
     
 try:
     # Server starten
-    server = Server("0.0.0.0", 12345)
+    server = Server("0.0.0.0", 5000)
     server.start()
 
     #Abbruch mit Strg+C abfangen
