@@ -13,16 +13,15 @@ def main():
         
     except FileNotFoundError: 
         print("Konfigurationsdatei nicht gefunden.")
-        return() # Beenden des Programms, wenn die Konfigurationsdatei nicht gefunden wird  
+        return # Beenden der Funktion, wenn die Datei nicht gefunden wird  
         
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
-        return() # Beenden des Programms, wenn die Konfigurationsdatei nicht korrekt ist
+        return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
 
     except socket.error as e:
         print(f"Socket-Fehler: {e}")
-        return() # Beenden des Programms, wenn ein Socket-Fehler auftritt
-
+        return # Beenden der Funktion bei Socket-Fehler
     try:    
          # Discovery Service erstellen und starten
         discovery = DiscoveryService(discovery_port=int(config["peer_port"]))
@@ -30,7 +29,7 @@ def main():
     
     except Exception as e:
         print(f"Fehler beim Starten des Discovery Services: {e}")
-        return
+        return # Beenden der Funktion, wenn ein Fehler auftritt
     
     try:
         # Server starten
