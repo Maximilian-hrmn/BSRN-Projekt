@@ -33,8 +33,18 @@ def main():
     
     try:
         # Server starten
-        server = Server("0.0.0.0", 12345)
+        server = Server("0.0.0.0", int(config["port"]))
         server.start()
+        print("[MAIN] Server und Discovery-Responder gestartet")
+
+        # Dann erst nach Peers suchen
+        discovery = DiscoveryService(discovery_port=int(config["peer_port"]))
+        peers = discovery.discover_peers()
+        
+        if peers:
+            print(f"[MAIN] Gefundene Peers: {peers}")
+        else:
+            print("[MAIN] Keine Peers gefunden")
 
         #Abbruch mit Strg+C abfangen
     except KeyboardInterrupt:

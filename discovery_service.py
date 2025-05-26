@@ -34,17 +34,19 @@ class DiscoveryService:
 
     def discover_peers(self):
         """Sucht nach verfügbaren Peers im Netzwerk"""
-        # Die Nachricht, die an alle gesendet wird, um nach Peers zu suchen
         message = b"DISCOVERY_SERVICE"
-        found_peers = []  # Liste für gefundene Peers
-
+        found_peers = []
+        
+        # Socket für Broadcast konfigurieren
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind(('', self.discovery_port))  # Wichtig: Bind auf allen Interfaces
+    
         print("Sende Discovery-Anfrage...")
-        start = time.time()  # Startzeit für die Suche
         
         try:
             while True:  # Äußere Schleife für Wiederholung
                 # Sende Discovery Nachricht
-                self.sock.sendto(message, ('<broadcast>', self.discovery_port))
+                self.sock.sendto(message, ('255.255.255.255', self.discovery_port))
                 
                 try:
                     while True:
