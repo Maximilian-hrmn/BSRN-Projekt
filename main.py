@@ -10,15 +10,18 @@ def main():
     try:
         config = toml.load("config.toml")
         print("Konfigurationsdatei geladen.")
-        return config # Konfigurationsdatei erfolgreich geladen
         
     except FileNotFoundError: 
         print("Konfigurationsdatei nicht gefunden.")
-        exit() # Beenden des Programms, wenn die Konfigurationsdatei nicht gefunden wird  
+        return() # Beenden des Programms, wenn die Konfigurationsdatei nicht gefunden wird  
         
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
-        exit() # Beenden des Programms, wenn die Konfigurationsdatei nicht korrekt ist
+        return() # Beenden des Programms, wenn die Konfigurationsdatei nicht korrekt ist
+
+    except socket.error as e:
+        print(f"Socket-Fehler: {e}")
+        return() # Beenden des Programms, wenn ein Socket-Fehler auftritt
 
     try:    
          # Discovery Service erstellen und starten
@@ -31,7 +34,7 @@ def main():
     
     try:
         # Server starten
-        server = Server("0.0.0.0",port=int(config["port"]))
+        server = Server("0.0.0.0", 12345)
         server.start()
 
         #Abbruch mit Strg+C abfangen
@@ -52,16 +55,16 @@ def main():
         print(f"[MAIN] Fehler beim Starten des Clients: {e}")
 
 
-    if __name__ == "__main__":
-        try:
-            main()
+if __name__ == "__main__":
+    try:
+        main()
 
-        except KeyboardInterrupt:
-            print("\n[MAIN] Beendet durch Benutzer.")
+    except KeyboardInterrupt:
+        print("\n[MAIN] Beendet durch Benutzer.")
 
-        try:
-            cli = ChatCLI()
-            cli.cmdloop()
-            
-        except Exception as e:
-         print(f"[MAIN] Fehler beim Starten der CLI: {e}")
+    try:
+        cli = ChatCLI()
+        cli.cmdloop()
+
+    except Exception as e:
+        print(f"[MAIN] Fehler beim Starten der CLI: {e}")
