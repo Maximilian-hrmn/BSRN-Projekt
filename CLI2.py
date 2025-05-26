@@ -22,21 +22,21 @@ class ChatCLI(cmd.Cmd):
         self.port = int(self.config["port"])
         self.prompt = f"[{self.handle}]> "
 
-        # # === automatischer JOIN ===
-        # # Erzeuge JOIN-Nachricht mit SLCPHandler
-        # self.slcp_handler = SLCPHandler(handle=self.handle, port=self.port)
-        # join_message = self.slcp_handler.create_join()
+        # === automatischer JOIN ===
+        # Erzeuge JOIN-Nachricht mit SLCPHandler
+        self.slcp_handler = SLCPHandler(handle=self.handle, port=self.port)
+        join_message = self.slcp_handler.create_join()
 
-        # # Lese Bootstrap-Peer aus der Konfiguration
-        # bootstrap_ip = self.config["peer_ip"]
-        # bootstrap_port = int(self.config["peer_port"])
+        # Lese Bootstrap-Peer aus der Konfiguration
+        bootstrap_ip = self.config["peer_ip"]
+        bootstrap_port = int(self.config["peer_port"])
 
-        # # Sende JOIN an den Bootstrap-Peer
-        # slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
-        # response = slcp_client.send_message(join_message.strip())
-        # print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
-        # print(f"[SLCP] Antwort: {response}")
-        # # === Ende automatischer JOIN ===
+        # Sende JOIN an den Bootstrap-Peer
+        slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
+        response = slcp_client.send_message(join_message.strip())
+        print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
+        print(f"[SLCP] Antwort: {response}")
+        # === Ende automatischer JOIN ===
 
     def load_config(self):
         with open("config.toml", "rb") as f:
