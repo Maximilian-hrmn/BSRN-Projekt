@@ -60,7 +60,6 @@ class ChatCLI(cmd.Cmd):
             raise
                 
 
-
     #Diese Funktion lädt die Konfiguration aus der TOML-Datei
     def load_config(self):
         #Öffnet die Datei 'config.toml' im Binärmodus zum Lesen
