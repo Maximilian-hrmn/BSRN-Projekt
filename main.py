@@ -63,6 +63,12 @@ def main():
     except Exception as e:
         print(f"[MAIN] Fehler beim Starten des Clients: {e}")
 
+    try:
+        cli = ChatCLI()
+        cli.cmdloop()
+
+    except Exception as e:
+        print(f"[MAIN] Fehler beim Starten der CLI: {e}")
 
 if __name__ == "__main__":
     try:
@@ -70,10 +76,3 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\n[MAIN] Beendet durch Benutzer.")
-
-    try:
-        cli = ChatCLI()
-        cli.cmdloop()
-
-    except Exception as e:
-        print(f"[MAIN] Fehler beim Starten der CLI: {e}")
