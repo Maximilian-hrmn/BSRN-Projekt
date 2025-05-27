@@ -1,5 +1,5 @@
 handle = "Jan"
-port = 1024
-whoisport = 5001
+server_port = 5000
+discovery_port = 5001
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
 image = "images/"

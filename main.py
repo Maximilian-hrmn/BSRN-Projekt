@@ -21,7 +21,7 @@ def main():
 
     try:    
         # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=5, discovery_port=int(config["peer_port"]))
+        discovery = DiscoveryService(timeout=5, discovery_port=int(config["whoisport"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
     
@@ -40,7 +40,7 @@ def main():
             return  # <-- Stoppe, wenn Server nicht startet
 
     try:
-            client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
+            client = SLCPClient(discovery_service["found_peers"], int(discovery_service["peer_port"]))
             print("[MAIN] SLCP Client erstellt und bereit.")
             cli = ChatCLI(client)
             cli.cmdloop()
