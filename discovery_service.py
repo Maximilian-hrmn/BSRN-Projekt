@@ -2,8 +2,9 @@ import socket
 import time
 
 class DiscoveryService:
-    def __init__(self, discovery_port=5000):
+    def __init__(self, timeout=30, discovery_port=5000):
         # Initialisierung der Klassenvariablen
+        self.timeout = timeout
         self.discovery_port = discovery_port
         self.found_peers = []
         
@@ -32,32 +33,37 @@ class DiscoveryService:
         return None
 
     def discover_peers(self):
-        """Sucht nach verfügbaren Peers im Netzwerk"""
-        # Die Nachricht, die an alle gesendet wird, um nach Peers zu suchen
+        """Sucht nach verfügbaren Peers im Netzwerk für eine bestimmte Zeit"""
         message = b"DISCOVERY_SERVICE"
-        found_peers = []  # Liste für gefundene Peers
-
-        print("Sende Discovery-Anfrage...")
-
-        # Sende Discovery Nachricht
-        self.sock.sendto(message, ('<broadcast>', self.discovery_port))
-
-        start = time.time()  # Startzeit für die Suche
+        found_peers = []
         
-        while True:
-            try:
-                # Wartet auf eine Antwort von einem Peer
-                data, addr = self.sock.recvfrom(1024)
-                # Prüft, ob die Antwort die erwartete Nachricht ist
-                if data == b"DISCOVER_RESPONSE":
-                    if addr[0] not in found_peers:
-                        found_peers.append(addr[0])  # Fügt die IP-Adresse des Peers zur Liste hinzu
-                        print(f"Peer gefunden: {addr[0]}")
-            except socket.timeout: 
-                # Wenn das Timeout erreicht ist, wird die Suche beendet
-                print("Discovery-Zeitüberschreitung.")
-                break
+        # Socket für Broadcast konfigurieren
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind(('', self.discovery_port))
 
-        self.sock.close()  # Schließt den Socket
-        return found_peers  # Gibt die Liste der gefundenen Peers zurück
-
+        print(f"Starte Peer-Suche (Timeout: {self.timeout} Sekunden)...")
+        
+        try:
+            # Sende Discovery Nachricht
+            self.sock.sendto(message, ('255.255.255.255', self.discovery_port))
+            
+            # Warte auf Antworten bis Timeout
+            start_time = time.time()
+            while (time.time() - start_time) < self.timeout:
+                try:
+                    data, addr = self.sock.recvfrom(1024)
+                    if data == b"DISCOVER_RESPONSE":
+                        if addr[0] not in found_peers:
+                            found_peers.append(addr[0])
+                            print(f"Peer gefunden: {addr[0]}")
+                except socket.timeout:
+                    # Timeout für einen einzelnen Empfangsversuch
+                    continue
+                
+        except KeyboardInterrupt:
+            print("\nSuche wurde vom Benutzer beendet.")
+        finally:
+            print(f"\nSuche beendet nach {time.time() - start_time:.1f} Sekunden.")
+            self.sock.close()
+            
+        return found_peers

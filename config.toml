@@ -1,7 +1,7 @@
-handle = "simon"
-port = 111
-whoisport = 222
+handle = "Jan"
+port = 5000
+whoisport = 5001
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
 image = "images/"
 peer_ip = "192.168.0.100"
-peer_port = 5000
+peer_port = 4000

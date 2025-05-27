@@ -3,6 +3,7 @@ import client #Importiert die Client.py Datei, wird benötigt für send und leav
 from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 from slcp_handler import SLCPHandler  # Importiere SLCPHandler-Klasse
+from client import SLCPClient
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
 class ChatCLI(cmd.Cmd):
@@ -30,7 +31,19 @@ class ChatCLI(cmd.Cmd):
         self.port = int(self.config["port"])
         self.prompt = f"[{self.handle}]> "
         
-        #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
+        # #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
+
+        #     # === automatischer JOIN ===
+        # bootstrap_ip   = self.config["peer_ip"]      # aus config.toml
+        # bootstrap_port = int(self.config["peer_port"])
+
+        # # SLCPClient initialisieren und JOIN senden
+        # slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
+        # response = slcp_client.send_message(join_message.strip())
+
+        # print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
+        # print(f"[SLCP] Antwort: {response}")
+        # # === Ende automatischer JOIN ===
 
         #Implementation des SLCP Handler 
         try:
@@ -46,7 +59,6 @@ class ChatCLI(cmd.Cmd):
             print(f"[SLCP] Fehler beim Erstellen des Handlers: {e}")
             raise
                 
-
 
     #Diese Funktion lädt die Konfiguration aus der TOML-Datei
     def load_config(self):
@@ -69,20 +81,13 @@ class ChatCLI(cmd.Cmd):
         else:
             print("Keine Peers gefunden.")
 
-
-
-
-
-
-#HIER WEITERARBEITEN 
-
     # Diese Methode wird aufgerufen, wenn der Nutzer "msg <Benutzer> <Text>" eintippt
     def do_msg(self, arg):
         "Nachricht senden: msg <Benutzer> <Text>"
         try:
             # Zerlegt den String in zwei Teile: Empfänger und Nachricht
             user, message = arg.split(" ", 1)
-            # Schickt die Nachricht mit Hilfe eurer client.py
+            # Schickt die Nachricht mit Hilfe der client.py
             client.send_msg(user, message)
         except ValueError:
             # Falls der Benutzer das Kommando falsch verwendet
@@ -115,3 +120,4 @@ class ChatCLI(cmd.Cmd):
     #         client.send_img(user, filepath)
     #     except ValueError:
     #         print("Benutzung: img <Benutzer> <Dateipfad>")
+
