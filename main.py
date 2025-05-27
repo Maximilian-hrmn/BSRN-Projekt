@@ -22,8 +22,9 @@ def main():
     except socket.error as e:
         print(f"Socket-Fehler: {e}")
         return # Beenden der Funktion bei Socket-Fehler
+
     try:    
-         # Discovery Service erstellen und starten
+        # Discovery Service erstellen und starten
         discovery = DiscoveryService(timeout=5, discovery_port=int(config["peer_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
@@ -32,38 +33,30 @@ def main():
         print(f"Fehler beim Starten des Discovery Services: {e}")
         return # Beenden der Funktion, wenn ein Fehler auftritt
     
-    try:
-        # Server starten
-        server = Server("0.0.0.0", int(config["port"]))
-        server.start()
-        print("[MAIN] Server und Discovery-Responder gestartet")
+        try:
+            # Server starten
+            import threading
 
-        # Dann erst nach Peers suchen
-        discovery = DiscoveryService(discovery_port=int(config["peer_port"]))
-        peers = discovery.discover_peers()
+            server = Server("0.0.0.0", 5000)
+            server_thread = threading.Thread(target=server.start, daemon=True)
+            server_thread.start()
+
+            #Abbruch mit Strg+C abfangen
+        except KeyboardInterrupt:
+            print("\n[MAIN] Server wird beendet.")
+            server.close()
         
-        if peers:
-            print(f"[MAIN] Gefundene Peers: {peers}")
-        else:
-            print("[MAIN] Keine Peers gefunden")
+            #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
+        except Exception as e:
+            print(f"Fehler beim Starten des Servers: {e}")
 
-        #Abbruch mit Strg+C abfangen
-    except KeyboardInterrupt:
-        print("\n[MAIN] Server wird beendet.")
-        server.close()
-       
-        #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
-    except Exception as e:
-        print(f"Fehler beim Starten des Servers: {e}")
-
-    try:
-        client = SLCPClient("peer_ip", "peer_port")
-        print("[MAIN] SLCP Client erstellt und bereit.")
-
-        cli = ChatCLI()
-        cli.cmdloop()
-    except Exception as e:
-        print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
+            try:
+                client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
+                print("[MAIN] SLCP Client erstellt und bereit.")
+                cli = ChatCLI()
+                cli.cmdloop()
+            except Exception as e:
+                print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
 if __name__ == "__main__":
     try:
