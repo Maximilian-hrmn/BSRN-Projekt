@@ -73,7 +73,8 @@ class Server:
 
                     client_socket.send(b"IMG_RECEIVED")
 
-                elif parts[0] == "LEAVE":
+                elif parts[0] == "LEAVE"and len(parts) == 2:
+                    username = parts[1]
                     print(f"[LEAVE] {username} hat den Chat verlassen.")
                     self.broadcast(f"[SERVER] {username} hat den Chat verlassen.", client_socket)
                     break
