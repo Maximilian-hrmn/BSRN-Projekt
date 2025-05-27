@@ -10,27 +10,25 @@ class SLCPClient:
         self.handle = None
 
     #Methode zum verbinden
-    def connect(self):
-        if self.s is None:
-            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.s.connect((self.peer_ip, self.peer_port))
+    def send_join(self, handle):
+        self.handle = handle  # Handle speichern für spätere Nachrichten
+        response = self.send_message(f"JOIN {handle}")
+        if response:
+            print(f"[Antwort vom Peer]: {response}")
+        else:
+            print("[Info] JOIN gesendet (keine Antwort erhalten)")
 
-    #methode zu schließen
-    def close(self):
-        if self.s:
-            self.s.close()
-            self.s = None
-
-    #Methode zum senden von Nachrichten
-    def send_message(self, message):
-        try:
-            self.connect()
-            self.s.sendall((message + '\n').encode('utf-8'))
-            response = self.s.recv(1024).decode('utf-8').strip()
-            return response
-        except Exception as e:
-            print(f"[Fehler] Verbindung zu {self.peer_ip}:{self.peer_port} fehlgeschlagen:", e)
-            return None
+    #Methode zum verbinden mit dem Peer
+    def send_msg(self, text):
+        # Sende die Nachricht im Format: MSG <handle> <text>
+        if not self.handle:
+            print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
+            return
+        response = self.send_message(f"MSG {self.handle} {text}")
+        if response:
+            print(f"[Antwort vom Peer]: {response}")
+        else:
+            print("[Info] Nachricht gesendet (keine Antwort erhalten)")
 
     #Methode zum senden von Bildern
     def send_image(self, empfänger, bildpfad):
@@ -47,27 +45,8 @@ class SLCPClient:
             print(f"[Antwort vom Peer]: {response}")
         except Exception as e:
             print(f"[Fehler beim Bildversand]: {e}")
-
-    def send_join(self, handle):
-        self.handle = handle  # Handle speichern für spätere Nachrichten
-        response = self.send_message(f"JOIN {handle}")
-        if response:
-            print(f"[Antwort vom Peer]: {response}")
-        else:
-            print("[Info] JOIN gesendet (keine Antwort erhalten)")
-
-
-    def send_msg(self, text):
-        # Sende die Nachricht im Format: MSG <handle> <text>
-        if not self.handle:
-            print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
-            return
-        response = self.send_message(f"MSG {self.handle} {text}")
-        if response:
-            print(f"[Antwort vom Peer]: {response}")
-        else:
-            print("[Info] Nachricht gesendet (keine Antwort erhalten)")
-
+            
+    #Methode zum verlassen des Clients
     def send_leave(self):
         if not self.handle:
             print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
