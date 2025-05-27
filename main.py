@@ -4,7 +4,6 @@ from client import SLCPClient
 from discovery_service import DiscoveryService
 from CLI2 import ChatCLI 
 import time
-import tomli_w  # <- Zum Schreiben in config.toml (pip install tomli-w erforderlich)
 
 
 def main():
@@ -27,8 +26,8 @@ def main():
         return
     config["handle"] = username
     try:
-        with open("config.toml", "wb") as f:
-            f.write(tomli_w.dumps(config).encode("utf-8"))
+        with open("config.toml", "w") as f:
+            toml.dump(config, f)    
         print(f"[MAIN] Benutzername '{username}' wurde gespeichert.")
     except Exception as e:
         print(f"Fehler beim Schreiben in die config.toml: {e}")
