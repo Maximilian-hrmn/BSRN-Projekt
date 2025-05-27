@@ -47,27 +47,21 @@ class SLCPClient:
         except Exception as e:
             print(f"[Fehler beim Bildversand]: {e}")
 
-# ========== HIER KOMMEN DIE FUNKTIONEN, die CLI aufruft ==========
+    def send_join(self, handle):
+        response = self.client.send_message(f"JOIN {handle}")
+        if response:
+            print(f"[Antwort vom Peer]: {response}")
+        else:
+            print("[Info] JOIN gesendet (keine Antwort erhalten)")
 
-PEER_IP = "127.0.0.1"
-PEER_PORT = 5000
-client = SLCPClient(PEER_IP, PEER_PORT)
+    def send_msg(self, empfänger, text):
+        response = self.client.send_message(f"MSG {empfänger} {text}")
+        if response:
+            print(f"[Antwort vom Peer]: {response}")
+        else:
+            print("[Info] Nachricht gesendet (keine Antwort erhalten)")
 
-def send_join(handle):
-    response = client.send_message(f"JOIN {handle}")
-    if response:
-        print(f"[Antwort vom Peer]: {response}")
-    else:
-        print("[Info] JOIN gesendet (keine Antwort erhalten)")
-
-def send_msg(empfänger, text):
-    response = client.send_message(f"MSG {empfänger} {text}")
-    if response:
-        print(f"[Antwort vom Peer]: {response}")
-    else:
-        print("[Info] Nachricht gesendet (keine Antwort erhalten)")
-
-def send_leave(handle):
-    response = client.send_message(f"LEAVE {handle}")
-    print("[Info] LEAVE gesendet.")
-    client.close()
+    def send_leave(self, handle):
+        response = self.client.send_message(f"LEAVE {handle}")
+        print("[Info] LEAVE gesendet.")
+        self.close()

@@ -87,7 +87,7 @@ class ChatCLI(cmd.Cmd):
             # Zerlegt den String in zwei Teile: Empfänger und Nachricht
             user, message = arg.split(" ", 1)
             # Schickt die Nachricht mit Hilfe der client.py
-            self.client.send_msg(user, message)
+            self.send_msg(user, message)
         except ValueError:
             # Falls der Benutzer das Kommando falsch verwendet
             print("Benutzung: msg <Benutzer> <Text>")
@@ -96,7 +96,7 @@ class ChatCLI(cmd.Cmd):
     def do_leave(self, arg):
         "Den Chat verlassen"
         # Sendet die LEAVE-Nachricht über client.py
-        self.client.send_leave(self.handle)
+        self.send_leave(self.handle)
         print("Verlassen...")
         return True  # Beendet das CLI-Programm
 
