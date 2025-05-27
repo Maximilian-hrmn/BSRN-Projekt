@@ -1,5 +1,5 @@
 import cmd  # Importiert das cmd-Modul für die Erstellung einer Command-Line-Interface (CLI)
-import tomllib  # Wird benötigt zum Parsen von TOML-Dateien (ab Python 3.11 Standard)
+import tomllib  # Wird benötigt zum Parsen von TOML-Dateien 
 from discovery_service import DiscoveryService  # Importiert den DiscoveryService zur Peer-Erkennung
 from slcp_handler import SLCPHandler  # Importiert die SLCPHandler-Klasse für Nachrichten-Handling
 
