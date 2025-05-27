@@ -1,8 +1,6 @@
 """
 
-Kurzbeschreibung des SLCP Handlers
-
-ABLAUF des Programms in 4 Schritten
+ABLAUF des SLCP Protokolls in 4 Schritten
 
 1. Initialisierung des Handlers:
  Der Handler wird mit einem Benutzernamen (handle) und einem Port initialisiert, über den die Kommunikation stattfindet.
@@ -74,6 +72,7 @@ class SLCPHandler:
 
         if not handle or not isinstance(handle, str):
             raise ValueError("Handle muss ein gültiger String sein")
+        
         if not isinstance(port, int) or port <= 0 or port > 65535:
             raise ValueError("Port muss eine gültige Zahl zwischen 1 und 65535 sein")
             
@@ -191,6 +190,7 @@ class SLCPHandler:
         Returns:
             Dictionary mit den geparsten Nachrichtenteilen, strukturiert nach Befehlstyp
         """
+        
         # Prüfe auf leere Nachricht
         if not raw_message:
             return {"command": "ERROR", "error": "Leere Nachricht", "raw": raw_message}
@@ -224,6 +224,8 @@ class SLCPHandler:
                 return {"command": "LEAVE", "handle": parts[1]}
                 
             elif command == "MSG":
+
+
                 # Format: MSG handle "message"
                 # Verwende Regex, um mit Anführungszeichen umzugehen
                 # Diese Regex sucht nach: MSG, gefolgt von Leerzeichen, einem Wort (handle), Leerzeichen
