@@ -1,5 +1,7 @@
 import socket
 import time
+import toml
+config = toml.load("config.toml")
 
 class DiscoveryService:
     def __init__(self, timeout=5, discovery_port=5000):
@@ -38,28 +40,34 @@ class DiscoveryService:
         found_peers = []
         
         # Socket für Broadcast konfigurieren
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind(('', self.discovery_port))
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.bind(('',self.discovery_port))
+        sock.settimeout(self.timeout)
 
         print(f"Starte Peer-Suche (Timeout: {self.timeout} Sekunden)...")
         
         try:
             # Sende Discovery Nachricht
-            self.sock.sendto(message, ('255.255.255.255', self.discovery_port))
+            sock.sendto(message, ('255.255.255.255', self.discovery_port))
             
             # Warte auf Antworten bis Timeout
             start_time = time.time()
             while (time.time() - start_time) < self.timeout:
                 try:
-                    data, addr = self.sock.recvfrom(1024)
-                    if data == b"DISCOVER_RESPONSE":
-                        if addr[0] not in found_peers:
-                            found_peers.append(addr[0])
-                            print(f"Peer gefunden: {addr[0]}")
+                    data, addr = sock.recvfrom(1024)
+                    #Erwarteter Response: "DISCOVER_RESPONSE <tcp_port>"
+                    parts = data.decode().split()
+                    if parts[0] == "DISCOVER_RESPONSE" and len(parts)>= 2:
+                        tcp_port =int(parts[1])
+                        #Speichere als tuple: (IP, TCP-Port)
+                        if (addr[0], tcp_port) not in found_peers:
+                            found_peers.append((addr[0], tcp_port))
+                            print(f"Peer gefunden: {addr[0]}:{tcp_port}")
                 except socket.timeout:
                     # Timeout für einen einzelnen Empfangsversuch
-                    break
-                
+                    break   
         except KeyboardInterrupt:
             print("\nSuche wurde vom Benutzer beendet.")
         finally:

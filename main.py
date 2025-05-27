@@ -24,6 +24,9 @@ def main():
         discovery = DiscoveryService(timeout=5, discovery_port=int(config["peer_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
+        if peers: #Beispiel: Verbindung zum ersten gefunden Peer aufbauen
+            peer_ip, peer_tcp_port = SCLPClient(peer_ip, peer_tcp_port)
+            #Anschließend JOIN, MSG etc. verwenden
     
     except Exception as e:
         print(f"Fehler beim Starten des Discovery Services: {e}")
