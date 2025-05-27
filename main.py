@@ -5,6 +5,7 @@ from discovery_service import DiscoveryService
 from CLI2 import ChatCLI 
 import time
 
+
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
     try:
@@ -18,10 +19,23 @@ def main():
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
+    
+    username = input("Bitte gib deinen Benutzernamen ein: ").strip()
+    if not username:
+        print("Benutzername darf nicht leer sein.")
+        return
+    config["handle"] = username
+    try:
+        with open("config.toml", "w") as f:
+            toml.dump(config, f)    
+        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.")
+    except Exception as e:
+        print(f"Fehler beim Schreiben in die config.toml: {e}")
+        return
 
     try:    
         # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=5, discovery_port=int(config["peer_port"]))
+        discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
         if peers: #Beispiel: Verbindung zum ersten gefunden Peer aufbauen
@@ -33,34 +47,25 @@ def main():
         return # Beenden der Funktion, wenn ein Fehler auftritt
     
     try:
-        # Server starten
-        import threading
-
-        server = Server("0.0.0.0", int(config["port"]))
-        server_thread = threading.Thread(target=server.start, daemon=True)
-        server_thread.start()
-        time.sleep(1)
-
-        #Abbruch mit Strg+C abfangen
-    except KeyboardInterrupt:
-        print("\n[MAIN] Server wird beendet.")
-        server.close()
-        
-        #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
+            import threading
+            server = Server("0.0.0.0", int(config["server_port"]))
+            server_thread = threading.Thread(target=server.start, daemon=True)
+            server_thread.start()
+            time.sleep(1)
     except Exception as e:
-        print(f"Fehler beim Starten des Servers: {e}")
+            print(f"Fehler beim Starten des Servers: {e}")
+            return  # <-- Stoppe, wenn Server nicht startet
 
     try:
-        client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
-        print("[MAIN] SLCP Client erstellt und bereit.")
-        cli = ChatCLI(client)
-        cli.cmdloop()
+            client = SLCPClient(DiscoveryService["found_peers"], int(DiscoveryService["peer_port"]))
+            print("[MAIN] SLCP Client erstellt und bereit.")
+            cli = ChatCLI(client)
+            cli.cmdloop()
     except Exception as e:
-        print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
+            print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
 if __name__ == "__main__":
     try:
         main()
-
     except KeyboardInterrupt:
         print("\n[MAIN] Beendet durch Benutzer.")
