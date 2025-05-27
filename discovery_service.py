@@ -72,6 +72,6 @@ class DiscoveryService:
             print("\nSuche wurde vom Benutzer beendet.")
         finally:
             print(f"\nSuche beendet nach {time.time() - start_time:.1f} Sekunden.")
-            self.sock.close()
+            sock.close()
             
         return found_peers
