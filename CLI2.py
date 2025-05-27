@@ -3,7 +3,6 @@ import client #Importiert die Client.py Datei, wird benötigt für send und leav
 from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 from slcp_handler import SLCPHandler  # Importiere SLCPHandler-Klasse
-from client import SLCPClient
 
 #Definiert die Klasse die auf cmd basiert (stellt CLI Funktionalität bereit)
 class ChatCLI(cmd.Cmd):
@@ -89,7 +88,7 @@ class ChatCLI(cmd.Cmd):
             # Zerlegt den String in zwei Teile: Empfänger und Nachricht
             user, message = arg.split(" ", 1)
             # Schickt die Nachricht mit Hilfe der client.py
-            this.client.send_msg(user, message)
+            self.client.send_msg(user, message)
         except ValueError:
             # Falls der Benutzer das Kommando falsch verwendet
             print("Benutzung: msg <Benutzer> <Text>")
