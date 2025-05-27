@@ -39,7 +39,7 @@ def main():
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
         if peers: #Beispiel: Verbindung zum ersten gefunden Peer aufbauen
-            peer_ip, peer_tcp_port = SCLPClient(peer_ip, peer_tcp_port)
+            peer_ip, peer_tcp_port = SLCPClient(peer_ip, peer_tcp_port)
             #Anschließend JOIN, MSG etc. verwenden
     
     except Exception as e:
