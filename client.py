@@ -54,3 +54,26 @@ class SLCPClient:
         response = self.send_message(f"LEAVE {self.handle}")
         print("[Info] LEAVE gesendet.")
         self.close()
+
+
+        
+    #Hilfsmethode 
+    def connect(self):
+        if self.s is None:
+            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.s.connect((self.peer_ip, self.peer_port))
+
+    def send_message(self, message):
+        try:
+            self.connect()
+            self.s.sendall((message + "\n").encode("utf-8"))
+            response = self.s.recv(1024).decode("utf-8").strip()
+            return response
+        except Exception as e:
+            print(f"[Fehler beim Senden]: {e}")
+            return None
+
+    def close(self):
+        if self.s:
+            self.s.close()
+            self.s = None
