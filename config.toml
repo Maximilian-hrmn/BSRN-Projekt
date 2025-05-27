@@ -4,3 +4,4 @@ discovery_port_responder = 5001
 discover_port_client = 5002
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
 image = "images/"
+discovery_port = 5002
