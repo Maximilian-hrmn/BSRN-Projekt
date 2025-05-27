@@ -30,30 +30,22 @@ def main():
         return # Beenden der Funktion, wenn ein Fehler auftritt
     
     try:
-        # Server starten
-        import threading
-
-        server = Server("0.0.0.0", int(config["port"]))
-        server_thread = threading.Thread(target=server.start, daemon=True)
-        server_thread.start()
-        time.sleep(1)
-
-        #Abbruch mit Strg+C abfangen
-    except KeyboardInterrupt:
-        print("\n[MAIN] Server wird beendet.")
-        server.close()
-        
-        #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
+            import threading
+            server = Server("0.0.0.0", int(config["port"]))
+            server_thread = threading.Thread(target=server.start, daemon=True)
+            server_thread.start()
+            time.sleep(1)
     except Exception as e:
-        print(f"Fehler beim Starten des Servers: {e}")
+            print(f"Fehler beim Starten des Servers: {e}")
+            return  # <-- Stoppe, wenn Server nicht startet
 
     try:
-        client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
-        print("[MAIN] SLCP Client erstellt und bereit.")
-        cli = ChatCLI(client)
-        cli.cmdloop()
+            client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
+            print("[MAIN] SLCP Client erstellt und bereit.")
+            cli = ChatCLI(client)
+            cli.cmdloop()
     except Exception as e:
-        print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
+            print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
 if __name__ == "__main__":
     try:

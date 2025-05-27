@@ -50,12 +50,14 @@ class Server:
                     self.clients[client_socket] = username
                     print(f"[JOIN] {username} beigetreten.")
                     self.broadcast(f"[SERVER] {username} ist dem Chat beigetreten.", client_socket)
+                    client_socket.send(b"OK")
 
                 elif parts[0] == "MSG" and len(parts) >= 3:
                     sender = parts[1]
                     message = " ".join(parts[2:])
                     print(f"[MSG] {sender}: {message}")
                     self.broadcast(f"{sender}: {message}", client_socket)
+                    client_socket.send(b"OK")
 
                 elif parts[0] == "IMG" and len(parts) == 3:
                     sender = parts[1]
@@ -115,7 +117,7 @@ class Server:
 
 
 # UDP-Responder für Discovery
-def start_discovery_responder(listen_port=5001):
+def start_discovery_responder(listen_port=1024):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', listen_port))
     print(f"[UDP] Discovery-Responder läuft auf Port {listen_port}")
