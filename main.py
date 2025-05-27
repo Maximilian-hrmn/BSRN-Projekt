@@ -21,7 +21,7 @@ def main():
 
     try:    
         # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=5, discovery_port=int(config["whoisport"]))
+        discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
     
@@ -31,7 +31,7 @@ def main():
     
     try:
             import threading
-            server = Server("0.0.0.0", int(config["port"]))
+            server = Server("0.0.0.0", int(config["server_port"]))
             server_thread = threading.Thread(target=server.start, daemon=True)
             server_thread.start()
             time.sleep(1)
@@ -40,7 +40,7 @@ def main():
             return  # <-- Stoppe, wenn Server nicht startet
 
     try:
-            client = SLCPClient(discovery_service["found_peers"], int(discovery_service["peer_port"]))
+            client = SLCPClient(DiscoveryService["found_peers"], int(DiscoveryService["peer_port"]))
             print("[MAIN] SLCP Client erstellt und bereit.")
             cli = ChatCLI(client)
             cli.cmdloop()
@@ -50,6 +50,5 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-
     except KeyboardInterrupt:
         print("\n[MAIN] Beendet durch Benutzer.")
