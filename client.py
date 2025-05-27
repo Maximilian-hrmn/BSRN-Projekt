@@ -7,6 +7,7 @@ class SLCPClient:
         self.peer_ip = peer_ip
         self.peer_port = peer_port
         self.s = None
+        self.handle = None
 
     #Methode zum verbinden
     def connect(self):
@@ -48,20 +49,29 @@ class SLCPClient:
             print(f"[Fehler beim Bildversand]: {e}")
 
     def send_join(self, handle):
+        self.handle = handle  # Handle speichern für spätere Nachrichten
         response = self.send_message(f"JOIN {handle}")
         if response:
             print(f"[Antwort vom Peer]: {response}")
         else:
             print("[Info] JOIN gesendet (keine Antwort erhalten)")
 
-    def send_msg(self, empfänger, text):
-        response = self.send_message(f"MSG {empfänger} {text}")
+
+    def send_msg(self, text):
+        # Sende die Nachricht im Format: MSG <handle> <text>
+        if not self.handle:
+            print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
+            return
+        response = self.send_message(f"MSG {self.handle} {text}")
         if response:
             print(f"[Antwort vom Peer]: {response}")
         else:
             print("[Info] Nachricht gesendet (keine Antwort erhalten)")
 
-    def send_leave(self, handle):
-        response = self.send_message(f"LEAVE {handle}")
+    def send_leave(self):
+        if not self.handle:
+            print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
+            return
+        response = self.send_message(f"LEAVE {self.handle}")
         print("[Info] LEAVE gesendet.")
         self.close()

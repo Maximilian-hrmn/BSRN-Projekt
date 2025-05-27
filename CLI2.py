@@ -82,23 +82,18 @@ class ChatCLI(cmd.Cmd):
 
     # Diese Methode wird aufgerufen, wenn der Nutzer "msg <Benutzer> <Text>" eintippt
     def do_msg(self, arg):
-        "Nachricht senden: msg <Benutzer> <Text>"
-        try:
-            # Zerlegt den String in zwei Teile: Empfänger und Nachricht
-            user, message = arg.split(" ", 1)
-            # Schickt die Nachricht mit Hilfe der client.py
-            self.send_msg(user, message)
-        except ValueError:
-            # Falls der Benutzer das Kommando falsch verwendet
-            print("Benutzung: msg <Benutzer> <Text>")
+        "Nachricht senden: msg <Text>"
+        if not arg.strip():
+            print("Benutzung: msg <Text>")
+            return
+        self.client.send_msg(arg)
+
 
     # Diese Methode wird aufgerufen, wenn der Nutzer "leave" eingibt
     def do_leave(self, arg):
         "Den Chat verlassen"
-        # Sendet die LEAVE-Nachricht über client.py
-        self.send_leave(self.handle)
-        print("Verlassen...")
-        return True  # Beendet das CLI-Programm
+        self.client.send_leave()
+        return True
 
     # Zeigt die aktuelle Konfiguration an
     def do_config(self, arg):
