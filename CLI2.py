@@ -1,5 +1,4 @@
 import cmd #Importiert das cmd-Modul für die CLI 
-import client #Importiert die Client.py Datei, wird benötigt für send und leave 
 from discovery_service import DiscoveryService#Importiert die disovery_servive Datei, wird benötigt für die WHO abfrage 
 import tomllib #benötigt zum Parsen von TOML-Datein 
 from slcp_handler import SLCPHandler  # Importiere SLCPHandler-Klasse
@@ -97,7 +96,7 @@ class ChatCLI(cmd.Cmd):
     def do_leave(self, arg):
         "Den Chat verlassen"
         # Sendet die LEAVE-Nachricht über client.py
-        client.send_leave(self.handle)
+        self.client.send_leave(self.handle)
         print("Verlassen...")
         return True  # Beendet das CLI-Programm
 
