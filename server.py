@@ -116,7 +116,7 @@ class Server:
 
 
 # UDP-Responder für Discovery
-def start_discovery_responder(tcp_port, listen_port=5001):
+def start_discovery_responder(tcp_port, listen_port=5002):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', listen_port))
     print(f"[UDP] Discovery-Responder läuft auf Port {listen_port}")
