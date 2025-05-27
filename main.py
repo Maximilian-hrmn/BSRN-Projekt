@@ -4,6 +4,8 @@ from client import SLCPClient
 from discovery_service import DiscoveryService
 from CLI2 import ChatCLI 
 import time
+import tomli_w  # <- Zum Schreiben in config.toml (pip install tomli-w erforderlich)
+
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -18,6 +20,19 @@ def main():
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
+    
+    username = input("Bitte gib deinen Benutzernamen ein: ").strip()
+    if not username:
+        print("Benutzername darf nicht leer sein.")
+        return
+    config["handle"] = username
+    try:
+        with open("config.toml", "wb") as f:
+            f.write(tomli_w.dumps(config).encode("utf-8"))
+        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.")
+    except Exception as e:
+        print(f"Fehler beim Schreiben in die config.toml: {e}")
+        return
 
     try:    
         # Discovery Service erstellen und starten
