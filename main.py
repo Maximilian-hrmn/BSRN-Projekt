@@ -33,29 +33,29 @@ def main():
         print(f"Fehler beim Starten des Discovery Services: {e}")
         return # Beenden der Funktion, wenn ein Fehler auftritt
     
-        try:
-            # Server starten
-            import threading
+    try:
+        # Server starten
+        import threading
 
-            server = Server("0.0.0.0", 5000)
-            server_thread = threading.Thread(target=server.start, daemon=True)
-            server_thread.start()
+        server = Server("0.0.0.0", 5000)
+        server_thread = threading.Thread(target=server.start, daemon=True)
+        server_thread.start()
 
-            #Abbruch mit Strg+C abfangen
-        except KeyboardInterrupt:
-            print("\n[MAIN] Server wird beendet.")
-            server.close()
+        #Abbruch mit Strg+C abfangen
+    except KeyboardInterrupt:
+        print("\n[MAIN] Server wird beendet.")
+        server.close()
         
-            #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
-        except Exception as e:
-            print(f"Fehler beim Starten des Servers: {e}")
+        #Abbruch falls die Verbindung zum Server nicht hergestellt werden kann
+    except Exception as e:
+        print(f"Fehler beim Starten des Servers: {e}")
 
-            try:
-                client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
-                print("[MAIN] SLCP Client erstellt und bereit.")
-                cli = ChatCLI()
-                cli.cmdloop()
-            except Exception as e:
+        try:
+            client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
+            print("[MAIN] SLCP Client erstellt und bereit.")
+            cli = ChatCLI()
+            cli.cmdloop()
+        except Exception as e:
                 print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
 if __name__ == "__main__":

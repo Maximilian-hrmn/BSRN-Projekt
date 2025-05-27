@@ -88,7 +88,7 @@ class ChatCLI(cmd.Cmd):
             # Zerlegt den String in zwei Teile: Empfänger und Nachricht
             user, message = arg.split(" ", 1)
             # Schickt die Nachricht mit Hilfe der client.py
-            client.send_msg(user, message)
+            SLCPClient.send_msg(user, message)
         except ValueError:
             # Falls der Benutzer das Kommando falsch verwendet
             print("Benutzung: msg <Benutzer> <Text>")
