@@ -4,6 +4,7 @@ from server import Server
 from client import SLCPClient
 from discovery_service import DiscoveryService
 from CLI2 import ChatCLI 
+import time
 
 def main():
     # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
@@ -40,6 +41,7 @@ def main():
         server = Server("0.0.0.0", int(config["port"]))
         server_thread = threading.Thread(target=server.start, daemon=True)
         server_thread.start()
+        time.sleep(1)
 
         #Abbruch mit Strg+C abfangen
     except KeyboardInterrupt:
@@ -53,7 +55,6 @@ def main():
     try:
         client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
         print("[MAIN] SLCP Client erstellt und bereit.")
-        client.send_join(config["handle"])
         cli = ChatCLI(client)
         cli.cmdloop()
     except Exception as e:
