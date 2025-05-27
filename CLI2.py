@@ -30,34 +30,13 @@ class ChatCLI(cmd.Cmd):
         self.port = int(self.config["port"])
         self.prompt = f"[{self.handle}]> "
         
-        # #HIER NOCH DIE JOIN NACHRICHT MACHEN!!!!!
-
-        #     # === automatischer JOIN ===
-        # bootstrap_ip   = self.config["peer_ip"]      # aus config.toml
-        # bootstrap_port = int(self.config["peer_port"])
-
-        # # SLCPClient initialisieren und JOIN senden
-        # slcp_client = SLCPClient(bootstrap_ip, bootstrap_port)
-        # response = slcp_client.send_message(join_message.strip())
-
-        # print(f"[SLCP] JOIN an {bootstrap_ip}:{bootstrap_port} gesendet.")
-        # print(f"[SLCP] Antwort: {response}")
-        # # === Ende automatischer JOIN ===
-
         #Implementation des SLCP Handler 
         try:
             self.slcp_handler = SLCPHandler(handle=self.handle, port=self.port)
-            print(f"[SLCP] Handler erstellt für Benutzer '{self.handle}' auf Port {self.port}")
-            
-            # Sende JOIN-Nachricht beim Start
-            join_message = self.slcp_handler.create_join()
-            print(f"[SLCP] JOIN-Nachricht bereit: {join_message.strip()}")
-            # Hier könntest du die JOIN-Nachricht an entdeckte Peers senden
-            
-        except ValueError as e:
+            print(f"[SLCP] Handler erstellt für Benutzer '{self.handle}' auf Port {self.port}")    
+        except Exception as e:
             print(f"[SLCP] Fehler beim Erstellen des Handlers: {e}")
             raise
-                
 
     #Diese Funktion lädt die Konfiguration aus der TOML-Datei
     def load_config(self):
@@ -65,7 +44,14 @@ class ChatCLI(cmd.Cmd):
         with open("config.toml", "rb") as f:
             #Lädt den Inhalt als Dictionary mit tomllib
             return tomllib.load(f)
-        
+
+    def do_join(self, arg):
+        "Mit dem Chat verbinden: join"
+        if not self.handle:
+            print("Kein Handle gesetzt.")
+            return
+        self.client.send_join(self.handle) 
+
     def do_who(self, arg):
         """Teilnehmer im Netzwerk entdecken"""
         discovery_service = DiscoveryService()
@@ -99,12 +85,7 @@ class ChatCLI(cmd.Cmd):
     def do_config(self, arg):
         "Zeige aktuelle Konfiguration"
         for key, value in self.config.items():
-            print(f"{key} = {value}")
-
-    # Wenn der Nutzer "exit" eingibt, wird 'leave' aufgerufen und das Programm beendet
-    def do_exit(self, arg):
-        "Programm beenden"
-        return self.do_leave(arg)  
+            print(f"{key} = {value}") 
     
     # #Wenn der benutzer "img" einigbt wird ein Bild gesendet 
     # def do_img(self, arg):

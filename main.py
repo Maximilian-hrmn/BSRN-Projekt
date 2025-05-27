@@ -1,5 +1,4 @@
 import toml
-import socket
 from server import Server
 from client import SLCPClient
 from discovery_service import DiscoveryService
