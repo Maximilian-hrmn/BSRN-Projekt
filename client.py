@@ -8,6 +8,17 @@ class SLCPClient:
         self.peer_ip = peer_ip
         self.peer_port = peer_port
 #Methode zum Senden von Nachrichten
+
+def send_join(handle):
+    message = f"JOIN {handle}"
+    client = SLCPClient(PEER_IP, PEER_PORT)
+    response = client.send_message(message)
+
+    if response:
+        print(f"[Antwort vom Peer]: {response}")
+    else:
+        print("[Info] JOIN gesendet (keine Antwort erhalten)")
+        
     def send_message(self, message):
         try:
             # 1. Socket erstellen
