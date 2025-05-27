@@ -20,17 +20,17 @@ def main():
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
     
-    username = input("Bitte gib deinen Benutzernamen ein: ").strip()
+    username = input("Bitte gib deinen Benutzernamen ein: ").strip() # Benutzername wird in der .toml-Datei überschrieben 
     if not username:
-        print("Benutzername darf nicht leer sein.")
+        print("Benutzername darf nicht leer sein.") # Wenn der Benutzername leer ist, wird die Funktion beendet
         return
-    config["handle"] = username
+    config["handle"] = username # Überschreiben des Benutzernamens in der Konfigurationsdatei
     try:
-        with open("config.toml", "w") as f:
-            toml.dump(config, f)    
-        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.")
+        with open("config.toml", "w") as f: # Schreiben des Benutzernamens in die .toml-Datei
+            toml.dump(config, f)    # Speichern der Konfiguration
+        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.") # Bestätigung der Speicherung
     except Exception as e:
-        print(f"Fehler beim Schreiben in die config.toml: {e}")
+        print(f"Fehler beim Schreiben in die config.toml: {e}") # Wenn ein Fehler beim Schreiben auftritt, wird die Funktion beendet
         return
 
     try:    
