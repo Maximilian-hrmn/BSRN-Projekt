@@ -13,6 +13,7 @@ class Server:
 
     # Server starten Methode
     def start(self):
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.ip, self.port))
         self.socket.listen(5)
         print(f"[TCP] Server gestartet auf {self.ip}:{self.port}")
@@ -21,7 +22,7 @@ class Server:
         threading.Thread(target=self.accept_connection).start()
         
         # Discovery Responder in eigenem Thread starten
-        self.discovery_thread = threading.Thread(target=start_discovery_responder)
+        self.discovery_thread = threading.Thread(target=start_discovery_responder, args=(self.port,))
         self.discovery_thread.daemon = True  # Thread beendet sich mit Hauptprogramm
         self.discovery_thread.start()
         print("[UDP] Discovery-Responder gestartet")
@@ -50,14 +51,12 @@ class Server:
                     self.clients[client_socket] = username
                     print(f"[JOIN] {username} beigetreten.")
                     self.broadcast(f"[SERVER] {username} ist dem Chat beigetreten.", client_socket)
-                    client_socket.send(b"OK")
 
                 elif parts[0] == "MSG" and len(parts) >= 3:
                     sender = parts[1]
                     message = " ".join(parts[2:])
                     print(f"[MSG] {sender}: {message}")
                     self.broadcast(f"{sender}: {message}", client_socket)
-                    client_socket.send(b"OK")
 
                 elif parts[0] == "IMG" and len(parts) == 3:
                     sender = parts[1]
@@ -117,7 +116,7 @@ class Server:
 
 
 # UDP-Responder für Discovery
-def start_discovery_responder(listen_port=1024):
+def start_discovery_responder(tcp_port, listen_port=5001):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', listen_port))
     print(f"[UDP] Discovery-Responder läuft auf Port {listen_port}")
@@ -126,5 +125,7 @@ def start_discovery_responder(listen_port=1024):
         data, addr = sock.recvfrom(1024)
         if data == b"DISCOVER_SERVICE":
             print(f"[UDP] DISCOVER von {addr}")
-            sock.sendto(b"DISCOVER_RESPONSE", addr)
+            #Sende Antwort, die den TCP Port mitliefert
+            response = f"DISCOVER_RESPONSE:{tcp_port}".encode()
+            sock.sendto(response, addr)
 
