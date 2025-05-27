@@ -48,20 +48,20 @@ class SLCPClient:
             print(f"[Fehler beim Bildversand]: {e}")
 
     def send_join(self, handle):
-        response = self.client.send_message(f"JOIN {handle}")
+        response = self.send_message(f"JOIN {handle}")
         if response:
             print(f"[Antwort vom Peer]: {response}")
         else:
             print("[Info] JOIN gesendet (keine Antwort erhalten)")
 
     def send_msg(self, empfänger, text):
-        response = self.client.send_message(f"MSG {empfänger} {text}")
+        response = self.send_message(f"MSG {empfänger} {text}")
         if response:
             print(f"[Antwort vom Peer]: {response}")
         else:
             print("[Info] Nachricht gesendet (keine Antwort erhalten)")
 
     def send_leave(self, handle):
-        response = self.client.send_message(f"LEAVE {handle}")
+        response = self.send_message(f"LEAVE {handle}")
         print("[Info] LEAVE gesendet.")
         self.close()
