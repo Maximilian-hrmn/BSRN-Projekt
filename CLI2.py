@@ -13,11 +13,12 @@ class ChatCLI(cmd.Cmd):
     prompt = "P2P-Chat: "
 
     #Konstruktor von der Klasse CLI 
-    def __init__(self): 
+    def __init__(self,client): 
         #Ruft den Konstuktor der Elternklasse auf (cmd)
         super().__init__() 
         #Lädt die Konfiguartionsdaten aus der Datei (TOML)
         self.config = self.load_config()
+        self.client = client
 
         #Prüft, ob 'handle' in der Konfiguration vorhanden ist wenn nicht, bricht das Programm mit Fehlermeldung ab
         if "handle" not in self.config:
@@ -88,7 +89,7 @@ class ChatCLI(cmd.Cmd):
             # Zerlegt den String in zwei Teile: Empfänger und Nachricht
             user, message = arg.split(" ", 1)
             # Schickt die Nachricht mit Hilfe der client.py
-            SLCPClient.send_msg(user, message)
+            this.client.send_msg(user, message)
         except ValueError:
             # Falls der Benutzer das Kommando falsch verwendet
             print("Benutzung: msg <Benutzer> <Text>")

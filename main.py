@@ -37,7 +37,7 @@ def main():
         # Server starten
         import threading
 
-        server = Server("0.0.0.0", 5000)
+        server = Server("0.0.0.0", int(config["port"]))
         server_thread = threading.Thread(target=server.start, daemon=True)
         server_thread.start()
 
@@ -53,7 +53,7 @@ def main():
         try:
             client = SLCPClient(config["peer_ip"], int(config["peer_port"]))
             print("[MAIN] SLCP Client erstellt und bereit.")
-            cli = ChatCLI()
+            cli = ChatCLI(client)
             cli.cmdloop()
         except Exception as e:
                 print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
