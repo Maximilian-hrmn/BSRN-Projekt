@@ -20,10 +20,6 @@ def main():
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
         return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
 
-    except socket.error as e:
-        print(f"Socket-Fehler: {e}")
-        return # Beenden der Funktion bei Socket-Fehler
-
     try:    
         # Discovery Service erstellen und starten
         discovery = DiscoveryService(timeout=5, discovery_port=int(config["peer_port"]))
