@@ -3,22 +3,12 @@ import os
 
 class SLCPClient:
 
-#Konstruktor des Clients
+    # Konstruktor des Clients
     def __init__(self, peer_ip, peer_port):
         self.peer_ip = peer_ip
         self.peer_port = peer_port
-#Methode zum Senden von Nachrichten
 
-def send_join(handle):
-    message = f"JOIN {handle}"
-    client = SLCPClient(PEER_IP, PEER_PORT)
-    response = client.send_message(message)
-
-    if response:
-        print(f"[Antwort vom Peer]: {response}")
-    else:
-        print("[Info] JOIN gesendet (keine Antwort erhalten)")
-        
+    # Methode zum Senden von Nachrichten
     def send_message(self, message):
         try:
             # 1. Socket erstellen
@@ -37,7 +27,7 @@ def send_join(handle):
         except Exception as e:
             print(f"[Fehler] Verbindung zu {self.peer_ip}:{self.peer_port} fehlgeschlagen:", e)
             return None
-        
+
     def send_image(self, empfänger, bildpfad):
         try:
             bildname = os.path.basename(bildpfad)
@@ -68,7 +58,16 @@ def send_join(handle):
 PEER_IP = "127.0.0.1"
 PEER_PORT = 5000
 
-# Diese Funktion wird von CLI.py aufgerufen
+def send_join(handle):
+    message = f"JOIN {handle}"
+    client = SLCPClient(PEER_IP, PEER_PORT)
+    response = client.send_message(message)
+
+    if response:
+        print(f"[Antwort vom Peer]: {response}")
+    else:
+        print("[Info] JOIN gesendet (keine Antwort erhalten)")
+
 def send_msg(empfänger, text):
     message = f"MSG {empfänger} {text}"
     client = SLCPClient(PEER_IP, PEER_PORT)
@@ -79,7 +78,6 @@ def send_msg(empfänger, text):
     else:
         print("[Info] Nachricht gesendet (keine Antwort erhalten)")
 
-# Diese Funktion wird von CLI.py aufgerufen
 def send_leave(handle):
     message = f"LEAVE {handle}"
     client = SLCPClient(PEER_IP, PEER_PORT)
