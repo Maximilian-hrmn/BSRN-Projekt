@@ -2,7 +2,7 @@ import socket
 import time
 
 class DiscoveryService:
-    def __init__(self, timeout=30, discovery_port=5000):
+    def __init__(self, timeout=5, discovery_port=5000):
         # Initialisierung der Klassenvariablen
         self.timeout = timeout
         self.discovery_port = discovery_port
@@ -19,7 +19,7 @@ class DiscoveryService:
             who_message = b"WHO"
             self.sock.sendto(who_message, (peer_address, self.discovery_port))
             
-            data, addr = self.sock.recvfrom(1024)
+            data, addr = self.sock.recvfrom(5001)
             if data.startswith(b"WHO_RESPONSE:"):
                 peer_info = data.decode('utf-8').split(':')[1]
                 print(f"Peer Info von {addr[0]}: {peer_info}")
@@ -58,7 +58,7 @@ class DiscoveryService:
                             print(f"Peer gefunden: {addr[0]}")
                 except socket.timeout:
                     # Timeout für einen einzelnen Empfangsversuch
-                    continue
+                    break
                 
         except KeyboardInterrupt:
             print("\nSuche wurde vom Benutzer beendet.")

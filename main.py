@@ -24,7 +24,8 @@ def main():
         return # Beenden der Funktion bei Socket-Fehler
     try:    
          # Discovery Service erstellen und starten
-        discovery = DiscoveryService(discovery_port=int(config["peer_port"]))
+        discovery = DiscoveryService(timeout=5, discovery_port=int(config["peer_port"]))
+        print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
     
     except Exception as e:
