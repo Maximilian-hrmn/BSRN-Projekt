@@ -1,4 +1,4 @@
-handle = "m"
+handle = "marius"
 server_port = 5000
 discovery_port = 5001
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
