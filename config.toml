@@ -1,6 +1,5 @@
-handle = "marius"
+handle = "m"
 server_port = 5000
-discovery_port_responder = 5001
-discover_port_client = 5002
+discovery_port = 5001
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
 image = "images/"
