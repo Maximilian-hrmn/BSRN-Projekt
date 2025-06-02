@@ -35,7 +35,7 @@ def main():
 
     try:    
         # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
+        discovery = DiscoveryService(timeout=4, discovery_port=int(config["discovery_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
        # if peers: #Beispiel: Verbindung zum ersten gefunden Peer aufbauen
@@ -64,7 +64,7 @@ def main():
                 print("[MAIN] SLCP Client erstellt und bereit.")
             else: 
                 print("[MAIN] Keine Peers gefunden. SLCP Client wird ohne Peer gestartet.")
-            
+                return
             cli = ChatCLI(client)
             cli.cmdloop()
     except Exception as e:
