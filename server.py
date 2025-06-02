@@ -21,11 +21,23 @@ class Server:
         # TCP Connection Handler starten
         threading.Thread(target=self.accept_connection).start()
         
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind(('', 5000))
+        print(f"[UDP] Discovery-Responder läuft auf Port {5000}")
+
+        while True:
+            data, addr = sock.recvfrom(1024)
+            print(data, addr)
+            #if data == b"DISCOVER_SERVICE":
+            print(f"[UDP] DISCOVER von {addr}")
+            #Sende Antwort, die den TCP Port mitliefert
+            response = f"DISCOVER_RESPONSE:{self.port}".encode()
+            sock.sendto(response, addr)
         # Discovery Responder in eigenem Thread starten
-        self.discovery_thread = threading.Thread(target=start_discovery_responder, args=(self.port,))
-        self.discovery_thread.daemon = True  # Thread beendet sich mit Hauptprogramm
-        self.discovery_thread.start()
-        print("[UDP] Discovery-Responder gestartet")
+        #self.discovery_thread = threading.Thread(target=start_discovery_responder, args=(self.port,))
+        #self.discovery_thread.daemon = True  # Thread beendet sich mit Hauptprogramm
+        #self.discovery_thread.start()
+        #print("[UDP] Discovery-Responder gestartet")
 
     # Methode um Verbindungen zu akzeptieren
     def accept_connection(self):
@@ -116,16 +128,17 @@ class Server:
 
 
 # UDP-Responder für Discovery
-def start_discovery_responder(tcp_port, listen_port=5002):
+def start_discovery_responder(tcp_port, listen_port=5000):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', listen_port))
     print(f"[UDP] Discovery-Responder läuft auf Port {listen_port}")
 
     while True:
         data, addr = sock.recvfrom(1024)
-        if data == b"DISCOVER_SERVICE":
-            print(f"[UDP] DISCOVER von {addr}")
-            #Sende Antwort, die den TCP Port mitliefert
-            response = f"DISCOVER_RESPONSE:{tcp_port}".encode()
-            sock.sendto(response, addr)
+        print(data, addr)
+        #if data == b"DISCOVER_SERVICE":
+        print(f"[UDP] DISCOVER von {addr}")
+        #Sende Antwort, die den TCP Port mitliefert
+        response = f"DISCOVER_RESPONSE:{tcp_port}".encode()
+        sock.sendto(response, addr)
 
