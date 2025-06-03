@@ -57,18 +57,18 @@ def main():
             return  # <-- Stoppe, wenn Server nicht startet
 
     try:
-            peers = discovery.discover_peers()
-            if peers:
-                peer_ip, peer_tcp_port = peers[0]
-                client = SLCPClient(peer_ip, peer_tcp_port)
-                print("[MAIN] SLCP Client erstellt und bereit.")
-            else: 
-                print("[MAIN] Keine Peers gefunden. SLCP Client wird ohne Peer gestartet.")
-            
-            cli = ChatCLI(client)
-            cli.cmdloop()
+        peers = discovery.discover_peers()
+        if peers:
+            peer_ip, peer_tcp_port = peers[0]
+            client = SLCPClient(peer_ip, peer_tcp_port)
+            print("[MAIN] SLCP Client erstellt und bereit.")
+        else: 
+            print("[MAIN] Keine Peers gefunden. Beende das Programm.")
+            return  # <--- Hier abbrechen, damit client nicht fehlt!
+        cli = ChatCLI(client)
+        cli.cmdloop()
     except Exception as e:
-            print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
+        print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
 if __name__ == "__main__":
     try:
