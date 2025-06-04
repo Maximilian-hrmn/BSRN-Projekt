@@ -5,7 +5,6 @@ from discovery_service import DiscoveryService
 from cli import ChatCLI 
 import time
 import sys
-from PyQt5 import QtWidgets  # Add this import for QtWidgets
 from mainWindow_controller import MainWindow  # Import the generated UI class
 
 
@@ -38,28 +37,6 @@ def main():
         return
     
      # Nutzer fragen: CLI oder GUI?
-    while True:
-        wahl = input("Möchtest du die GUI starten? (j/n): ").strip().lower()
-        if wahl == "j":
-            app = QtWidgets.QApplication(sys.argv)
-            # Hier Discovery und Client wie im CLI-Teil:
-            discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
-            peers = discovery.discover_peers()
-            if peers:
-                peer_ip, peer_tcp_port = peers[0]
-                client = SLCPClient(peer_ip, peer_tcp_port)
-            else:
-                client = None
-                peers = []
-            MainWindowObj = MainWindow(client, peers)
-            MainWindowObj.show()
-            sys.exit(app.exec_())
-            return
-        elif wahl == "n":
-            print("Starte CLI ...")
-            break
-        else:
-            print("Ungültige Eingabe. Bitte 'j' für GUI oder 'n' für CLI eingeben.")
     
     try:
             import threading
