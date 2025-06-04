@@ -32,7 +32,17 @@ def main():
     except Exception as e:
         print(f"Fehler beim Schreiben in die config.toml: {e}") # Wenn ein Fehler beim Schreiben auftritt, wird die Funktion beendet
         return
-
+    
+    try:
+            import threading
+            server = Server("0.0.0.0", int(config["server_port"]))
+            server_thread = threading.Thread(target=server.start, daemon=True)
+            server_thread.start()
+            time.sleep(1)
+    except Exception as e:
+            print(f"Fehler beim Starten des Servers: {e}")
+            return  # <-- Stoppe, wenn Server nicht startet
+    
     try:    
         # Discovery Service erstellen und starten
         discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
@@ -45,16 +55,6 @@ def main():
     except Exception as e:
         print(f"Fehler beim Starten des Discovery Services: {e}")
         return # Beenden der Funktion, wenn ein Fehler auftritt
-    
-    try:
-            import threading
-            server = Server("0.0.0.0", int(config["server_port"]))
-            server_thread = threading.Thread(target=server.start, daemon=True)
-            server_thread.start()
-            time.sleep(1)
-    except Exception as e:
-            print(f"Fehler beim Starten des Servers: {e}")
-            return  # <-- Stoppe, wenn Server nicht startet
 
     try:
         peers = discovery.discover_peers()
