@@ -21,6 +21,11 @@ class Server:
 
         # UDP Discovery-Responder
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        except AttributeError:
+            pass  # SO_REUSEPORT gibt es nicht auf allen Systemen
         sock.bind(('', self.discovery_port))
         print(f"[UDP] Discovery-Responder läuft auf Port {self.discovery_port}")
 

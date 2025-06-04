@@ -42,6 +42,10 @@ class DiscoveryService:
         # Socket für Broadcast konfigurieren
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        except AttributeError:
+            pass  # SO_REUSEPORT gibt es nicht auf allen Systemen
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.bind(('',self.discovery_port))
         sock.settimeout(self.timeout)

@@ -5,59 +5,49 @@ from discovery_service import DiscoveryService
 from cli import ChatCLI 
 import time
 
-
 def main():
-    # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
+    # TOML-Datei wird geladen und eingebettet und mit try-catch abgefangen
     try:
         config = toml.load("config.toml")
         print("Konfigurationsdatei geladen.")
-        
     except FileNotFoundError: 
         print("Konfigurationsdatei nicht gefunden.")
-        return # Beenden der Funktion, wenn die Datei nicht gefunden wird  
-        
+        return  
     except toml.TomlDecodeError:
         print("Fehler beim Dekodieren der Konfigurationsdatei.")
-        return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
-    
-    username = input("Bitte gib deinen Benutzernamen ein: ").strip() # Benutzername wird in der .toml-Datei überschrieben 
-    if not username:
-        print("Benutzername darf nicht leer sein.") # Wenn der Benutzername leer ist, wird die Funktion beendet
         return
-    config["handle"] = username # Überschreiben des Benutzernamens in der Konfigurationsdatei
+
+    username = input("Bitte gib deinen Benutzernamen ein: ").strip()
+    if not username:
+        print("Benutzername darf nicht leer sein.")
+        return
+    config["handle"] = username
 
     try:
-        with open("config.toml", "w") as f: # Schreiben des Benutzernamens in die .toml-Datei
-            toml.dump(config, f)    # Speichern der Konfiguration
-        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.") # Bestätigung der Speicherung
+        with open("config.toml", "w") as f:
+            toml.dump(config, f)
+        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.")
     except Exception as e:
-        print(f"Fehler beim Schreiben in die config.toml: {e}") # Wenn ein Fehler beim Schreiben auftritt, wird die Funktion beendet
+        print(f"Fehler beim Schreiben in die config.toml: {e}")
         return
-    
-     # Nutzer fragen: CLI oder GUI?
-    
+
     try:
-            import threading
-            server = Server("0.0.0.0", int(config["server_port"]), int(config["discovery_port"]))
-            server_thread = threading.Thread(target=server.start, daemon=True)
-            server_thread.start()
-            time.sleep(1)
+        import threading
+        server = Server("0.0.0.0", int(config["server_port"]), int(config["discovery_port"]))
+        server_thread = threading.Thread(target=server.start, daemon=True)
+        server_thread.start()
+        time.sleep(1)
     except Exception as e:
-            print(f"Fehler beim Starten des Servers: {e}")
-            return  # <-- Stoppe, wenn Server nicht startet
-    
-    try:    
-        # Discovery Service erstellen und starten
+        print(f"Fehler beim Starten des Servers: {e}")
+        return
+
+    try:
         discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
-       # if peers: #Beispiel: Verbindung zum ersten gefunden Peer aufbauen
-        #    peer_ip, peer_tcp_port = SLCPClient(peer_ip, peer_tcp_port)
-            #Anschließend JOIN, MSG etc. verwenden
-    
     except Exception as e:
         print(f"Fehler beim Starten des Discovery Services: {e}")
-        return # Beenden der Funktion, wenn ein Fehler auftritt
+        return
 
     try:
         peers = discovery.discover_peers()
@@ -67,7 +57,7 @@ def main():
             print("[MAIN] SLCP Client erstellt und bereit.")
         else: 
             print("[MAIN] Keine Peers gefunden. Beende das Programm.")
-            return  # <--- Hier abbrechen, damit client nicht fehlt!
+            return
         cli = ChatCLI(client)
         cli.cmdloop()
     except Exception as e:
