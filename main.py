@@ -4,6 +4,9 @@ from client import SLCPClient
 from discovery_service import DiscoveryService
 from CLI2 import ChatCLI 
 import time
+import sys
+from PyQt5 import QtWidgets  # Add this import for QtWidgets
+from GUI import Ui_MainWindow  # Import the generated UI class
 
 
 def main():
@@ -25,6 +28,7 @@ def main():
         print("Benutzername darf nicht leer sein.") # Wenn der Benutzername leer ist, wird die Funktion beendet
         return
     config["handle"] = username # Überschreiben des Benutzernamens in der Konfigurationsdatei
+
     try:
         with open("config.toml", "w") as f: # Schreiben des Benutzernamens in die .toml-Datei
             toml.dump(config, f)    # Speichern der Konfiguration
@@ -32,6 +36,25 @@ def main():
     except Exception as e:
         print(f"Fehler beim Schreiben in die config.toml: {e}") # Wenn ein Fehler beim Schreiben auftritt, wird die Funktion beendet
         return
+    
+     # Nutzer fragen: CLI oder GUI?
+    while True:
+        wahl = input("Möchtest du die GUI starten? (j/n): ").strip().lower()
+        if wahl == "j":
+            app = QtWidgets.QApplication(sys.argv)
+            MainWindow = QtWidgets.QMainWindow()
+            ui = Ui_MainWindow()
+            ui.setupUi(MainWindow)
+            MainWindow.show()
+            sys.exit(app.exec_())
+            # Hier GUI starten
+            print("Starte GUI ...")
+            return
+        elif wahl == "n":
+            print("Starte CLI ...")
+            break
+        else:
+            print("Ungültige Eingabe. Bitte 'j' für GUI oder 'n' für CLI eingeben.")
     
     try:
             import threading
