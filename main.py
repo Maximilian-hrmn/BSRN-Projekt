@@ -4,6 +4,7 @@ from client import SLCPClient
 from discovery_service import DiscoveryService
 from cli import ChatCLI 
 import time
+import socket
 
 def main():
     # TOML-Datei wird geladen und eingebettet und mit try-catch abgefangen
@@ -50,16 +51,20 @@ def main():
         return
 
     try:
-        peers = discovery.discover_peers()
+        # Eigene IP herausfinden
+        my_ip = socket.gethostbyname(socket.gethostname())
+        # Sich selbst aus der Peer-Liste entfernen
+        peers = [peer for peer in peers if peer[0] != my_ip]
+
         if peers:
             peer_ip, peer_tcp_port = peers[0]
             client = SLCPClient(peer_ip, peer_tcp_port)
             print("[MAIN] SLCP Client erstellt und bereit.")
-        else: 
+            cli = ChatCLI(client)
+            cli.cmdloop()
+        else:
             print("[MAIN] Keine Peers gefunden. Beende das Programm.")
-            return
-        cli = ChatCLI(client)
-        cli.cmdloop()
+        return
     except Exception as e:
         print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
 
