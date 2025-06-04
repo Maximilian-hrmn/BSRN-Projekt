@@ -109,13 +109,3 @@ class Ui_MainWindow(object):
         self.toolButton.setAccessibleDescription("Klick zum Auswählen eines Bildes")
         self.pushButton.setText(_translate("MainWindow", "Senden"))
         self.pushButton.setAccessibleDescription("Klick zum Senden der Nachricht")
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
