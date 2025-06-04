@@ -6,6 +6,17 @@ from cli import ChatCLI
 import time
 import socket
 
+def get_own_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
 def main():
     # TOML-Datei wird geladen und eingebettet und mit try-catch abgefangen
     try:
@@ -52,7 +63,7 @@ def main():
 
     try:
         # Eigene IP herausfinden
-        my_ip = socket.gethostbyname(socket.gethostname())
+        my_ip = get_own_ip()
         # Sich selbst aus der Peer-Liste entfernen
         peers = [peer for peer in peers if peer[0] != my_ip]
 
