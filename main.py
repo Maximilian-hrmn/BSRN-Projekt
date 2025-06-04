@@ -2,7 +2,7 @@ import toml
 from server import Server
 from client import SLCPClient
 from discovery_service import DiscoveryService
-from CLI2 import ChatCLI 
+from cli import ChatCLI 
 import time
 import sys
 from PyQt5 import QtWidgets  # Add this import for QtWidgets
