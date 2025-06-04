@@ -4,8 +4,6 @@ from client import SLCPClient
 from discovery_service import DiscoveryService
 from cli import ChatCLI 
 import time
-import sys
-from mainWindow_controller import MainWindow  # Import the generated UI class
 
 
 def main():
