@@ -54,7 +54,7 @@ class DiscoveryService:
         
         try:
             # Sende Discovery Nachricht
-            sock.sendto(message, ('255.255.255.255', self.discovery_port))
+            sock.sendto(message, ('10.0.1.255', self.discovery_port))
             
             # Warte auf Antworten bis Timeout
             start_time = time.time()
