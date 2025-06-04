@@ -64,8 +64,11 @@ def main():
     try:
         # Eigene IP herausfinden
         my_ip = get_own_ip()
+        print(f"[DEBUG] Eigene IP: {my_ip}")
+        print(f"[DEBUG] Gefundene Peers (vor Filter): {peers}")
         # Sich selbst aus der Peer-Liste entfernen
         peers = [peer for peer in peers if peer[0] != my_ip]
+        print(f"[DEBUG] Gefundene Peers (nach Filter): {peers}")
 
         if peers:
             peer_ip, peer_tcp_port = peers[0]
