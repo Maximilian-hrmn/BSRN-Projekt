@@ -38,7 +38,7 @@ def main():
     
     try:
             import threading
-            server = Server("0.0.0.0", int(config["server_port"]))
+            server = Server("0.0.0.0", int(config["server_port"]), int(config["discovery_port"]))
             server_thread = threading.Thread(target=server.start, daemon=True)
             server_thread.start()
             time.sleep(1)
