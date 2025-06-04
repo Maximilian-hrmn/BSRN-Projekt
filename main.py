@@ -6,7 +6,7 @@ from CLI2 import ChatCLI
 import time
 import sys
 from PyQt5 import QtWidgets  # Add this import for QtWidgets
-from GUI import MainWindow  # Import the generated UI class
+from mainWindow_controller import MainWindow  # Import the generated UI class
 
 
 def main():
