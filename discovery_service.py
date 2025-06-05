@@ -21,7 +21,7 @@ class DiscoveryService:
             who_message = b"WHO"
             self.sock.sendto(who_message, (peer_address, self.discovery_port))
             
-            data, addr = self.sock.recvfrom(5001)
+            data, addr = self.sock.recvfrom(4001)
             if data.startswith(b"WHO_RESPONSE:"):
                 peer_info = data.decode('utf-8').split(':')[1]
                 print(f"Peer Info von {addr[0]}: {peer_info}")
