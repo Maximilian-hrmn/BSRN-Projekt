@@ -25,16 +25,16 @@ class Server:
         try:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except AttributeError:
-            pass  # SO_REUSEPORT gibt es nicht auf allen Systemen
+            pass
         sock.bind(('', self.discovery_port))
         print(f"[UDP] Discovery-Responder läuft auf Port {self.discovery_port}")
 
         while True:
             data, addr = sock.recvfrom(1024)
-            print(f"[UDP] DISCOVER von {addr}")
-            # Sende Antwort mit Leerzeichen als Trenner
-            response = f"DISCOVER_RESPONSE {self.port}".encode()
-            sock.sendto(response, addr)
+            if data == b"DISCOVERY_SERVICE":
+                # Sende TCP-Port zurück!
+                response = f"DISCOVER_RESPONSE {self.port}".encode()
+                sock.sendto(response, addr)
 
     def accept_connection(self):
         while True:
