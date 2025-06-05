@@ -54,7 +54,7 @@ def main():
         return
 
     try:
-        discovery = DiscoveryService(timeout=5, discovery_port=int(config["discovery_port"]))
+        discovery = DiscoveryService(timeout=10, discovery_port=int(config["discovery_port"]))
         print("[MAIN] Suche nach Peers...")
         peers = discovery.discover_peers()
     except Exception as e:
