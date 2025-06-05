@@ -1,4 +1,4 @@
-handle = "maxi"
+handle = "jan"
 server_port = 4001
 discovery_port = 4000
 autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
