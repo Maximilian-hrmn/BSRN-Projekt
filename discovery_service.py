@@ -1,6 +1,7 @@
 import socket
 import time
 import toml
+
 config = toml.load("config.toml")
 
 class DiscoveryService:
@@ -47,7 +48,7 @@ class DiscoveryService:
         except AttributeError:
             pass  # SO_REUSEPORT gibt es nicht auf allen Systemen
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.bind(('',self.discovery_port))
+        sock.bind(('', self.discovery_port))
         sock.settimeout(self.timeout)
 
         print(f"Starte Peer-Suche (Timeout: {self.timeout} Sekunden)...")
@@ -61,11 +62,11 @@ class DiscoveryService:
             while (time.time() - start_time) < self.timeout:
                 try:
                     data, addr = sock.recvfrom(1024)
-                    #Erwarteter Response: "DISCOVER_RESPONSE <tcp_port>"
+                    # Erwarteter Response: "DISCOVER_RESPONSE <tcp_port>"
                     parts = data.decode().split()
-                    if parts[0] == "DISCOVER_RESPONSE" and len(parts)>= 2:
-                        tcp_port =int(parts[1])
-                        #Speichere als tuple: (IP, TCP-Port)
+                    if parts[0] == "DISCOVER_RESPONSE" and len(parts) >= 2:
+                        tcp_port = int(parts[1])
+                        # Speichere als tuple: (IP, TCP-Port)
                         if (addr[0], tcp_port) not in found_peers:
                             found_peers.append((addr[0], tcp_port))
                             print(f"Peer gefunden: {addr[0]}:{tcp_port}")
