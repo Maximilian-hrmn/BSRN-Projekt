@@ -65,7 +65,12 @@ def main():
         # Eigene IP herausfinden
         my_ip = get_own_ip()
         # Sich selbst aus der Peer-Liste entfernen
-        peers = [peer for peer in peers if peer[0] != my_ip]
+        peers = [
+            peer for peer in peers 
+            if peer[0] != my_ip and 
+            not peer[0].startswith('127.') and  # Loopback-Adressen filtern
+            peer[0] != '0.0.0.0'  # Unspezifische Adressen filtern
+        ]
         print(f"[DEBUG] Gefundene Peers (nach Filter): {peers}")
 
         if peers:
