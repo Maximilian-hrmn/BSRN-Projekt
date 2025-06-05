@@ -4,7 +4,7 @@ import toml
 config = toml.load("config.toml")
 
 class DiscoveryService:
-    def __init__(self, timeout=5, discovery_port=int(config["discovery_port"])):
+    def __init__(self, timeout=10, discovery_port=int(config["discovery_port"])):
         # Initialisierung der Klassenvariablen
         self.timeout = timeout
         self.discovery_port = discovery_port
