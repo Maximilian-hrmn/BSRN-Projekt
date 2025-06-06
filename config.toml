@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # File: config.toml
 
 # Handle (Benutzername). Wird durch 'join' überschrieben, kann als Vorgabewert bleiben.
@@ -14,3 +15,10 @@ broadcast = "172.20.10.15"
 
 # Pfad, wo empfangene Bilder gespeichert werden
 imagepath = "./images"
+=======
+handle = "maxi"
+server_port = 4001
+discovery_port = 4000
+autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
+image = "images/"
+>>>>>>> e3e3d87472a639b4ced2beef1075e7f250613fe1
