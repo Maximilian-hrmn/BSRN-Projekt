@@ -1,77 +1,58 @@
+# File: discovery_service.py
+
 import socket
 import time
+from slcp_handler import parse_slcp_line, build_knowusers
 import toml
-config = toml.load("config.toml")
 
-class DiscoveryService:
-    def __init__(self, timeout=5, discovery_port=5000):
-        # Initialisierung der Klassenvariablen
-        self.timeout = timeout
-        self.discovery_port = discovery_port
-        self.found_peers = []
-        
-        # Socket erstellen und konfigurieren
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock.settimeout(self.timeout)
+"""
+Discovery Service:
 
-    def send_who(self, peer_address):
-        """Sendet eine WHO-Anfrage an einen spezifischen Peer"""
+- Lauscht per UDP auf config['whoisport'] (z. B. Port 4000) auf Broadcasts.
+- Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE.
+- Speichert eine lokale Peerliste mapping handle -> (IP, Port).
+- Sendet KNOWUSERS-Antworten per Unicast an anfragenden Peer.
+"""
+
+def discovery_loop(config, cli_queue):
+    peers = {}  # handle -> (host, port)
+    whoisport = config['whoisport']
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("", whoisport))
+
+    while True:
+        data, addr = sock.recvfrom(65535)
         try:
-            who_message = b"WHO"
-            self.sock.sendto(who_message, (peer_address, self.discovery_port))
-            
-            data, addr = self.sock.recvfrom(5001)
-            if data.startswith(b"WHO_RESPONSE:"):
-                peer_info = data.decode('utf-8').split(':')[1]
-                print(f"Peer Info von {addr[0]}: {peer_info}")
-                return peer_info
-                
-        except socket.timeout:
-            print(f"Keine Antwort von {peer_address} erhalten")
-        except Exception as e:
-            print(f"Fehler beim Senden der WHO-Anfrage: {e}")
-    
-        return None
+            line = data.decode('utf-8')
+            cmd, args = parse_slcp_line(line)
+        except:
+            continue
 
-    def discover_peers(self):
-        """Sucht nach verfügbaren Peers im Netzwerk für eine bestimmte Zeit"""
-        message = b"DISCOVERY_SERVICE"
-        found_peers = []
-        
-        # Socket für Broadcast konfigurieren
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.bind(('',self.discovery_port))
-        sock.settimeout(self.timeout)
+        if cmd == 'JOIN' and len(args) == 2:
+            new_handle = args[0]
+            new_port = int(args[1])
+            peers[new_handle] = (addr[0], new_port)
+            # Sende KNOWUSERS an neuen Peer:
+            response = build_knowusers(peers)
+            sock.sendto(response, (addr[0], new_port))
 
-        print(f"Starte Peer-Suche (Timeout: {self.timeout} Sekunden)...")
-        
-        try:
-            # Sende Discovery Nachricht
-            sock.sendto(message, ('255.255.255.255', self.discovery_port))
-            
-            # Warte auf Antworten bis Timeout
-            start_time = time.time()
-            while (time.time() - start_time) < self.timeout:
-                try:
-                    data, addr = sock.recvfrom(1024)
-                    #Erwarteter Response: "DISCOVER_RESPONSE <tcp_port>"
-                    parts = data.decode().split()
-                    if parts[0] == "DISCOVER_RESPONSE" and len(parts)>= 2:
-                        tcp_port =int(parts[1])
-                        #Speichere als tuple: (IP, TCP-Port)
-                        if (addr[0], tcp_port) not in found_peers:
-                            found_peers.append((addr[0], tcp_port))
-                            print(f"Peer gefunden: {addr[0]}:{tcp_port}")
-                except socket.timeout:
-                    # Timeout für einen einzelnen Empfangsversuch
-                    break   
-        except KeyboardInterrupt:
-            print("\nSuche wurde vom Benutzer beendet.")
-        finally:
-            print(f"\nSuche beendet nach {time.time() - start_time:.1f} Sekunden.")
-            sock.close()
-            
-        return found_peers
+        elif cmd == 'WHO':
+            # Sende KNOWUSERS an Anfragenden zurück
+            response = build_knowusers(peers)
+            sock.sendto(response, addr)
+
+        elif cmd == 'LEAVE' and len(args) == 1:
+            leaving = args[0]
+            if leaving in peers:
+                del peers[leaving]
+
+        # Wenn Peerliste sich ändert, sende Kopie an CLI
+        cli_queue.put(('PEERS', peers.copy()))
+
+if __name__ == '__main__':
+    config = toml.load('config.toml')
+    from multiprocessing import Queue
+    q = Queue()
+    discovery_loop(config, q)

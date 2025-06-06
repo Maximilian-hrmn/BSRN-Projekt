@@ -1,5 +1,16 @@
-handle = "marius"
-server_port = 5000
-discovery_port = 5001
-autoreply = "Ich bin leider gerade nicht erreichbar, versuche es doch gerne ein anderes mal!"
-image = "images/"
+# File: config.toml
+
+# Handle (Benutzername). Wird durch 'join' überschrieben, kann als Vorgabewert bleiben.
+handle    = "Alice"
+
+# Client-Server-UDP-Port dieses Rechners (z. B. 5001 oder 5002)
+port      = 5005
+
+# SLCP-Discovery-Port (muss auf allen Peers gleich sein, z. B. 4000)
+whoisport = 4000
+
+# Broadcast-Adresse des lokalen LAN-Subnetzes (z. B. 192.168.1.255 oder 10.0.0.255)
+broadcast = "172.20.10.15"
+
+# Pfad, wo empfangene Bilder gespeichert werden
+imagepath = "./images"

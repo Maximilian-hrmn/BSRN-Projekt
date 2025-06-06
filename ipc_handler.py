@@ -1,50 +1,40 @@
+# ipc_handler.py – Verbindet CLI mit Netzwerkfunktionen über ChatClient
 import socket
 import json
-from slcp_handler import SLCPHandler
-"""
-Der slcp_handler wird instanziert, damit der ipc_handler auf dessen Protokoll zugreifen kann. 
-"""
+from client import ChatClient
+
 class IPCHandler:
-
-    # Konstruktor 
-    def __init__(self, handle, port):
-        self.slcp = SLCPHandler(handle, port)
-
-        # IPC Socket für Kommunikation mit UI
-
+    def __init__(self):
+        self.client = ChatClient()
         self.ipc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.ipc_socket.bind(('localhost', 9999))  # IPC Port
-    # Methode die nach Befhelen aus der UI "scannt"
+        self.ipc_socket.bind(('localhost', 9999))
 
     def listen_for_ui_commands(self):
-
-        """Lauscht auf Befehle vom UI über IPC"""
-
         self.ipc_socket.listen(1)
-
+        print("[IPC] Lauscht auf CLI-Befehle")
         while True:
             conn, addr = self.ipc_socket.accept()
-            
-            # Empfange Befehl vom UI
-            ui_command = conn.recv(1024).decode('utf-8')
-            ui_data = json.loads(ui_command)
-            
-            # Verwende SLCP Handler zum Formatieren
-            
-            if ui_data['action'] == 'send_message':
-                slcp_message = self.slcp.create_msg(
-                    ui_data['target'], 
-                    ui_data['message']
-                )
-                # Sende über Netzwerk...
-                
-            elif ui_data['action'] == 'join_network':
-                slcp_message = self.slcp.create_join()
+            data = conn.recv(2048).decode("utf-8")
+            try:
+                cmd = json.loads(data)
+                action = cmd.get("action")
+                if action == "send_message":
+                    self.client.send_msg(cmd["target"], cmd["message"])
+                elif action == "send_image":
+                    self.client.send_img(cmd["target"], cmd["path"])
+                elif action == "join_network":
+                    self.client.send_join()
+                elif action == "leave_network":
+                    self.client.send_leave()
+                elif action == "send_who":
+                    self.client.send_who()
+                conn.send(b"OK")
+            except Exception as e:
+                print(f"[IPC ERROR] {e}")
+                conn.send(b"ERROR")
+            finally:
+                conn.close()
 
-                # Sende über Netzwerk...
-    
-    def send_to_ui(self, parsed_message):
-        """Sendet geparste Nachrichten an das UI"""
-        # Formatiere für UI
-        ui_message = json.dumps(parsed_message)
-        # Sende über IPC an UI...
+if __name__ == "__main__":
+    ipc = IPCHandler()
+    ipc.listen_for_ui_commands()

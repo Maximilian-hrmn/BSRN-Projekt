@@ -1,77 +1,43 @@
+# File: main.py
+
 import toml
-from server import Server
-from client import SLCPClient
-from discovery_service import DiscoveryService
-from CLI2 import ChatCLI 
-import time
+from multiprocessing import Process, Queue
+import discovery_service
+import server
+from cli import ChatCLI
 
+"""
+Main Entry Point:
 
-def main():
-    # TOML-Datei wird geladen und eingebetet und mit try-catch abgefangen
-    try:
-        config = toml.load("config.toml")
-        print("Konfigurationsdatei geladen.")
-        
-    except FileNotFoundError: 
-        print("Konfigurationsdatei nicht gefunden.")
-        return # Beenden der Funktion, wenn die Datei nicht gefunden wird  
-        
-    except toml.TomlDecodeError:
-        print("Fehler beim Dekodieren der Konfigurationsdatei.")
-        return # Beenden der Funktion, wenn die Datei nicht dekodiert werden kann
-    
-    username = input("Bitte gib deinen Benutzernamen ein: ").strip() # Benutzername wird in der .toml-Datei überschrieben 
-    if not username:
-        print("Benutzername darf nicht leer sein.") # Wenn der Benutzername leer ist, wird die Funktion beendet
-        return
-    config["handle"] = username # Überschreiben des Benutzernamens in der Konfigurationsdatei
-    try:
-        with open("config.toml", "w") as f: # Schreiben des Benutzernamens in die .toml-Datei
-            toml.dump(config, f)    # Speichern der Konfiguration
-        print(f"[MAIN] Benutzername '{username}' wurde gespeichert.") # Bestätigung der Speicherung
-    except Exception as e:
-        print(f"Fehler beim Schreiben in die config.toml: {e}") # Wenn ein Fehler beim Schreiben auftritt, wird die Funktion beendet
-        return
+- Lädt config.toml
+- Startet im Hintergrund jeweils:
+    * Discovery-Service (Process A)
+    * Server/Network-Empfang (Process B)
+- Anschließend startet CLI (ChatCLI) im Hauptprozess
+"""
 
-    try:    
-        # Discovery Service erstellen und starten
-        discovery = DiscoveryService(timeout=4, discovery_port=int(config["discovery_port"]))
-        print("[MAIN] Suche nach Peers...")
-        peers = discovery.discover_peers()
-       # if peers: #Beispiel: Verbindung zum ersten gefunden Peer aufbauen
-        #    peer_ip, peer_tcp_port = SLCPClient(peer_ip, peer_tcp_port)
-            #Anschließend JOIN, MSG etc. verwenden
-    
-    except Exception as e:
-        print(f"Fehler beim Starten des Discovery Services: {e}")
-        return # Beenden der Funktion, wenn ein Fehler auftritt
-    
-    try:
-            import threading
-            server = Server("0.0.0.0", int(config["server_port"]))
-            server_thread = threading.Thread(target=server.start, daemon=True)
-            server_thread.start()
-            time.sleep(1)
-    except Exception as e:
-            print(f"Fehler beim Starten des Servers: {e}")
-            return  # <-- Stoppe, wenn Server nicht startet
+if __name__ == '__main__':
+    config = toml.load('config.toml')
 
-    try:
-            peers = discovery.discover_peers()
-            if peers:
-                peer_ip, peer_tcp_port = peers[0]
-                client = SLCPClient(peer_ip, peer_tcp_port)
-                print("[MAIN] SLCP Client erstellt und bereit.")
-            else: 
-                print("[MAIN] Keine Peers gefunden. SLCP Client wird ohne Peer gestartet.")
-                return
-            cli = ChatCLI(client)
-            cli.cmdloop()
-    except Exception as e:
-            print(f"[MAIN] Fehler beim Starten des Clients oder der CLI: {e}")
+    # IPC-Queues
+    cli_to_net = Queue()
+    cli_to_disc = Queue()
+    net_to_cli = Queue()
+    disc_to_cli = Queue()
 
-if __name__ == "__main__":
+    # Discovery-Service als eigener Process
+    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
+    disc_proc.daemon = True
+    disc_proc.start()
+
+    # Server/Network als eigener Process
+    net_proc = Process(target=server.server_loop, args=(config, net_to_cli))
+    net_proc.daemon = True
+    net_proc.start()
+
+    # CLI im Hauptprozess
+    cli = ChatCLI(config, net_to_cli, disc_to_cli)
     try:
-        main()
+        cli.cmdloop()
     except KeyboardInterrupt:
-        print("\n[MAIN] Beendet durch Benutzer.")
+        print("\nAbbruch durch Benutzer.")

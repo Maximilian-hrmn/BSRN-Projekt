@@ -1,80 +1,52 @@
+# File: client.py
+
 import socket
+from slcp_handler import build_join, build_leave, build_who, build_msg, build_img
 import os
 
-class SLCPClient:
-    #Kontruktor für den Client
-    def __init__(self, peer_ip, peer_port):
-        self.peer_ip = peer_ip
-        self.peer_port = peer_port
-        self.s = None
-        self.handle = None
+"""
+Client-Funktionen (Network-Sender):
 
-    #Methode zum verbinden
-    def send_join(self, handle):
-        self.handle = handle  # Handle speichern für spätere Nachrichten
-        response = self.send_message(f"JOIN {handle}")
-        if response:
-            print(f"[Antwort vom Peer]: {response}")
-        else:
-            print("[Info] JOIN gesendet (keine Antwort erhalten)")
+- Broadcast (JOIN/WHO/LEAVE) an config['broadcast']:config['whoisport']
+- Unicast (MSG/IMG) an target_host:target_port
+"""
 
-    #Methode zum verbinden mit dem Peer
-    def send_msg(self, text):
-        if not self.handle:
-            print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
-            return
-        # Sende im SLCP-Format
-        message = f'MSG {self.handle} \"{text}\"'
-        response = self.send_message(message)
-        if response:
-            print(f"[Antwort vom Peer]: {response}")
-        else:
-            print("[Info] Nachricht gesendet (keine Antwort erhalten)")
+def client_send_join(config):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    msg = build_join(config['handle'], config['port'])
+    sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    sock.close()
 
-    #Methode zum senden von Bildern
-    def send_image(self, empfänger, bildpfad):
-        try:
-            self.connect()
-            bildname = os.path.basename(bildpfad)
-            bildgröße = os.path.getsize(bildpfad)
-            with open(bildpfad, 'rb') as f:
-                bilddaten = f.read()
-            header = f"IMG {empfänger} {bildname} {bildgröße}\n"
-            self.s.sendall(header.encode('utf-8'))
-            self.s.sendall(bilddaten)
-            response = self.s.recv(1024).decode('utf-8').strip()
-            print(f"[Antwort vom Peer]: {response}")
-        except Exception as e:
-            print(f"[Fehler beim Bildversand]: {e}")
-            
-    #Methode zum verlassen des Clients
-    def send_leave(self):
-        if not self.handle:
-            print("[Fehler] Kein Handle gesetzt. Bitte zuerst JOIN senden.")
-            return
-        response = self.send_message(f"LEAVE {self.handle}")
-        print("[Info] LEAVE gesendet.")
-        self.close()
+def client_send_who(config):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    msg = build_who()
+    sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    sock.close()
 
+def client_send_leave(config):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    msg = build_leave(config['handle'])
+    sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    sock.close()
 
-        
-    #Hilfsmethoden
-    def connect(self):
-        if self.s is None:
-            self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.s.connect((self.peer_ip, self.peer_port))
+def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    data = build_msg(from_handle, text)
+    sock.sendto(data, (target_host, target_port))
+    sock.close()
 
-    def send_message(self, message):
-        try:
-            self.connect()
-            self.s.sendall((message + "\n").encode("utf-8"))
-            response = self.s.recv(1024).decode("utf-8").strip()
-            return response
-        except Exception as e:
-            print(f"[Fehler beim Senden]: {e}")
-            return None
-
-    def close(self):
-        if self.s:
-            self.s.close()
-            self.s = None
+def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
+    if not os.path.isfile(img_path):
+        return False
+    size = os.path.getsize(img_path)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    header = build_img(from_handle, size)
+    sock.sendto(header, (target_host, target_port))
+    with open(img_path, 'rb') as f:
+        data = f.read()
+        sock.sendto(data, (target_host, target_port))
+    sock.close()
+    return True
