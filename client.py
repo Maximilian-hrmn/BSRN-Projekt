@@ -41,6 +41,7 @@ def client_send_msg(target_host: str, target_port: int, from_handle: str, text: 
     data = build_msg(from_handle, text)
     sock.sendto(data, (target_host, target_port))
     sock.close()
+    
 #Funktion zum Senden eines Bildes an einen bestimmten Host und Port
 def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
     if not os.path.isfile(img_path):
