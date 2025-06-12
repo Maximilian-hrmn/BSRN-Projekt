@@ -7,52 +7,79 @@ import toml
 
 """
 Discovery Service:
-
-- Lauscht per UDP auf config['whoisport'] (z. B. Port 4000) auf Broadcasts.
+- Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
 - Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE.
-- Speichert eine lokale Peerliste mapping handle -> (IP, Port).
-- Sendet KNOWUSERS-Antworten per Unicast an anfragenden Peer.
+- Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
+- Sendet KNOWUSERS-Antworten per Unicast an anfragende Peers.
 """
 
 def discovery_loop(config, cli_queue):
+    # Erstelle ein leeres Array zum Speichern der bekannten Peers.
+    # Jeder Eintrag hat die Form: handle -> (IP-Adresse, Port)
     peers = {}  # handle -> (host, port)
+    
+    # Liest den UDP-Port für Discovery aus der Konfiguration
     whoisport = config['whoisport']
 
+    # Erstellt einen UDP-Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    
+    # Setze SO_REUSEADDR, damit der Socket sofort wieder genutzt werden kann,
+    # falls er kürzlich geschlossen wurde.
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
+    # Binde den Socket an alle verfügbaren Netzwerkschnittstellen und den Discovery-Port.
     sock.bind(("", whoisport))
 
+    # Loop, der Discovery-Service hört auf eingehende UDP-Nachrichten.
     while True:
+        # Empfang der Daten (bis zu 65535 Bytes) sowie der Absenderadresse (IP, Port)
         data, addr = sock.recvfrom(65535)
+        
         try:
+            # Versucht, die empfangenen Daten als UTF-8-Zeichenkette zu decodieren.
             line = data.decode('utf-8')
+            # Parset die Zeichenkette in einen Befehl (cmd) und eine Liste von Argumenten (args).
             cmd, args = parse_slcp_line(line)
         except:
+            # Falls ein Fehler bei der Decodierung oder beim Parsen auftritt, ignoriere diese Nachricht.
             continue
 
+        # Verarbeitet den "JOIN"-Befehl
         if cmd == 'JOIN' and len(args) == 2:
-            new_handle = args[0]
-            new_port = int(args[1])
+            new_handle = args[0]              # Der Benutzername des neuen Peers.
+            new_port = int(args[1])           # Der Port, unter dem der neue Peer erreichbar ist.
+            # Fügt den neuen Peer in die Peerliste ein, wobei die IP aus der Absenderadresse (addr[0]) stammt.
             peers[new_handle] = (addr[0], new_port)
-            # Sende KNOWUSERS an neuen Peer:
+            # Erstellt eine Antwortnachricht (KNOWUSERS), die alle bekannten Peers enthält.
             response = build_knowusers(peers)
+            # Sendet die Antwort per Unicast an den neuen Peer (an seine Adresse und den angegebenen Port).
             sock.sendto(response, (addr[0], new_port))
 
+        # Verarbeitet den "WHO"-Befehl
         elif cmd == 'WHO':
-            # Sende KNOWUSERS an Anfragenden zurück
+            # Erstellt die KNOWUSERS-Antwort mit der aktuellen Peerliste.
             response = build_knowusers(peers)
+            # Sendet die Antwort an den anfragenden Peer (Adresse in "addr").
             sock.sendto(response, addr)
 
+        # Verarbeite den "LEAVE"-Befehl
         elif cmd == 'LEAVE' and len(args) == 1:
-            leaving = args[0]
+            leaving = args[0]   # Der Handle des Peers, der geht.
+            # Entferne den Peer aus dem Dictionary, falls er vorhanden ist.
             if leaving in peers:
                 del peers[leaving]
 
-        # Wenn Peerliste sich ändert, sende Kopie an CLI
+        # Informiere die übergeordnete Anwendung (z.B. die CLI) über Änderungen in der Peerliste.
+        # Hier wird eine Kopie der aktuellen Peerliste über eine IPC-Queue (cli_queue) verschickt.
         cli_queue.put(('PEERS', peers.copy()))
 
+# Wenn dieses Modul direkt ausgeführt wird:
 if __name__ == '__main__':
+    # Lädt die Konfigurationsdatei (config.toml)
     config = toml.load('config.toml')
     from multiprocessing import Queue
+    # Erstellt eine Queue für die Kommunikation zwischen Discovery-Service und z.B. der CLI.
     q = Queue()
+    # Startet die Discovery-Schleife.
     discovery_loop(config, q)
