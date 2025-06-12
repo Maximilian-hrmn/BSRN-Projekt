@@ -37,7 +37,7 @@ if __name__ == '__main__':
     net_proc.start()
 
     
-    mode = input("'g' für Gui, 'c' für CLI").strip().lower()
+    mode = input("Modus wählen: [g] GUI  |  [c] CLI  > ").strip().lower()
     if mode == 'g':
         startGui(config, net_to_cli, disc_to_cli)
     else:
