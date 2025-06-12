@@ -5,7 +5,7 @@ from multiprocessing import Process, Queue
 import discovery_service
 import server
 from cli import ChatCLI
-from gui import start_gui
+from gui import startGui
 
 """
 Main Entry Point:

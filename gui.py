@@ -116,7 +116,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "Senden"))
         self.pushButton.setAccessibleDescription("Klick zum Senden der Nachricht")
     
-    def start_gui(config, net_to_cli, disc_to_cli):
+    def startGui(config, net_to_cli, disc_to_cli):
         app = QtWidgets.QApplication(sys.argv)
         MainWindow = QtWidgets.QMainWindow()
         ui = Ui_MainWindow(config, net_to_cli, disc_to_cli)  # Übergib Queues
