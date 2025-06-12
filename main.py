@@ -39,7 +39,7 @@ if __name__ == '__main__':
     
     mode = input("'g' für Gui, 'c' für CLI? ").strip().lower()
     if mode == 'g':
-        start_gui(config, net_to_cli, disc_to_cli)
+        startGui(config, net_to_cli, disc_to_cli)
     else:
         # Fallback zu CLI
         cli = ChatCLI(config, net_to_cli, disc_to_cli)
