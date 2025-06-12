@@ -1,6 +1,12 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import sys
 
 class Ui_MainWindow(object):
+    def __init__(self, config=None, net_to_cli=None, disc_to_cli=None):
+        self.config = config
+        self.net_to_cli = net_to_cli
+        self.disc_to_cli = disc_to_cli
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(830, 575)
@@ -109,13 +115,11 @@ class Ui_MainWindow(object):
         self.toolButton.setAccessibleDescription("Klick zum Auswählen eines Bildes")
         self.pushButton.setText(_translate("MainWindow", "Senden"))
         self.pushButton.setAccessibleDescription("Klick zum Senden der Nachricht")
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+    
+    def start_gui(config, net_to_cli, disc_to_cli):
+        app = QtWidgets.QApplication(sys.argv)
+        MainWindow = QtWidgets.QMainWindow()
+        ui = Ui_MainWindow(config, net_to_cli, disc_to_cli)  # Übergib Queues
+        ui.setupUi(MainWindow)
+        MainWindow.show()
+        sys.exit(app.exec_())

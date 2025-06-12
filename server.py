@@ -4,7 +4,6 @@ import socket
 import os
 import time
 from slcp_handler import parse_slcp_line
-import toml
 
 """
 Server-Prozess (Network-Empfang):

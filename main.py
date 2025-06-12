@@ -5,6 +5,7 @@ from multiprocessing import Process, Queue
 import discovery_service
 import server
 from cli import ChatCLI
+from gui import start_gui
 
 """
 Main Entry Point:
@@ -35,9 +36,14 @@ if __name__ == '__main__':
     net_proc.daemon = True
     net_proc.start()
 
-    # CLI im Hauptprozess
-    cli = ChatCLI(config, net_to_cli, disc_to_cli)
-    try:
-        cli.cmdloop()
-    except KeyboardInterrupt:
-        print("\nAbbruch durch Benutzer.")
+    
+    mode = input("'g' für Gui, 'c' für CLI? ").strip().lower()
+    if mode == 'g':
+        start_gui(config, net_to_cli, disc_to_cli)
+    else:
+        # Fallback zu CLI
+        cli = ChatCLI(config, net_to_cli, disc_to_cli)
+        try:
+            cli.cmdloop()
+        except KeyboardInterrupt:
+            print("\nAbbruch durch Benutzer.")

@@ -1,7 +1,6 @@
 # File: discovery_service.py
 
 import socket
-import time
 from slcp_handler import parse_slcp_line, build_knowusers
 import toml
 
