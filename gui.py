@@ -8,11 +8,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.config = config
         self.net_to_cli = net_to_cli
         self.disc_to_cli = disc_to_cli
-
-        self.prompt_user_info()
+        self.userInfoAbfrage()
         self.setupUi()
 
-    def prompt_user_info(self):
+    def userInfoAbfrage(self):
         name, ok = QInputDialog.getText(self, "Name", "Bitte gib deinen Namen ein:")
         if ok and name:
             self.config.setdefault("user", {})["name"] = name
