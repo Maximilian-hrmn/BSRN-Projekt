@@ -1,52 +1,58 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QInputDialog, QFileDialog
 import sys
 
-class Ui_MainWindow(object):
-    def __init__(self, config=None, net_to_cli=None, disc_to_cli=None):
+class Ui_MainWindow(QtWidgets.QMainWindow):
+    def __init__(self, config, net_to_cli, disc_to_cli):
+        super().__init__()
         self.config = config
         self.net_to_cli = net_to_cli
         self.disc_to_cli = disc_to_cli
 
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(830, 575)
+        self.prompt_user_info()
+        self.setupUi()
 
-        # MainWindow
+    def prompt_user_info(self):
+        name, ok = QInputDialog.getText(self, "Name", "Bitte gib deinen Namen ein:")
+        if ok and name:
+            self.config.setdefault("user", {})["name"] = name
+
+        port, ok = QInputDialog.getInt(self, "Port", "Bitte gib deinen Port ein:", value=5000, min=1024, max=65535)
+        if ok:
+            self.config.setdefault("network", {})["port"] = port
+
+    def setupUi(self):
+        self.setObjectName("MainWindow")
+        self.resize(830, 575)
+
+        # MainWindow Size Policy
         mainSizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        mainSizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
-        MainWindow.setSizePolicy(mainSizePolicy)
+        mainSizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(mainSizePolicy)
 
         # Central Widget
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget = QtWidgets.QWidget(self)
         centralSizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         centralSizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(centralSizePolicy)
         self.centralwidget.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.centralwidget.setObjectName("centralwidget")
 
-        # Main Layout
+        # Layouts
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
-        self.verticalLayout.setObjectName("verticalLayout")
 
-        # horizontales layout (Chat-Fenster und Liste der Verbindungen)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
 
-        # Chat-Fenster
+        # Chat-Fenster (links)
         self.listView = QtWidgets.QListView(self.centralwidget)
-        listViewPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.listView.setSizePolicy(listViewPolicy)
+        self.listView.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.listView.setObjectName("listView")
         self.horizontalLayout_2.addWidget(self.listView)
 
-        # Liste der Verbindungen
+        # Verbindungen (rechts)
         self.listView_2 = QtWidgets.QListView(self.centralwidget)
-        listView2Policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.listView_2.setSizePolicy(listView2Policy)
+        self.listView_2.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.listView_2.setObjectName("listView_2")
         self.horizontalLayout_2.addWidget(self.listView_2)
 
@@ -55,34 +61,33 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_2)
 
-        # Unteres Layout mit Eingabefeld, Bilder Button und Senden Button
+        # Untere Leiste (Textfeld, ToolButton, Senden)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
-        self.horizontalLayout.setObjectName("horizontalLayout")
 
         # Eingabefeld
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
-        textEditPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.textEdit.setSizePolicy(textEditPolicy)
+        self.textEdit.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         font = QtGui.QFont()
         font.setPointSize(12)
         self.textEdit.setFont(font)
         self.textEdit.setObjectName("textEdit")
         self.horizontalLayout.addWidget(self.textEdit)
 
-        # Bilder Button
+        # Bilder-Button
         self.toolButton = QtWidgets.QToolButton(self.centralwidget)
-        toolButtonPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.toolButton.setSizePolicy(toolButtonPolicy)
+        self.toolButton.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.toolButton.setObjectName("toolButton")
-        self.horizontalLayout.addWidget(self.toolButton)
         self.toolButton.setToolTip("Bild auswählen oder hochladen")
+        self.toolButton.setText("📷")
+        self.toolButton.clicked.connect(self.open_image_dialog)
+        self.horizontalLayout.addWidget(self.toolButton)
 
-        # Senden Button
+        # Senden-Button
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        pushButtonPolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.pushButton.setSizePolicy(pushButtonPolicy)
+        self.pushButton.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.setToolTip("Nachricht senden")
+        self.pushButton.setText("Senden")
         self.horizontalLayout.addWidget(self.pushButton)
 
         self.horizontalLayout.setStretch(0, 70)
@@ -90,36 +95,30 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setStretch(2, 20)
 
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.pushButton.setToolTip("Nachricht senden")
 
-        # Stretch zwischen layouts
-        self.verticalLayout.setStretch(0, 9)  # Top ListViews
-        self.verticalLayout.setStretch(1, 1)  # Bottom Controls
+        # Stretch setzen
+        self.verticalLayout.setStretch(0, 9)
+        self.verticalLayout.setStretch(1, 1)
 
         self.verticalLayout_2.addLayout(self.verticalLayout)
-        MainWindow.setCentralWidget(self.centralwidget)
+        self.setCentralWidget(self.centralwidget)
 
-        # Status Bar
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setAutoFillBackground(False)
+        # Statusbar
+        self.statusbar = QtWidgets.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        self.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.setWindowTitle("Messenger")
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("Messenger", "Messenger"))
-        self.toolButton.setText(_translate("MainWindow", "..."))
-        self.toolButton.setAccessibleDescription("Klick zum Auswählen eines Bildes")
-        self.pushButton.setText(_translate("MainWindow", "Senden"))
-        self.pushButton.setAccessibleDescription("Klick zum Senden der Nachricht")
-    
+    def open_image_dialog(self):
+        filename, _ = QFileDialog.getOpenFileName(self, "Bild auswählen", "", "Bilder (*.png *.jpg *.jpeg *.bmp *.gif)")
+        if filename:
+            print("Bild ausgewählt:", filename)
+            # Hier könntest du die Datei laden, versenden oder anzeigen etc.
+
+# Startfunktion
 def startGui(config, net_to_cli, disc_to_cli):
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow(config, net_to_cli, disc_to_cli)  # Übergib Queues
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    window = Ui_MainWindow(config, net_to_cli, disc_to_cli)
+    window.show()
     sys.exit(app.exec_())
