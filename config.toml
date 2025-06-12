@@ -9,7 +9,7 @@ port      = 5005
 # SLCP-Discovery-Port (muss auf allen Peers gleich sein, z. B. 4000)
 whoisport = 4000
 
-# Broadcast-Adresse des lokalen LAN-Subnetzes (z. B. 192.168.1.255 oder 10.0.0.255)
+# Broadcast-Adresse (z. B. 192.168.1.255 oder 10.0.0.255)
 broadcast = "255.255.255.255"
 
 # Pfad, wo empfangene Bilder gespeichert werden
