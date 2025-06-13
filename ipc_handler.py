@@ -1,11 +1,11 @@
 # ipc_handler.py – Verbindet CLI mit Netzwerkfunktionen über ChatClient
 import socket
 import json
-from client import ChatClient
+import client 
 
 class IPCHandler:
     def __init__(self):
-        self.client = ChatClient()
+        self.client = client()
         self.ipc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ipc_socket.bind(('localhost', 9999))
 

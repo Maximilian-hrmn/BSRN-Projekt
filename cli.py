@@ -1,4 +1,4 @@
-# File: chat_cli.py
+# File: cli.py
 
 import cmd
 import threading
