@@ -1,11 +1,10 @@
 # File: main.py
 
 import toml
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, set_start_method
 import discovery_service
 import server
 from cli import ChatCLI
-from gui import startGui
 
 """
 Main Entry Point:
@@ -18,6 +17,7 @@ Main Entry Point:
 """
 
 if __name__ == '__main__':
+    set_start_method('spawn', force=True)
     config = toml.load('config.toml')
 
     # IPC-Queues
@@ -39,6 +39,7 @@ if __name__ == '__main__':
     
     mode = input("Modus wählen: [g] GUI  |  [c] CLI  > ").strip().lower()
     if mode == 'g':
+        from gui import startGui
         startGui(config, net_to_cli, disc_to_cli)
     else:
         # Fallback zu CLI
