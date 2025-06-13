@@ -5,7 +5,6 @@ from multiprocessing import Process, Queue
 import discovery_service
 import server
 from cli import ChatCLI
-from gui import startGui
 
 """
 Main Entry Point:
@@ -39,6 +38,7 @@ if __name__ == '__main__':
     
     mode = input("Modus wählen: [g] GUI  |  [c] CLI  > ").strip().lower()
     if mode == 'g':
+        from gui import startGui
         startGui(config, net_to_cli, disc_to_cli)
     else:
         # Fallback zu CLI
