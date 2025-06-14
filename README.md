@@ -4,7 +4,7 @@ Dieses Projekt implementiert einen einfachen Peer-to-Peer Messenger.
 
 ## Mehrere Instanzen lokal starten
 
-Um zwei Clients gleichzeitig auf einem Rechner zu betreiben, muss jeder Client auf einem eigenen UDP-Port lauschen. Starte daher jede Instanz mit einem unterschiedlichen Port:
+Um zwei Clients gleichzeitig auf einem Rechner zu betreiben, muss jeder Client auf einem eigenen UDP-Port lauschen. Setze außerdem die Broadcast-Adresse in `config.toml` auf `127.255.255.255`, damit Discovery lokal funktioniert. Starte jede Instanz mit einem unterschiedlichen Port:
 
 ```bash
 python3 main.py --port 5001
@@ -12,3 +12,11 @@ python3 main.py --port 5002
 ```
 
 Der Discovery-Service verwendet standardmäßig den gleichen `whoisport` für alle Clients. Durch die Verwendung von `SO_REUSEPORT` können mehrere Instanzen denselben Discovery-Port teilen.
+
+## Abhängigkeiten installieren
+
+Die Anwendung benötigt lediglich das `toml`-Paket. Installiere es mit:
+
+```bash
+pip install toml
+```

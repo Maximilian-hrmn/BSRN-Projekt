@@ -8,32 +8,40 @@ import os
 Client-Funktionen (Network-Sender):
 
 - Broadcast (JOIN/WHO/LEAVE) an config['broadcast']:config['whoisport']
+  (fällt bei Bedarf auf localhost zurück)
 - Unicast (MSG/IMG) an target_host:target_port
 """
 
-# Funktion zum Senden einer JOIN-Nachricht an den Server
-def client_send_join(config):
+def _send_discovery(msg: bytes, config: dict) -> None:
+    """Send a discovery message via broadcast with localhost fallback."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    try:
+        sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    except OSError as e:
+        # Fallback if broadcast is not available (e.g. network unreachable)
+        if e.errno == 101:
+            sock.sendto(msg, ("127.0.0.1", config['whoisport']))
+        else:
+            raise
+    finally:
+        sock.close()
+
+
+# Funktion zum Senden einer JOIN-Nachricht an den Server
+def client_send_join(config):
     msg = build_join(config['handle'], config['port'])
-    sock.sendto(msg, (config['broadcast'], config['whoisport']))
-    sock.close()
+    _send_discovery(msg, config)
 
 # Funktion zum Senden einer WHO-Nachricht an den Server
 def client_send_who(config):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     msg = build_who()
-    sock.sendto(msg, (config['broadcast'], config['whoisport']))
-    sock.close()
+    _send_discovery(msg, config)
 
 # Funktion zum Senden einer LEAVE-Nachricht an den Server
 def client_send_leave(config):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     msg = build_leave(config['handle'])
-    sock.sendto(msg, (config['broadcast'], config['whoisport']))
-    sock.close()
+    _send_discovery(msg, config)
 
 #Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port
 def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):

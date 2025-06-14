@@ -9,7 +9,7 @@ Discovery Service:
  - Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
  - Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE und KNOWUSERS.
  - Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
- - Sendet KNOWUSERS-Antworten per Unicast an anfragende Peers.
+ - Sendet KNOWUSERS-Antworten per Broadcast an alle Peers.
 """
 
 def discovery_loop(config, cli_queue):
@@ -55,9 +55,10 @@ def discovery_loop(config, cli_queue):
             peers[new_handle] = (addr[0], new_port)
             # Erstellt eine Antwortnachricht (KNOWUSERS), die alle bekannten Peers enthält.
             response = build_knowusers(peers)
-            # Sende die Antwort an den Discovery-Port des neuen Peers.
-            # Dadurch kann dessen Discovery-Service die Peerliste aktualisieren.
-            sock.sendto(response, (addr[0], whoisport))
+            # Sende die Antwort per Broadcast, damit alle lokalen Instanzen die
+            # Peerliste aktualisieren.
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.sendto(response, (config['broadcast'], whoisport))
 
         # Verarbeitet den "WHO"-Befehl
         elif cmd == 'WHO':
