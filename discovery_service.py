@@ -33,6 +33,8 @@ def discovery_loop(config, cli_queue):
     # Binde den Socket an alle verfügbaren Netzwerkschnittstellen und den Discovery-Port.
     sock.bind(("", whoisport))
 
+    print(f"[Discovery] Service gestartet auf Port {whoisport}")
+
     # Loop, der Discovery-Service hört auf eingehende UDP-Nachrichten.
     while True:
         # Empfang der Daten (bis zu 65535 Bytes) sowie der Absenderadresse (IP, Port)
