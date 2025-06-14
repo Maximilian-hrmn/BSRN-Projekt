@@ -3,99 +3,107 @@
 import socket
 import os
 import time
+import queue
 from slcp_handler import parse_slcp_line
 
 """
 Server-Prozess (Network-Empfang):
 
 - Lauscht per UDP-Unicast auf config['port'] auf eingehende SLCP-Nachrichten (MSG, IMG).
-- Bei MSG: Gibt Nachricht über IPC an CLI weiter.
-- Bei IMG: Liest erst Header (IMG <handle> <size>), dann erwartet es in separatem recvfrom() den Raw-JPEG-Binärstrom der Länge <size>.
-  Speichert empfangenes Bild unter imagepath/<handle>_<timestamp>.jpg und meldet der CLI den Pfad.
-
+- Bei MSG: Gibt Nachricht über IPC (Interprozess-Kommunikation) an die CLI weiter.
+- Bei IMG: Liest zunächst Header (IMG <handle> <size>), dann erwartet es in einem separaten recvfrom()
+  den Raw-JPEG-Binärstrom der angegebenen Länge <size>.
+  Speichert das empfangene Bild unter imagepath/<handle>_<timestamp>.jpg und übermittelt der CLI den Pfad.
 """
 
-#Funktion namens `server_loop`, die den Serverprozess implementiert.
-import queue
-
+# Funktion namens `server_loop`, die den Serverprozess implementiert.
 def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
 
-    # Stelle sicher, dass der imagepath existiert
+    # Stelle sicher, dass das Verzeichnis für empfangene Bilder existiert
     imagepath = config['imagepath']
-    # Überprüfe, ob der imagepath existiert, und erstelle ihn, falls nicht
+    # Falls der imagepath noch nicht existiert, wird er erstellt
     if not os.path.exists(imagepath):
         os.makedirs(imagepath)
 
-    # Erstelle einen UDP-Socket
+    # Aktuellen Port aus der Konfiguration übernehmen
     current_port = config['port']
-    # Erstelle einen UDP-Socket und binde ihn an den aktuellen Port
+
+    # Erstellen eines UDP-Sockets
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Setze die Option SO_REUSEADDR, um den Port wiederverwenden zu können
+    # Setzen der Option SO_REUSEADDR, damit der Port wiederverwendet werden kann
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # Binde den Socket an die Adresse und den aktuellen Port
+    # Binden des Sockets an die IP-Adresse '' (alle Interfaces) und den aktuellen Port
     sock.bind(("", current_port))
 
+    # Endlosschleife zum permanenten Empfangen von Nachrichten
     while True:
-        # Überprüfe, ob eine neue Portänderung angefordert wurde
+
+        # Prüfen, ob es eine Port-Änderung über die CLI gibt
         if cli_to_net_queue is not None:
             try:
-                # Versuche, eine Nachricht aus der cli_to_net_queue zu lesen
+                # Sofortige, nicht blockierende Abfrage der CLI-Nachrichten
                 msg = cli_to_net_queue.get_nowait()
-                # Wenn die Nachricht 'SET_PORT' ist, ändere den Port
+                # Wenn die CLI eine Portänderung anfordert ('SET_PORT' mit neuem Port)
                 if msg[0] == 'SET_PORT':
-                    # Extrahiere den neuen Port aus der Nachricht
-                    new_port = int(msg[1]) 
-                    # Wenn der neue Port sich vom aktuellen Port unterscheidet, ändere den Socket
+                    new_port = int(msg[1])
+                    # Nur reagieren, wenn sich der Port tatsächlich geändert hat
                     if new_port != current_port:
                         sock.close()
-                        # Erstelle einen neuen Socket und binde ihn an den neuen Port
+                        # Neuer Socket wird erstellt und gebunden
                         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                        # Setze die Option SO_REUSEADDR, um den Port wiederverwenden zu können
                         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                        # Binde den neuen Socket an die Adresse und den neuen Port
                         sock.bind(("", new_port))
                         print(f"Port changed to {new_port}")
                         current_port = new_port
+            # Keine Nachricht vorhanden – Queue ist leer
             except queue.Empty:
                 pass
-        # Empfange Daten vom Socket
+
+        # Empfang von Daten über den UDP-Socket (max. 65535 Bytes)
         data, addr = sock.recvfrom(65535)
-        # Wenn keine Daten empfangen wurden, überspringe die Verarbeitung
+
+        # Versuch, die Nachricht als SLCP-Zeile zu interpretieren
         try:
             line = data.decode('utf-8', errors='ignore')
             cmd, args = parse_slcp_line(line)
         except:
+            # Fehlerhafte oder nicht-dekodierbare Nachricht wird ignoriert
             continue
 
-        # Verarbeite die empfangene SLCP-Nachricht
+        # Verarbeiten eines Textnachricht-Kommandos (MSG)
         if cmd == 'MSG' and len(args) >= 2:
-            # Wenn die Nachricht ein MSG-Kommando ist, extrahiere den Absender und den Text
+            # Extrahieren des Absender-Handles
             from_handle = args[0]
-            # Extrahiere den Text der Nachricht, der im zweiten Argument enthalten ist
+            # Extrahieren des eigentlichen Nachrichtentextes
             text = args[1]
-            # Füge die Nachricht in die net_to_cli_queue ein
+            # Weiterleiten der Nachricht an die CLI über die IPC-Queue
             net_to_cli_queue.put(('MSG', from_handle, text))
 
-        # Verarbeite die empfangene Bildnachricht
+        # Verarbeiten eines Bild-Kommandos (IMG)
         elif cmd == 'IMG' and len(args) == 2:
-            # Wenn die Nachricht ein IMG-Kommando ist, extrahiere den Absender und die Größe des Bildes
+            # Extrahieren von Absender und erwarteter Bildgröße
             from_handle = args[0]
-            # Extrahiere die Größe des Bildes, die im zweiten Argument enthalten ist
             size = int(args[1])
-            # Empfange Raw-Binärdaten
+
+            # Empfang des Bilddatenstroms mit erwarteter Größe
             img_data, _ = sock.recvfrom(size)
-            # Wenn die empfangenen Daten nicht der erwarteten Größe entsprechen, überspringe die Verarbeitung
+
+            # Erstellen eines einzigartigen Dateinamens basierend auf Handle und Zeitstempel
             filename = f"{from_handle}_{int(time.time())}.jpg"
-            # Erstelle den vollständigen Dateipfad für das Bild
             filepath = os.path.join(imagepath, filename)
-            # Speichere die empfangenen Bilddaten in der Datei
+
+            # Speichern des empfangenen Bildes in die Zieldatei
             with open(filepath, 'wb') as f:
-            # Öffne die Datei im Binärmodus und schreibe die empfangenen Bilddaten hinein
                 f.write(img_data)
+
+            # Übermittlung des Bildpfads an die CLI
             net_to_cli_queue.put(('IMG', from_handle, filepath))
 
 """
-Test Main-Funktion zum Testen des Servers
+Test-Main-Funktion zum Starten des Servers direkt (z. B. zu Debug-Zwecken)
+
+Hinweis: Die Konfiguration wird aus der Datei 'config.toml' geladen,
+die IPC-Queues werden lokal erstellt und an server_loop() übergeben.
 
 if __name__ == '__main__':
     config = toml.load('config.toml')
