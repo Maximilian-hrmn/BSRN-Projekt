@@ -4,6 +4,7 @@ import cmd
 import threading
 import time
 import queue
+import socket
 from client import client_send_join, client_send_leave, client_send_who, client_send_msg, client_send_img
 
 # Timeout für Auto-Reply (in Sekunden) – bleibt vorerst fest im Code, kann aber auch in config ausgelagert werden
@@ -77,21 +78,23 @@ class ChatCLI(cmd.Cmd):
     # … alle do_*-Methoden setzen self.last_activity zurück (nicht verändert) …
 
     def do_join(self, arg):
-        """join <username> <port>  –  Tritt dem Netzwerk bei."""
+        """join <username>  –  Tritt dem Netzwerk bei. Port wird automatisch vergeben."""
         self.last_activity = time.time()
         if self.joined:
             print("Du bist bereits eingeloggt. Zuerst 'leave', bevor du 'join' ausführst.")
             return
         parts = arg.split()
-        if len(parts) != 2:
-            print("Usage: join <username> <port>")
+        if len(parts) != 1:
+            print("Usage: join <username>")
             return
-        handle, port_str = parts
-        try:
-            port = int(port_str)
-        except ValueError:
-            print("Port muss eine Zahl sein.")
-            return
+        handle = parts[0]
+
+        # freien TCP-Port wählen
+        tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tmp_sock.bind(("", 0))
+        port = tmp_sock.getsockname()[1]
+        tmp_sock.close()
+
         self.config['handle'] = handle
         self.config['port'] = port
         if self.cli_to_net:
@@ -222,7 +225,7 @@ class ChatCLI(cmd.Cmd):
             return
         cmd = parts[0].lower()
         valid_cmds = {
-            'join': "Usage: join <username> <port>",
+            'join': "Usage: join <username>",
             'leave': "Usage: leave",
             'who': "Usage: who",
             'msg': "Usage: msg <user> <text>",

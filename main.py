@@ -25,8 +25,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     config = toml.load('config.toml')
-    if args.port:
+    if args.port is not None:
         config['port'] = args.port
+    else:
+        config['port'] = 0
     if args.broadcast:
         config['broadcast'] = args.broadcast
     if args.whoisport:
@@ -43,6 +45,7 @@ if __name__ == '__main__':
     disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
     disc_proc.daemon = True
     disc_proc.start()
+    print("Discovery-Service gestartet")
 
     # Server/Network als eigener Process
     net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net))

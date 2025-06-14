@@ -11,7 +11,7 @@ Client-Funktionen (Network-Sender):
 - Fallback auf localhost nur, wenn die Broadcast-Adresse bereits im
   Loopback-Bereich liegt, um unbeabsichtigtes Selbst-Senden im LAN zu
   vermeiden.
-- Unicast (MSG/IMG) an target_host:target_port
+- Unicast (MSG/IMG) an target_host:target_port erfolgt jetzt per TCP.
 """
 
 def _send_discovery(msg: bytes, config: dict) -> None:
@@ -53,21 +53,20 @@ def client_send_leave(config):
 
 #Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port
 def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    data = build_msg(from_handle, text)
-    sock.sendto(data, (target_host, target_port))
-    sock.close()
+    """Sende eine Textnachricht über TCP."""
+    with socket.create_connection((target_host, target_port)) as sock:
+        data = build_msg(from_handle, text)
+        sock.sendall(data)
     
 #Funktion zum Senden eines Bildes an einen bestimmten Host und Port
 def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
+    """Sende eine Bildnachricht über TCP."""
     if not os.path.isfile(img_path):
         return False
     size = os.path.getsize(img_path)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    header = build_img(from_handle, size)
-    sock.sendto(header, (target_host, target_port))
-    with open(img_path, 'rb') as f:
-        data = f.read()
-        sock.sendto(data, (target_host, target_port))
-    sock.close()
+    with socket.create_connection((target_host, target_port)) as sock:
+        header = build_img(from_handle, size)
+        sock.sendall(header)
+        with open(img_path, 'rb') as f:
+            sock.sendall(f.read())
     return True
