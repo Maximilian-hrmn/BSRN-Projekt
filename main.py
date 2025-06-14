@@ -1,10 +1,10 @@
 # File: main.py
 
-import toml
-from multiprocessing import Process, Queue
-import discovery_service
-import server
-from cli import ChatCLI
+import toml # Importiere die TOML-Bibliothek zum Laden der Konfiguration
+from multiprocessing import Process, Queue # Importiere die Multiprocessing-Bibliothek für parallele Prozesse
+import discovery_service # Importiere den Discovery-Service
+import server # Importiere den Server/Network-Empfang
+from cli import ChatCLI # Importiere die ChatCLI-Klasse für die Kommandozeilen-Schnittstelle
 
 """
 Main Entry Point:
