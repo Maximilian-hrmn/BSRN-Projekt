@@ -127,22 +127,22 @@ class ChatCLI(cmd.Cmd):
         for h, (hhost, hport) in self.peers.items(): # Iteriere über die Peer-Liste
             print(f"  {h} @ {hhost}:{hport}") # Ausgabe jedes Nutzers mit Host und Port
 
-    def do_msg(self, arg):
-        """msg <user> <text>  –  Sendet eine Textnachricht an <user>."""
-        self.last_activity = time.time()
-        if not self.joined:
-            print("Zuerst 'join', bevor du 'msg' ausführst.")
-            return
-        parts = arg.split(" ", 1)
-        if len(parts) != 2:
-            print("Usage: msg <user> <text>")
-            return
-        target, text = parts
-        if target in self.peers:
-            thost, tport = self.peers[target]
-            client_send_msg(thost, tport, self.config['handle'], text)
-        else:
-            print("Unbekannter Nutzer.")
+    def do_msg(self, arg): # Befehl zum Senden einer Nachricht an einen bestimmten Nutzer
+        """msg <user> <text>  –  Sendet eine Textnachricht an <user>.""" # Dokumentation des Befehls
+        self.last_activity = time.time() # Verhindert Auto-Reply, wenn der Nutzer aktiv ist
+        if not self.joined: # Überprüfen, ob der Nutzer bereits dem Chat beigetreten ist
+            print("Zuerst 'join', bevor du 'msg' ausführst.") # Fehlermeldung, wenn der Nutzer nicht eingeloggt ist
+            return # Wenn der Nutzer nicht eingeloggt ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        parts = arg.split(" ", 1) # Zerlegt die Eingabe in Zielnutzer und Nachricht
+        if len(parts) != 2: # Überprüfen, ob genau zwei Teile vorhanden sind
+            print("Usage: msg <user> <text>") # Fehlermeldung, wenn die Eingabe nicht korrekt ist
+            return # Wenn die Eingabe nicht korrekt ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        target, text = parts # Teile die Eingabe in Zielnutzer und Text auf
+        if target in self.peers: # Nachricht nur senden, wenn Zielnutzer bekannt ist
+            thost, tport = self.peers[target] # Hole die Host- und Port-Informationen des Zielnutzers
+            client_send_msg(thost, tport, self.config['handle'], text) # Sende die Nachricht an IP/Port des Zielnutzers
+        else: # Wenn der Zielnutzer nicht in der Peer-Liste ist
+            print("Unbekannter Nutzer.") # Fehlermeldung, wenn der Zielnutzer nicht bekannt ist
 
     # Die do_msgall-Methode sendet eine Nachricht an alle Peers im Chat
     def do_msgall(self, arg):
@@ -204,7 +204,7 @@ class ChatCLI(cmd.Cmd):
         # Wenn der Zielnutzer nicht in der Peer-Liste ist, wird eine Fehlermeldung ausgegeben
         else:
             print("Unbekannter Nutzer.")
-    # Die do_show_config-Methode zeigt die aktuelle Konfiguration an
+
     def do_show_config(self, arg):
         """show_config  –  Zeigt die aktuelle Konfiguration an."""
         self.last_activity = time.time()
