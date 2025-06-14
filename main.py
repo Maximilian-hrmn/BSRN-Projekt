@@ -5,7 +5,7 @@ from multiprocessing import Process, Queue
 import discovery_service
 import server
 from cli import ChatCLI
-from multiprocessing import Process, Queue, set_start_method
+from multiprocessing import Process, Queue
 
 """
 Main Entry Point:
@@ -18,7 +18,6 @@ Main Entry Point:
 """
 
 if __name__ == '__main__':
-    set_start_method('spawn', force=True)
     config = toml.load('config.toml')
     
 
