@@ -144,19 +144,27 @@ class ChatCLI(cmd.Cmd):
         else:
             print("Unbekannter Nutzer.")
 
+    # Die do_msgall-Methode sendet eine Nachricht an alle Peers im Chat
     def do_msgall(self, arg):
+        # Text der gezeigt wird wenn man nur msggall eingibt -> zeigt die Syntax an
         """msgall <text>  –  Sendet eine Textnachricht an alle aktuell im Chat befindlichen Nutzer."""
+        # Aktualisiert den Zeitpunkt der letzten Aktivität
         self.last_activity = time.time()
+        # Überprüft, ob der Nutzer bereits dem Chat beigetreten ist
         if not self.joined:
             print("Zuerst 'join', bevor du 'msgall' ausführst.")
             return
+        # Überprüft, ob der Text angegeben wurde
         text = arg.strip()
+        # Wenn kein Text angegeben wurde, wird die korrekte Syntax angezeigt
         if not text:
             print("Usage: msgall <text>")
             return
+        # Überprüft, ob es andere Peers im Chat gibt
         if not self.peers:
             print("Keine anderen Peers im Chat.")
             return
+        
 
         for peer_handle, (phost, pport) in self.peers.items():
             try:
