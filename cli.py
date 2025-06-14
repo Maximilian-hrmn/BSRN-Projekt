@@ -78,54 +78,54 @@ class ChatCLI(cmd.Cmd):
 
     # … alle do_*-Methoden setzen self.last_activity zurück (nicht verändert) …
 
-    def do_join(self, arg):
-        """join <username> <port>  –  Tritt dem Netzwerk bei."""
-        self.last_activity = time.time()
-        if self.joined:
-            print("Du bist bereits eingeloggt. Zuerst 'leave', bevor du 'join' ausführst.")
-            return
-        parts = arg.split()
-        if len(parts) != 2:
-            print("Usage: join <username> <port>")
-            return
-        handle, port_str = parts
-        try:
-            port = int(port_str)
-        except ValueError:
-            print("Port muss eine Zahl sein.")
-            return
-        self.config['handle'] = handle
-        self.config['port'] = port
-        if self.cli_to_net:
-            self.cli_to_net.put(('SET_PORT', port))
-        client_send_join(self.config)
-        self.joined = True
-        print(f"Eingetreten als {handle} auf Port {port}")
+    def do_join(self, arg): # Befehl zum Beitreten des Netzwerks
+        """join <username> <port>  –  Tritt dem Netzwerk bei.""" # Dokumentation des Befehls
+        self.last_activity = time.time() # Zeitpunkt der letzten Aktivität aktualisieren
+        if self.joined: # Überprüfen, ob der Nutzer bereits eingeloggt ist
+            print("Du bist bereits eingeloggt. Zuerst 'leave', bevor du 'join' ausführst.") # Fehlermeldung, bei bereits bestehender Verbindung
+            return # Wenn der Nutzer bereits eingeloggt ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        parts = arg.split() # Teile den Eingabe-String in Teile auf 
+        if len(parts) != 2: # Überprüfen, ob genau 2 Teile vorhanden sind (Benutzername und Port)
+            print("Usage: join <username> <port>")  # Fehlermeldung, wenn die Eingabe nicht korrekt ist
+            return # Wenn die Eingabe nicht korrekt ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        handle, port_str = parts # Teile die Eingabe in Benutzername und Port auf
+        try: # Versuche, den Port in eine Ganzzahl umzuwandeln
+            port = int(port_str) # Port in Ganzzahl umwandeln
+        except ValueError: # Wenn die Umwandlung fehlschlägt
+            print("Port muss eine Zahl sein.") # Fehlermeldung, wenn der Port keine Zahl ist
+            return # Wenn der Port keine Zahl ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        self.config['handle'] = handle # Speichert den Benutzernamen, damit er in zukünfitgen Nachrichten verwendet werden kann
+        self.config['port'] = port # Setze den Port in der Konfiguration
+        if self.cli_to_net: # Wenn die Queue für CLI zu Network existiert
+            self.cli_to_net.put(('SET_PORT', port)) # Sende den Port an den Network-Prozess
+        client_send_join(self.config) # Informiert das Netzwerk über den neuen Teilnehmer (per JOIN-Nachricht)
+        self.joined = True # Setze den Beitrittsstatus auf True
+        print(f"Eingetreten als {handle} auf Port {port}") # Ausgabe der Bestätigung, dass der Nutzer dem Netzwerk beigetreten ist
 
-    def do_leave(self, arg):
-        """leave  –  Verlässt das Netzwerk."""
-        self.last_activity = time.time()
-        if not self.joined:
-            print("Du bist nicht eingeloggt.")
-            return
-        client_send_leave(self.config)
-        self.joined = False
-        print("Du hast das Netzwerk verlassen.")
+    def do_leave(self, arg): # Befehl zum Verlassen des Netzwerks
+        """leave  –  Verlässt das Netzwerk.""" # Dokumentation des Befehls
+        self.last_activity = time.time() # Zeitpunkt der letzten Aktivität aktualisieren
+        if not self.joined: # Überprüfen, ob der Nutzer eingeloggt ist
+            print("Du bist nicht eingeloggt.") # Fehlermeldung, wenn der Nutzer nicht eingeloggt ist
+            return # Wenn der Nutzer nicht eingeloggt ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        client_send_leave(self.config) # Sende eine Abmeldung an alle Peers, damit sie diesen Benutzer aus ihrer Liste entfernen
+        self.joined = False # Setze den Beitrittsstatus auf False
+        print("Du hast das Netzwerk verlassen.") # Ausgabe der Bestätigung, dass der Nutzer das Netzwerk verlassen hat
 
-    def do_who(self, arg):
-        """who  –  Fragt die Peer-Liste ab und zeigt sie an."""
-        self.last_activity = time.time()
-        if not self.joined:
-            print("Zuerst 'join', bevor du 'who' ausführst.")
-            return
-        client_send_who(self.config)
-        time.sleep(0.2)
-        if not self.peers:
-            print("Keine Peers gefunden.")
-            return
-        print("Bekannte Nutzer:")
-        for h, (hhost, hport) in self.peers.items():
-            print(f"  {h} @ {hhost}:{hport}")
+    def do_who(self, arg): # Befehl zum Abfragen der Peer-Liste
+        """who  –  Fragt die Peer-Liste ab und zeigt sie an.""" # Dokumentation des Befehls
+        self.last_activity = time.time() # Zeitpunkt der letzten Aktivität aktualisieren
+        if not self.joined: # Überprüfen, ob der Nutzer eingeloggt ist
+            print("Zuerst 'join', bevor du 'who' ausführst.") # Fehlermeldung, wenn der Nutzer nicht eingeloggt ist
+            return # Wenn der Nutzer nicht eingeloggt ist, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        client_send_who(self.config) # Fordert andere Teilnehmer im Netzwerk auf, sich vorzustellen (Antwort: 'iam')
+        time.sleep(0.2) # Warten, bis Rückmeldung (iam) eingetroffen sind
+        if not self.peers: # Überprüfen, ob die Peer-Liste leer ist
+            print("Keine Peers gefunden.") # Fehlermeldung, wenn keine Peers gefunden wurden
+            return # Wenn keine Peers gefunden wurden, wird eine Fehlermeldung ausgegeben und die Methode beendet
+        print("Bekannte Nutzer:") # Ausgabe der bekannten Nutzer
+        for h, (hhost, hport) in self.peers.items(): # Iteriere über die Peer-Liste
+            print(f"  {h} @ {hhost}:{hport}") # Ausgabe jedes Nutzers mit Host und Port
 
     def do_msg(self, arg):
         """msg <user> <text>  –  Sendet eine Textnachricht an <user>."""
