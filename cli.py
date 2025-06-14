@@ -5,6 +5,7 @@ import threading
 import time
 import queue
 import socket
+import random
 from client import client_send_join, client_send_leave, client_send_who, client_send_msg, client_send_img
 
 # Timeout für Auto-Reply (in Sekunden) – bleibt vorerst fest im Code, kann aber auch in config ausgelagert werden
@@ -30,6 +31,33 @@ class ChatCLI(cmd.Cmd):
         self._stop_event = threading.Event()
         self._poll_thread = threading.Thread(target=self._poll_queues, daemon=True)
         self._poll_thread.start()
+
+    def _choose_port(self) -> int:
+        """Wählt einen freien TCP-Port aus der Konfiguration.
+
+        Ist in ``config['auto_ports']`` eine Liste mit Ports angegeben, wird der
+        erste freie aus dieser Liste verwendet. Andernfalls (oder falls keiner
+        verfügbar ist) wird ein zufälliger freier Port gewählt.
+        """
+        ports = self.config.get('auto_ports', [])
+        if isinstance(ports, list) and ports:
+            ports = list(ports)
+            random.shuffle(ports)
+            for p in ports:
+                tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                try:
+                    tmp.bind(("", int(p)))
+                    tmp.close()
+                    return int(p)
+                except OSError:
+                    tmp.close()
+                    continue
+            print("Keiner der angegebenen Ports war frei. Wähle zufälligen Port.")
+        tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tmp.bind(("", 0))
+        port = tmp.getsockname()[1]
+        tmp.close()
+        return port
 
     def _poll_queues(self):
         while not self._stop_event.is_set():
@@ -89,11 +117,8 @@ class ChatCLI(cmd.Cmd):
             return
         handle = parts[0]
 
-        # freien TCP-Port wählen
-        tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        tmp_sock.bind(("", 0))
-        port = tmp_sock.getsockname()[1]
-        tmp_sock.close()
+        # freien TCP-Port wählen (ggf. aus vordefinierter Liste)
+        port = self._choose_port()
 
         self.config['handle'] = handle
         self.config['port'] = port

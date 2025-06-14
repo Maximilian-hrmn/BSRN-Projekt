@@ -6,6 +6,11 @@ handle    = "user_name"
 # Client-Server-UDP-Port dieses Rechners (z. B. 5001 oder 5002)
 port      = 5005
 
+# Liste möglicher TCP-Ports, die beim Beitreten verwendet werden dürfen.
+# Ist keine Liste angegeben oder sie ist leer, wählt der Client automatisch
+# einen freien Port.
+auto_ports = [5005, 5006, 5007]
+
 # SLCP-Discovery-Port (muss auf allen Peers gleich sein, z. B. 4000)
 whoisport = 4000
 
