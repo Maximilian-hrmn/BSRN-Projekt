@@ -34,7 +34,7 @@ if __name__ == '__main__':
     disc_proc.start()
 
     # Server/Network als eigener Process
-    net_proc = Process(target=server.server_loop, args=(config, net_to_cli))
+    net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net))
     net_proc.daemon = True
     net_proc.start()
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         startGui(config, net_to_cli, disc_to_cli)
     else:
         # Fallback zu CLI
-        cli = ChatCLI(config, net_to_cli, disc_to_cli)
+        cli = ChatCLI(config, net_to_cli, disc_to_cli, cli_to_net)
         try:
             cli.cmdloop()
         except KeyboardInterrupt:

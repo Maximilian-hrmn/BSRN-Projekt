@@ -13,11 +13,12 @@ class ChatCLI(cmd.Cmd):
     intro = "Willkommen zum Peer-to-Peer Chat. Tippe 'help', um alle Befehle zu sehen."
     prompt = "> "
 
-    def __init__(self, config, net_to_cli_queue, disc_to_cli_queue):
+    def __init__(self, config, net_to_cli_queue, disc_to_cli_queue, cli_to_net_queue):
         super().__init__()
         self.config = config
         self.net_to_cli = net_to_cli_queue
         self.disc_to_cli = disc_to_cli_queue
+        self.cli_to_net = cli_to_net_queue
         self.joined = False
         self.peers = {}
 
@@ -93,6 +94,8 @@ class ChatCLI(cmd.Cmd):
             return
         self.config['handle'] = handle
         self.config['port'] = port
+        if self.cli_to_net:
+            self.cli_to_net.put(('SET_PORT', port))
         client_send_join(self.config)
         self.joined = True
         print(f"Eingetreten als {handle} auf Port {port}")
