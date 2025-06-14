@@ -35,6 +35,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
         return s
 
     sock = bind_socket(current_port)
+    sock.settimeout(0.5)
 
     while True:
         if cli_to_net_queue is not None:
@@ -45,11 +46,15 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
                     if new_port != current_port:
                         sock.close()
                         sock = bind_socket(new_port)
+                        sock.settimeout(0.5)
                         current_port = new_port
             except queue.Empty:
                 pass
 
-        conn, _ = sock.accept()
+        try:
+            conn, _ = sock.accept()
+        except socket.timeout:
+            continue
         with conn:
             f = conn.makefile('rb')
             line = f.readline().decode('utf-8', errors='ignore')
