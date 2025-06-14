@@ -1,5 +1,6 @@
 # File: main.py
 
+import argparse
 import toml
 from multiprocessing import Process, Queue
 import discovery_service
@@ -17,7 +18,13 @@ Main Entry Point:
 """
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Start chat client")
+    parser.add_argument("--port", type=int, help="UDP port for this client")
+    args = parser.parse_args()
+
     config = toml.load('config.toml')
+    if args.port:
+        config['port'] = args.port
     
 
     # IPC-Queues

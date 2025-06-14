@@ -22,10 +22,13 @@ def discovery_loop(config, cli_queue):
 
     # Erstellt einen UDP-Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
+
     # Setze SO_REUSEADDR, damit der Socket sofort wieder genutzt werden kann,
-    # falls er kürzlich geschlossen wurde.
+    # falls er kürzlich geschlossen wurde. Zusätzlich SO_REUSEPORT, um mehrere
+    # Clients auf dem gleichen Discovery-Port zu erlauben.
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    if hasattr(socket, "SO_REUSEPORT"):
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     
     # Binde den Socket an alle verfügbaren Netzwerkschnittstellen und den Discovery-Port.
     sock.bind(("", whoisport))
