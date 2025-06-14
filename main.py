@@ -20,11 +20,17 @@ Main Entry Point:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Start chat client")
     parser.add_argument("--port", type=int, help="UDP port for this client")
+    parser.add_argument("--broadcast", help="Broadcast address for discovery")
+    parser.add_argument("--whoisport", type=int, help="Port for discovery service")
     args = parser.parse_args()
 
     config = toml.load('config.toml')
     if args.port:
         config['port'] = args.port
+    if args.broadcast:
+        config['broadcast'] = args.broadcast
+    if args.whoisport:
+        config['whoisport'] = args.whoisport
     
 
     # IPC-Queues

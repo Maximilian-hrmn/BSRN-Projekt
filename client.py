@@ -19,7 +19,7 @@ def _send_discovery(msg: bytes, config: dict) -> None:
     try:
         sock.sendto(msg, (config['broadcast'], config['whoisport']))
     except OSError as e:
-        # Fallback if broadcast is not available (e.g. network unreachable)
+        # Fallback if broadcast is not available (network unreachable)
         if e.errno == 101:
             sock.sendto(msg, ("127.0.0.1", config['whoisport']))
         else:

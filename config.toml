@@ -10,7 +10,7 @@ port      = 5005
 whoisport = 4000
 
 # Broadcast-Adresse des lokalen LAN-Subnetzes (z. B. 192.168.1.255 oder 10.0.0.255)
-broadcast = "127.255.255.255"
+broadcast = "255.255.255.255"
 
 # Pfad, wo empfangene Bilder gespeichert werden
 imagepath = "./images"

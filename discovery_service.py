@@ -55,10 +55,11 @@ def discovery_loop(config, cli_queue):
             peers[new_handle] = (addr[0], new_port)
             # Erstellt eine Antwortnachricht (KNOWUSERS), die alle bekannten Peers enthält.
             response = build_knowusers(peers)
-            # Sende die Antwort per Broadcast, damit alle lokalen Instanzen die
-            # Peerliste aktualisieren.
+            # Sende die Antwort per Broadcast, damit alle Instanzen aktualisieren
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             sock.sendto(response, (config['broadcast'], whoisport))
+            # Zusätzlich die Liste direkt an den neuen Peer schicken
+            sock.sendto(response, (addr[0], whoisport))
 
         # Verarbeitet den "WHO"-Befehl
         elif cmd == 'WHO':
