@@ -15,7 +15,7 @@ Der Discovery-Service verwendet standardmäßig den gleichen `whoisport` für al
 
 ## Peer-to-Peer im Netzwerk
 
-Sollen sich Clients auf unterschiedlichen Rechnern finden, muss die Broadcast-Adresse auf das LAN angepasst werden. Gib sie entweder in der Konfiguration an oder direkt beim Starten:
+Sollen sich Clients auf unterschiedlichen Rechnern finden, muss die Broadcast-Adresse auf das LAN angepasst werden. Gib sie entweder in der Konfiguration an oder direkt beim Starten. Achte darauf, keine Loopback-Adresse (`127.x.x.x`) zu verwenden, da sonst alle Peers ihre eigene Adresse melden:
 
 ```bash
 python3 main.py --port 5001 --broadcast 192.168.1.255

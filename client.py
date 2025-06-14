@@ -7,20 +7,28 @@ import os
 """
 Client-Funktionen (Network-Sender):
 
-- Broadcast (JOIN/WHO/LEAVE) an config['broadcast']:config['whoisport']
-  (fällt bei Bedarf auf localhost zurück)
+- Broadcast (JOIN/WHO/LEAVE) an config['broadcast']:config['whoisport'].
+- Fallback auf localhost nur, wenn die Broadcast-Adresse bereits im
+  Loopback-Bereich liegt, um unbeabsichtigtes Selbst-Senden im LAN zu
+  vermeiden.
 - Unicast (MSG/IMG) an target_host:target_port
 """
 
 def _send_discovery(msg: bytes, config: dict) -> None:
-    """Send a discovery message via broadcast with localhost fallback."""
+    """Send a discovery message via broadcast.
+
+    Fällt nur dann auf 127.0.0.1 zurück, wenn die konfigurierte
+    Broadcast-Adresse selbst im 127.0.0.0/8-Netz liegt. Dadurch wird
+    vermieden, dass Peers im LAN versehentlich die localhost-Adresse
+    austauschen und Nachrichten an sich selbst schicken.
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     try:
         sock.sendto(msg, (config['broadcast'], config['whoisport']))
     except OSError as e:
-        # Fallback if broadcast is not available (network unreachable)
-        if e.errno == 101:
+        # Fallback nur bei lokalen Broadcast-Adressen verwenden
+        if e.errno == 101 and config['broadcast'].startswith('127.'):
             sock.sendto(msg, ("127.0.0.1", config['whoisport']))
         else:
             raise
