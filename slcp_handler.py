@@ -8,17 +8,14 @@ aufzubauen und einzeln zu parsen.
 Als erstes werden Methoden erstellt, die Nachrichten im SLCP-Format formatieren. 
 Die letzte Methode `parse_slcp_line` parst eine einzelne SLCP-Zeile in Befehl und Argumente.
 
-"""
 
-
-"""
 Ein normaler String ist nicht bereit für den Transport im Netzwerk und muss daher in Bytes umgewandelt werden.
 Netzwerke wie UDP  und TCP nehmen nur Bytes entgegen und können keine Textobjekte verarbeiten, daher müssen alle Nachrichten in Bytes umgewandelt werden.
 Das umwandeln der Strings in Bytes erfolgt mit der `.encode`-Methode, die einen String in Bytes umwandelt und dabei eine Kodierung angibt, in diesem Fall 'utf-8'.
 Jede Methode hat als Rückgabewert das finale Format der SLCP Nachricht als Bytes. 
 """
 
-def build_join(handle: str, port: int) -> bytes: 
+def build_join(handle: str, port: int) -> bytes: # Da .encode ein Byte Objekt erzeugt wird hier der Rückgabetyp als bytes angegeben.
     """Erzeugt eine JOIN-Nachricht."""
     return f"JOIN {handle} {port}\n".encode('utf-8') 
 
