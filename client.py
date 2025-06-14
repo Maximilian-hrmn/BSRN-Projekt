@@ -11,7 +11,7 @@ Dieses Modul stellt Funktionen bereit, um verschiedene SLCP-Nachrichten (JOIN, W
 über UDP zu versenden.
 
 - Broadcast (JOIN/WHO/LEAVE) wird an config['broadcast']:config['whoisport'] gesendet.
-- Unicast (MSG/IMG) wird direkt an target_host:target_port gesendet.
+- Unicast (MSG/IMG) wird direkt an target_host:target_port gesendet. 
 """
 
 # Funktion zum Senden einer JOIN-Nachricht an alle Clients im Netzwerk

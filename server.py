@@ -100,7 +100,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
             net_to_cli_queue.put(('IMG', from_handle, filepath))
 
 """
-Test-Main-Funktion zum Starten des Servers direkt (z. B. zu Debug-Zwecken)
+Test-Main-Funktion zum Starten des Servers direkt (z.B. zu Debug-Zwecken)
 
 Hinweis: Die Konfiguration wird aus der Datei 'config.toml' geladen,
 die IPC-Queues werden lokal erstellt und an server_loop() übergeben.
