@@ -165,7 +165,7 @@ class ChatCLI(cmd.Cmd):
             print("Keine anderen Peers im Chat.")
             return
         
-
+        
         for peer_handle, (phost, pport) in self.peers.items():
             try:
                 client_send_msg(phost, pport, self.config['handle'], text)
@@ -173,22 +173,35 @@ class ChatCLI(cmd.Cmd):
                 print(f"Fehler beim Senden an {peer_handle}: {e}")
         print("Nachricht an alle gesendet.")
 
+    # Die do_img-Methode sendet ein Bild an einen bestimmten Nutzer
     def do_img(self, arg):
+        # Die Syntax für den Befehl, wenn nur "img" eingegeben wird
         """img <user> <pfad>  –  Sendet ein Bild an <user>."""
+        # Aktualisiert den Zeitpunkt der letzten Aktivität
         self.last_activity = time.time()
+        # Überprüft, ob der Nutzer bereits dem Chat beigetreten ist
         if not self.joined:
             print("Zuerst 'join', bevor du 'img' ausführst.")
             return
+        # Überprüft, ob der Argument-String leer ist
         parts = arg.split(" ", 1)
+        # Wenn nicht genau zwei Teile vorhanden sind, wird die korrekte Syntax angezeigt
         if len(parts) != 2:
             print("Usage: img <user> <pfad>")
             return
+        # Extrahiert den Zielnutzer und den Pfad zur Bilddatei
         target, path = parts
+        # Überprüft, ob der Zielnutzer in der Peer-Liste vorhanden ist
         if target in self.peers:
+            # Holt die Host- und Port-Informationen des Zielnutzers
             thost, tport = self.peers[target]
+            # Versucht, das Bild zu senden
             success = client_send_img(thost, tport, self.config['handle'], path)
+            # Wenn das Senden erfolgreich war, wird eine Bestätigung ausgegeben
+            # andernfalls wird eine Fehlermeldung angezeigt
             if not success:
                 print("Datei nicht gefunden.")
+        # Wenn der Zielnutzer nicht in der Peer-Liste ist, wird eine Fehlermeldung ausgegeben
         else:
             print("Unbekannter Nutzer.")
 
