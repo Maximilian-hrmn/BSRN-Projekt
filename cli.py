@@ -30,49 +30,48 @@ class ChatCLI(cmd.Cmd):
         self._poll_thread = threading.Thread(target=self._poll_queues, daemon=True)
         self._poll_thread.start()
 
-    def _poll_queues(self):
-        while not self._stop_event.is_set():
-            now = time.time()
+    def _poll_queues(self): # Polling-Thread, der Nachrichten und Peer-Updates abholt
+        while not self._stop_event.is_set(): # Polling-Schleife 
+            now = time.time() # Aktueller Zeitpunkt
 
             # 1. Eingehende Chat-Nachrichten abholen
             try:
-                msg = self.net_to_cli.get_nowait()
-                if msg[0] == 'MSG':
-                    from_handle = msg[1]
-                    text = msg[2]
+                msg = self.net_to_cli.get_nowait() # Abfrage der Nachrichten-Queue
+                if msg[0] == 'MSG': # Nachricht empfangen
+                    from_handle = msg[1] # Absender der Nachricht
+                    text = msg[2] # Text der Nachricht
 
                     # Auto-Reply, falls Nutzer länger als AWAY_TIMEOUT “away” ist
                     if now - self.last_activity > AWAY_TIMEOUT and self.joined:
-                        # Die Auto-Reply-Nachricht aus der Konfigurationsdatei auslesen
-                        # (siehe config.toml: autoreply = "…") :contentReference[oaicite:0]{index=0}
-                        auto_msg = self.config.get('autoreply', None)
-                        if auto_msg and from_handle in self.peers:
-                            thost, tport = self.peers[from_handle]
-                            client_send_msg(thost, tport, self.config['handle'], auto_msg)
+                        # Hole Auto-Reply-Nachricht aus der geladenen Konfiguration (siehe config.toml: autoreply = "...")
+                        auto_msg = self.config.get('autoreply', None) # Auto-Reply-Nachricht aus der Konfiguration
+                        if auto_msg and from_handle in self.peers: # Nur senden, wenn der Absender bekannt ist
+                            thost, tport = self.peers[from_handle] # Hole Host und Port des Absenders
+                            client_send_msg(thost, tport, self.config['handle'], auto_msg) # Sende Auto-Reply-Nachricht
 
                     # Ausgabe der eigentlichen Nachricht
                     print(f"\n[Nachricht von {from_handle}]: {text}")
 
-                elif msg[0] == 'IMG':
-                    from_handle = msg[1]
-                    filepath = msg[2]
-                    print(f"\n[Bild empfangen von {from_handle}]: gespeichert als {filepath}")
+                elif msg[0] == 'IMG': # Bild empfangen
+                    from_handle = msg[1] # Absender des Bildes
+                    filepath = msg[2] # Dateipfad, wo das Bild gespeichert wurde
+                    print(f"\n[Bild empfangen von {from_handle}]: gespeichert als {filepath}") # Ausgabe des Dateipfads
 
-                # Prompt wieder anzeigen
-                print(self.prompt, end='', flush=True)
+                # Prompt erneut anzeigen, damit Benutzer nach eingehender Nachricht weiterschreiben kann
+                print(self.prompt, end='', flush=True) 
 
             except queue.Empty:
-                pass
+                pass # Weiter mit der nächsten Iteration
 
             # 2. Updates der Peer-Liste abholen
             try:
-                dmsg = self.disc_to_cli.get_nowait()
-                if dmsg[0] == 'PEERS':
-                    self.peers = dmsg[1]
-            except queue.Empty:
-                pass
+                dmsg = self.disc_to_cli.get_nowait() # Abfrage der Discovery-Service-Queue
+                if dmsg[0] == 'PEERS': # Peer-Update empfangen
+                    self.peers = dmsg[1] # Aktualisiere die Peer-Liste
+            except queue.Empty: # Keine neuen Peer-Updates
+                pass # Weiter mit der nächsten Iteration
 
-            time.sleep(0.1)
+            time.sleep(0.1) # Kurze Pause, um CPU-Last zu reduzieren
 
     # … alle do_*-Methoden setzen self.last_activity zurück (nicht verändert) …
 
