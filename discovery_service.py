@@ -6,10 +6,10 @@ import toml
 
 """
 Discovery Service:
-- Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
-- Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE.
-- Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
-- Sendet KNOWUSERS-Antworten per Unicast an anfragende Peers.
+ - Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
+ - Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE und KNOWUSERS.
+ - Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
+ - Sendet KNOWUSERS-Antworten per Broadcast an alle Peers.
 """
 
 def discovery_loop(config, cli_queue):
@@ -22,13 +22,18 @@ def discovery_loop(config, cli_queue):
 
     # Erstellt einen UDP-Socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
+
     # Setze SO_REUSEADDR, damit der Socket sofort wieder genutzt werden kann,
-    # falls er kürzlich geschlossen wurde.
+    # falls er kürzlich geschlossen wurde. Zusätzlich SO_REUSEPORT, um mehrere
+    # Clients auf dem gleichen Discovery-Port zu erlauben.
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    if hasattr(socket, "SO_REUSEPORT"):
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     
     # Binde den Socket an alle verfügbaren Netzwerkschnittstellen und den Discovery-Port.
     sock.bind(("", whoisport))
+
+    print(f"[Discovery] Service gestartet auf Port {whoisport}")
 
     # Loop, der Discovery-Service hört auf eingehende UDP-Nachrichten.
     while True:
@@ -52,8 +57,11 @@ def discovery_loop(config, cli_queue):
             peers[new_handle] = (addr[0], new_port)
             # Erstellt eine Antwortnachricht (KNOWUSERS), die alle bekannten Peers enthält.
             response = build_knowusers(peers)
-            # Sendet die Antwort per Unicast an den neuen Peer (an seine Adresse und den angegebenen Port).
-            sock.sendto(response, (addr[0], new_port))
+            # Sende die Antwort per Broadcast, damit alle Instanzen aktualisieren
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.sendto(response, (config['broadcast'], whoisport))
+            # Zusätzlich die Liste direkt an den neuen Peer schicken
+            sock.sendto(response, (addr[0], whoisport))
 
         # Verarbeitet den "WHO"-Befehl
         elif cmd == 'WHO':
@@ -61,6 +69,17 @@ def discovery_loop(config, cli_queue):
             response = build_knowusers(peers)
             # Sendet die Antwort an den anfragenden Peer (Adresse in "addr").
             sock.sendto(response, addr)
+
+        # Verarbeite eine KNOWUSERS-Antwort
+        elif cmd == 'KNOWUSERS' and args:
+            # args[0] enthält kommagetrennt alle handle:host:port Einträge
+            entries = args[0].split(',') if args[0] else []
+            for entry in entries:
+                try:
+                    h, host, port_str = entry.split(':')
+                    peers[h] = (host, int(port_str))
+                except ValueError:
+                    continue
 
         # Verarbeite den "LEAVE"-Befehl
         elif cmd == 'LEAVE' and len(args) == 1:
