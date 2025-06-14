@@ -206,13 +206,19 @@ class ChatCLI(cmd.Cmd):
             print("Unbekannter Nutzer.")
     # Die do_show_config-Methode zeigt die aktuelle Konfiguration an
     def do_show_config(self, arg):
+        # Die Syntax für den Befehl, wenn nur "show_config" eingegeben wird
         """show_config  –  Zeigt die aktuelle Konfiguration an."""
+        # Aktualisiert den Zeitpunkt der letzten Aktivität
         self.last_activity = time.time()
+        # Gibt die aktuelle Konfiguration aus
         print(self.config)
 
+    # Die do_set_config-Methode ändert einen Konfigurationsparameter
     def do_set_config(self, arg):
+        # Die Syntax für den Befehl, wenn nur "set_config" eingegeben wird
         """set_config <parameter> <wert>  –  Ändert einen Konfigurationsparameter."""
         self.last_activity = time.time()
+        # Überprüft, ob der Argument-String leer ist
         parts = arg.split(" ", 1)
         if len(parts) != 2:
             print("Usage: set_config <parameter> <wert>")
