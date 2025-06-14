@@ -204,7 +204,7 @@ class ChatCLI(cmd.Cmd):
         # Wenn der Zielnutzer nicht in der Peer-Liste ist, wird eine Fehlermeldung ausgegeben
         else:
             print("Unbekannter Nutzer.")
-
+    # Die do_show_config-Methode zeigt die aktuelle Konfiguration an
     def do_show_config(self, arg):
         """show_config  –  Zeigt die aktuelle Konfiguration an."""
         self.last_activity = time.time()
