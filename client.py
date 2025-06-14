@@ -7,72 +7,89 @@ import os
 """
 Client-Funktionen (Network-Sender):
 
-- Broadcast (JOIN/WHO/LEAVE) an config['broadcast']:config['whoisport']
-- Unicast (MSG/IMG) an target_host:target_port
+Dieses Modul stellt Funktionen bereit, um verschiedene SLCP-Nachrichten (JOIN, WHO, LEAVE, MSG, IMG)
+über UDP zu versenden.
+
+- Broadcast (JOIN/WHO/LEAVE) wird an config['broadcast']:config['whoisport'] gesendet.
+- Unicast (MSG/IMG) wird direkt an target_host:target_port gesendet.
 """
 
-# Funktion zum Senden einer JOIN-Nachricht an den Server
+# Funktion zum Senden einer JOIN-Nachricht an alle Clients im Netzwerk
 def client_send_join(config):
-    # Erstellen eines UDP-Sockets für den Broadcast
+    # Erstellen eines UDP-Sockets für den Broadcast-Versand
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Setzen der Socket-Optionen für Broadcast
+    # Aktivieren des Broadcast-Modus auf dem Socket
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    # Erstellen der JOIN-Nachricht mit dem Handle und Port aus der Konfiguration
+    # Erstellen der JOIN-Nachricht mit Benutzer-Handle und eigenem Port
     msg = build_join(config['handle'], config['port'])
-    # Senden der JOIN-Nachricht an die Broadcast-Adresse und den konfigurierten Port
+    # Versenden der JOIN-Nachricht an die Broadcast-Adresse und den konfigurierten Port
     sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    # Schließen des Sockets nach dem Versand
     sock.close()
 
-# Funktion zum Senden einer WHO-Nachricht an den Server
+# Funktion zum Senden einer WHO-Nachricht (Anfrage nach aktiven Teilnehmern)
 def client_send_who(config):
-    # Erstellen eines UDP-Sockets für den Broadcast
+    # Erstellen eines UDP-Sockets für den Broadcast-Versand
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Setzen der Socket-Optionen für Broadcast
+    # Aktivieren des Broadcast-Modus auf dem Socket
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    # Erstellen der WHO-Nachricht
+    # Erstellen der WHO-Nachricht zur Abfrage aktiver Benutzer
     msg = build_who()
-    # Senden der WHO-Nachricht an die Broadcast-Adresse und den konfigurierten Port
+    # Versenden der WHO-Nachricht an die Broadcast-Adresse und den konfigurierten Port
     sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    # Schließen des Sockets nach dem Versand
     sock.close()
 
-# Funktion zum Senden einer LEAVE-Nachricht an den Server
+# Funktion zum Senden einer LEAVE-Nachricht (Verlassen des Netzwerks)
 def client_send_leave(config):
-    # Erstellen eines UDP-Sockets für den Broadcast
+    # Erstellen eines UDP-Sockets für den Broadcast-Versand
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Setzen der Socket-Optionen für Broadcast
+    # Aktivieren des Broadcast-Modus auf dem Socket
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    # Erstellen der LEAVE-Nachricht mit dem Handle aus der Konfiguration
+    # Erstellen der LEAVE-Nachricht mit dem Handle des Clients
     msg = build_leave(config['handle'])
-    # Senden der LEAVE-Nachricht an die Broadcast-Adresse und den konfigurierten Port
+    # Versenden der LEAVE-Nachricht an die Broadcast-Adresse und den konfigurierten Port
     sock.sendto(msg, (config['broadcast'], config['whoisport']))
+    # Schließen des Sockets nach dem Versand
     sock.close()
 
-#Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port
+# Funktion zum Senden einer MSG-Nachricht (Textnachricht) an einen bestimmten Host und Port
 def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):
-    # Überprüfen, ob der Text leer ist
+    # Erstellen eines UDP-Sockets für den direkten Versand (Unicast)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Wenn der Text leer ist, wird eine leere Nachricht gesendet
+    # Erstellen der Nachricht im SLCP-Format mit Absender-Handle und Nachrichtentext
     data = build_msg(from_handle, text)
-    # Senden der Nachricht an den angegebenen Host und Port
+    # Versenden der Nachricht an den Ziel-Host und -Port
     sock.sendto(data, (target_host, target_port))
+    # Schließen des Sockets nach dem Versand
     sock.close()
-    
-#Funktion zum Senden eines Bildes an einen bestimmten Host und Port
+
+# Funktion zum Senden einer Bilddatei (IMG-Nachricht) an einen bestimmten Host und Port
 def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
-    # Überprüfen, ob der angegebene Pfad zu einer Bilddatei existiert
+    # Überprüfen, ob der angegebene Pfad zu einer Datei existiert
     if not os.path.isfile(img_path):
+        # Abbruch, wenn die Datei nicht existiert
         return False
-    # Überprüfen, ob die Datei eine Bilddatei ist
+
+    # Ermitteln der Dateigröße in Bytes
     size = os.path.getsize(img_path)
-    # Erstellen eines UDP-Sockets für den Unicast
+
+    # Erstellen eines UDP-Sockets für den direkten Versand (Unicast)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # Setzen der Socket-Optionen für Unicast
+
+    # Erstellen des SLCP-Headers für das Bild (Absender + Dateigröße)
     header = build_img(from_handle, size)
-    # Senden des Headers mit dem Handle und der Dateigröße an den angegebenen Host und Port
+    # Versenden des Bild-Headers an den Ziel-Host und -Port
     sock.sendto(header, (target_host, target_port))
-    # Öffnen der Bilddatei im Binärmodus und Senden des Inhalts
+
+    # Öffnen der Bilddatei im Binärmodus und Senden der Bilddaten
     with open(img_path, 'rb') as f:
         data = f.read()
+        # Versenden der Bilddaten direkt nach dem Header
         sock.sendto(data, (target_host, target_port))
+
+    # Schließen des Sockets nach dem Versand
     sock.close()
+
+    # Rückgabe True bei erfolgreichem Versand
     return True
