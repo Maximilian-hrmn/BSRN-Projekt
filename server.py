@@ -16,7 +16,9 @@ Server-Prozess (Network-Empfang):
 """
 
 #Funktion namens `server_loop`, die den Serverprozess implementiert.
-def server_loop(config, net_to_cli_queue):
+import queue
+
+def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
 
     # Stelle sicher, dass der imagepath existiert
     imagepath = config['imagepath']
@@ -24,12 +26,26 @@ def server_loop(config, net_to_cli_queue):
         os.makedirs(imagepath)
 
     # Erstelle einen UDP-Socket
+    current_port = config['port']
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(("", config['port']))
+    sock.bind(("", current_port))
 
-    # Setze den Socket in den Nicht-blockierenden Modus
     while True:
+        if cli_to_net_queue is not None:
+            try:
+                msg = cli_to_net_queue.get_nowait()
+                if msg[0] == 'SET_PORT':
+                    new_port = int(msg[1])
+                    if new_port != current_port:
+                        sock.close()
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                        sock.bind(("", new_port))
+                        current_port = new_port
+            except queue.Empty:
+                pass
+
         data, addr = sock.recvfrom(65535)
         try:
             line = data.decode('utf-8', errors='ignore')
@@ -61,6 +77,7 @@ Test Main-Funktion zum Testen des Servers
 if __name__ == '__main__':
     config = toml.load('config.toml')
     from multiprocessing import Queue
-    q = Queue()
-    server_loop(config, q)
+    q1 = Queue()
+    q2 = Queue()
+    server_loop(config, q1, q2)
 """
