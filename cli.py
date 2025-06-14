@@ -12,10 +12,10 @@ AWAY_TIMEOUT = 30
 
 #Main-Klasse für die Kommandozeilen-Schnittstelle des Peer-to-Peer Chats, erbt von cmd.Cmd ab
 class ChatCLI(cmd.Cmd):
-#
+#autotmatische Begrüßung und Eingabeaufforderung
     intro = "Willkommen zum Peer-to-Peer Chat. Tippe 'help', um alle Befehle zu sehen."
     prompt = "> "
-
+# Konstruktor der ChatCLI-Klasse, initialisiert die Konfiguration und IPC-Queues
     def __init__(self, config, net_to_cli_queue, disc_to_cli_queue, cli_to_net_queue):
         super().__init__()
         self.config = config
