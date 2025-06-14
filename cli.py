@@ -204,6 +204,7 @@ class ChatCLI(cmd.Cmd):
         # Wenn der Zielnutzer nicht in der Peer-Liste ist, wird eine Fehlermeldung ausgegeben
         else:
             print("Unbekannter Nutzer.")
+    # Die do_show_config-Methode zeigt die aktuelle Konfiguration an
 
     def do_show_config(self, arg):
         # Die Syntax für den Befehl, wenn nur "show_config" eingegeben wird
@@ -220,35 +221,47 @@ class ChatCLI(cmd.Cmd):
         self.last_activity = time.time()
         # Überprüft, ob der Argument-String leer ist
         parts = arg.split(" ", 1)
+        # Wenn nicht genau zwei Teile vorhanden sind, wird die korrekte Syntax angezeigt
         if len(parts) != 2:
             print("Usage: set_config <parameter> <wert>")
             return
         key, val = parts
+        # Überprüft, ob der angegebene Konfigurationsparameter existiert
         if key not in self.config:
             print("Unbekannter Konfigurationsparameter.")
             return
+        # Wenn der Konfigurationsparameter ein Integer ist, wird versucht, den Wert in eine Ganzzahl umzuwandeln
         if isinstance(self.config[key], int):
+            # Wenn die Umwandlung fehlschlägt, wird eine Fehlermeldung ausgegeben
             try:
                 val = int(val)
             except ValueError:
                 print("Wert muss eine Zahl sein.")
                 return
+            # Andernfalls wird der Wert als String gespeichert
         self.config[key] = val
         print(f"Konfig {key} = {val}")
-
+    # Die do_exit-Methode beendet die CLI und den Hintergrund-Thread
     def do_exit(self, arg):
+        # Die Syntax für den Befehl, wenn nur "exit" eingegeben wird
         """exit  –  Beendet CLI und Hintergrund-Thread."""
+        # Aktualisiert den Zeitpunkt der letzten Aktivität
         self.last_activity = time.time()
         print("Beende CLI…")
+        # Setzt das Stop-Event, um den Hintergrund-Thread zu beenden
         self._stop_event.set()
         return True
-
+    
+    # Die default-Methode fängt unbekannte Befehle ab und zeigt die korrekte Syntax an
     def default(self, line):
         """Fängt unbekannte Befehle ab und zeigt korrekte Syntax."""
+        # Aktualisiert den Zeitpunkt der letzten Aktivität
         self.last_activity = time.time()
+        # Teilt die Eingabezeile in Teile auf
         parts = line.strip().split()
         if not parts:
             return
+        # Wenn nur ein Teil vorhanden ist, wird die korrekte Syntax angezeigt
         cmd = parts[0].lower()
         valid_cmds = {
             'join': "Usage: join <username> <port>",
@@ -262,10 +275,15 @@ class ChatCLI(cmd.Cmd):
             'help': "Usage: help",
             'exit': "Usage: exit"
         }
+        # Überprüft, ob der Befehl in der Liste der gültigen Befehle vorhanden ist
         if cmd in valid_cmds:
+            # Gibt die korrekte Syntax für den unbekannten Befehl aus
             print(valid_cmds[cmd])
+        # Wenn der Befehl nicht in der Liste der gültigen Befehle ist, wird eine Fehlermeldung ausgegeben
         else:
             print(f"Unbekannter Befehl: '{parts[0]}'. Tippe 'help' für gültige Befehle.")
 
+    # Die do_help-Methode zeigt die Hilfe für die CLI-Befehle an
     def do_help(self, arg):
+        # Die Syntax für den Befehl, wenn nur "help" eingegeben wird
         return super().do_help(arg)
