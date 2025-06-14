@@ -1,11 +1,12 @@
 # ipc_handler.py – Verbindet CLI mit Netzwerkfunktionen über ChatClient
 import socket
 import json
-import client 
+import toml
+import client
 
 class IPCHandler:
-    def __init__(self):
-        self.client = client()
+    def __init__(self, config):
+        self.config = config
         self.ipc_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ipc_socket.bind(('localhost', 9999))
 
@@ -19,15 +20,25 @@ class IPCHandler:
                 cmd = json.loads(data)
                 action = cmd.get("action")
                 if action == "send_message":
-                    self.client.send_msg(cmd["target"], cmd["message"])
+                    client.client_send_msg(
+                        cmd["host"],
+                        cmd["port"],
+                        self.config["handle"],
+                        cmd["message"],
+                    )
                 elif action == "send_image":
-                    self.client.send_img(cmd["target"], cmd["path"])
+                    client.client_send_img(
+                        cmd["host"],
+                        cmd["port"],
+                        self.config["handle"],
+                        cmd["path"],
+                    )
                 elif action == "join_network":
-                    self.client.send_join()
+                    client.client_send_join(self.config)
                 elif action == "leave_network":
-                    self.client.send_leave()
+                    client.client_send_leave(self.config)
                 elif action == "send_who":
-                    self.client.send_who()
+                    client.client_send_who(self.config)
                 conn.send(b"OK")
             except Exception as e:
                 print(f"[IPC ERROR] {e}")
@@ -36,5 +47,6 @@ class IPCHandler:
                 conn.close()
 
 if __name__ == "__main__":
-    ipc = IPCHandler()
+    config = toml.load("config.toml")
+    ipc = IPCHandler(config)
     ipc.listen_for_ui_commands()
