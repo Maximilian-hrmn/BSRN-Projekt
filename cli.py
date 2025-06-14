@@ -1,15 +1,18 @@
-# File: cli.py
-
+# impotieret das cmd Modul für die Kommandozeilen-Interface (CLI) und andere benötigte Module
 import cmd
+# Importiere die benötigten Module für Netzwerkkommunikation und Threading
 import threading
+# Importiere die Zeit- und Queue-Module für Zeitmanagement und Thread-Synchronisation
 import time
 import queue
+# Importiere die Client-Funktionen für Netzwerkkommunikation
 from client import client_send_join, client_send_leave, client_send_who, client_send_msg, client_send_img
+# 30 Sekunden Inaktivität, bevor Auto-Reply ausgelöst wird
+AWAY_TIMEOUT = 30 
 
-# Timeout für Auto-Reply (in Sekunden) – bleibt vorerst fest im Code, kann aber auch in config ausgelagert werden
-AWAY_TIMEOUT = 30  # 30 Sekunden Inaktivität, bevor Auto-Reply ausgelöst wird
-
+#Main-Klasse für die Kommandozeilen-Schnittstelle des Peer-to-Peer Chats, erbt von cmd.Cmd ab
 class ChatCLI(cmd.Cmd):
+#
     intro = "Willkommen zum Peer-to-Peer Chat. Tippe 'help', um alle Befehle zu sehen."
     prompt = "> "
 
