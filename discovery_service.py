@@ -6,10 +6,10 @@ import toml
 
 """
 Discovery Service:
-- Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
-- Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE.
-- Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
-- Sendet KNOWUSERS-Antworten per Unicast an anfragende Peers.
+ - Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
+ - Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE und KNOWUSERS.
+ - Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
+ - Sendet KNOWUSERS-Antworten per Unicast an anfragende Peers.
 """
 
 def discovery_loop(config, cli_queue):
@@ -55,8 +55,9 @@ def discovery_loop(config, cli_queue):
             peers[new_handle] = (addr[0], new_port)
             # Erstellt eine Antwortnachricht (KNOWUSERS), die alle bekannten Peers enthält.
             response = build_knowusers(peers)
-            # Sendet die Antwort per Unicast an den neuen Peer (an seine Adresse und den angegebenen Port).
-            sock.sendto(response, (addr[0], new_port))
+            # Sende die Antwort an den Discovery-Port des neuen Peers.
+            # Dadurch kann dessen Discovery-Service die Peerliste aktualisieren.
+            sock.sendto(response, (addr[0], whoisport))
 
         # Verarbeitet den "WHO"-Befehl
         elif cmd == 'WHO':
@@ -64,6 +65,17 @@ def discovery_loop(config, cli_queue):
             response = build_knowusers(peers)
             # Sendet die Antwort an den anfragenden Peer (Adresse in "addr").
             sock.sendto(response, addr)
+
+        # Verarbeite eine KNOWUSERS-Antwort
+        elif cmd == 'KNOWUSERS' and args:
+            # args[0] enthält kommagetrennt alle handle:host:port Einträge
+            entries = args[0].split(',') if args[0] else []
+            for entry in entries:
+                try:
+                    h, host, port_str = entry.split(':')
+                    peers[h] = (host, int(port_str))
+                except ValueError:
+                    continue
 
         # Verarbeite den "LEAVE"-Befehl
         elif cmd == 'LEAVE' and len(args) == 1:
