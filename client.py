@@ -52,21 +52,35 @@ def client_send_leave(config):
     _send_discovery(msg, config)
 
 #Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port
-def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):
-    """Sende eine Textnachricht über TCP."""
-    with socket.create_connection((target_host, target_port)) as sock:
-        data = build_msg(from_handle, text)
-        sock.sendall(data)
+def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str) -> bool:
+    """Sende eine Textnachricht über TCP.
+
+    Gibt ``True`` zurück, wenn die Verbindung erfolgreich aufgebaut und die
+    Nachricht gesendet wurde. Tritt beim Verbindungsaufbau ein Fehler auf,
+    wird ``False`` geliefert und der Fehler auf ``stdout`` ausgegeben.
+    """
+    try:
+        with socket.create_connection((target_host, target_port)) as sock:
+            data = build_msg(from_handle, text)
+            sock.sendall(data)
+        return True
+    except OSError as e:
+        print(f"[Client] Verbindung zu {target_host}:{target_port} fehlgeschlagen: {e}")
+        return False
     
 #Funktion zum Senden eines Bildes an einen bestimmten Host und Port
-def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
+def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str) -> bool:
     """Sende eine Bildnachricht über TCP."""
     if not os.path.isfile(img_path):
         return False
     size = os.path.getsize(img_path)
-    with socket.create_connection((target_host, target_port)) as sock:
-        header = build_img(from_handle, size)
-        sock.sendall(header)
-        with open(img_path, 'rb') as f:
-            sock.sendall(f.read())
-    return True
+    try:
+        with socket.create_connection((target_host, target_port)) as sock:
+            header = build_img(from_handle, size)
+            sock.sendall(header)
+            with open(img_path, 'rb') as f:
+                sock.sendall(f.read())
+        return True
+    except OSError as e:
+        print(f"[Client] Verbindung zu {target_host}:{target_port} fehlgeschlagen: {e}")
+        return False

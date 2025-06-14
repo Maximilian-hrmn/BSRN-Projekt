@@ -141,7 +141,8 @@ class ChatCLI(cmd.Cmd):
         target, text = parts
         if target in self.peers:
             thost, tport = self.peers[target]
-            client_send_msg(thost, tport, self.config['handle'], text)
+            if not client_send_msg(thost, tport, self.config['handle'], text):
+                print(f"Fehler beim Senden an {target}.")
         else:
             print("Unbekannter Nutzer.")
 
@@ -160,10 +161,8 @@ class ChatCLI(cmd.Cmd):
             return
 
         for peer_handle, (phost, pport) in self.peers.items():
-            try:
-                client_send_msg(phost, pport, self.config['handle'], text)
-            except Exception as e:
-                print(f"Fehler beim Senden an {peer_handle}: {e}")
+            if not client_send_msg(phost, pport, self.config['handle'], text):
+                print(f"Fehler beim Senden an {peer_handle}.")
         print("Nachricht an alle gesendet.")
 
     def do_img(self, arg):
@@ -179,9 +178,8 @@ class ChatCLI(cmd.Cmd):
         target, path = parts
         if target in self.peers:
             thost, tport = self.peers[target]
-            success = client_send_img(thost, tport, self.config['handle'], path)
-            if not success:
-                print("Datei nicht gefunden.")
+            if not client_send_img(thost, tport, self.config['handle'], path):
+                print("Bild konnte nicht gesendet werden.")
         else:
             print("Unbekannter Nutzer.")
 
