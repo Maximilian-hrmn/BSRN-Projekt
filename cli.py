@@ -282,8 +282,3 @@ class ChatCLI(cmd.Cmd):
         # Wenn der Befehl nicht in der Liste der gültigen Befehle ist, wird eine Fehlermeldung ausgegeben
         else:
             print(f"Unbekannter Befehl: '{parts[0]}'. Tippe 'help' für gültige Befehle.")
-
-    # Die do_help-Methode zeigt die Hilfe für die CLI-Befehle an
-    def do_help(self, arg):
-        # Die Syntax für den Befehl, wenn nur "help" eingegeben wird
-        return super().do_help(arg)
