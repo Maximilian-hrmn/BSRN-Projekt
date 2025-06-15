@@ -15,7 +15,7 @@ Discovery Service:
 def discovery_loop(config, cli_queue):
     # Erstelle ein leeres Array zum Speichern der bekannten Peers.
     # Jeder Eintrag hat die Form: handle -> (IP-Adresse, Port)
-    peers = {}  # handle -> (host, port)
+    peers = {} 
     
     # Liest den UDP-Port für Discovery aus der Konfiguration
     whoisport = config['whoisport']

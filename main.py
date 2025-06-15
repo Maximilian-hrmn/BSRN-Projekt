@@ -1,11 +1,9 @@
-# File: main.py
-
-import argparse
-import toml
-from multiprocessing import Process, Queue
-import discovery_service
-import server
-from cli import ChatCLI
+import argparse # ArgumentParser für Kommandozeilenargumente
+import toml # TOML-Parser für Konfigurationsdateien
+from multiprocessing import Process, Queue # Multiprocessing für parallele Prozesse
+import discovery_service # Discovery-Service für Peer-Erkennung
+import server # Server-Modul für Netzwerkkommunikation
+from cli import ChatCLI # CLI-Modul für Kommandozeileninteraktion
 
 """
 Main Entry Point:
@@ -16,8 +14,8 @@ Main Entry Point:
     * Server/Network-Empfang (Process B)
 - Anschließend startet CLI (ChatCLI) im Hauptprozess
 """
-
-if __name__ == '__main__':
+# Main-Block, um das Skript direkt auszuführen
+if __name__ == '__main__': 
     parser = argparse.ArgumentParser(description="Start chat client")
     parser.add_argument("--port", type=int, help="UDP port for this client")
     parser.add_argument("--broadcast", help="Broadcast address for discovery")
