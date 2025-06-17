@@ -68,7 +68,7 @@ class ChatGUI(tk.Tk):
             wrap="word",
             state="disabled",
         )
-        self.chat_text.pack(side="left", fill="both", expand=True)
+
 
         peer_frame = tk.Frame(list_frame, bg="#2b2b2b")
         peer_frame.pack(side="right", fill="y")
@@ -76,7 +76,6 @@ class ChatGUI(tk.Tk):
         self.peer_list = tk.Listbox(
             peer_frame, width=20, font=("Helvetica", 11), bg="#333", fg="#ffffff"
         )
-        self.peer_list.pack(side="left", fill="y")
 
         bottom_frame = tk.Frame(main_frame, bg="#2b2b2b")
         bottom_frame.pack(fill="x", pady=5)
@@ -91,11 +90,7 @@ class ChatGUI(tk.Tk):
             text="📷",
             width=4,
             command=self.open_image_dialog,
-            bg="#007acc",
-            fg="#ffffff",
-            activebackground="#005f99",
-            relief="flat",
-            bd=0,
+
         )
         self.image_btn.pack(side="left", padx=(5, 0))
 
@@ -104,13 +99,7 @@ class ChatGUI(tk.Tk):
             text="Senden",
             width=10,
             command=self._send_message,
-            bg="#007acc",
-            fg="#ffffff",
-            activebackground="#005f99",
-            activeforeground="#ffffff",
-            relief="flat",
-            bd=0,
-            highlightthickness=0,
+
         )
         self.send_btn.pack(side="left", padx=5)
 
@@ -143,11 +132,7 @@ class ChatGUI(tk.Tk):
                     if auto_msg and from_handle in self.peers:
                         thost, tport = self.peers[from_handle]
                         client_send_msg(thost, tport, self.config["handle"], auto_msg)
-                self._append_text(f"{from_handle}: {text}\n")
-            elif msg[0] == "IMG":
-                from_handle = msg[1]
-                path = msg[2]
-                self._append_image(from_handle, path)
+
         while True:
             try:
                 dmsg = self.disc_to_cli.get_nowait()
@@ -202,27 +187,20 @@ class ChatGUI(tk.Tk):
                     host, port = self.peers[handle]
                     try:
                         client_send_msg(host, port, self.config["handle"], message)
-                        self._append_text(f"[Du -> {handle}] {message}\n")
-                    except OSError as e:
-                        self._append_text(f"[Fehler] {e}\n")
-                else:
-                    self._append_text("[Fehler] Unbekannter Nutzer\n")
-            else:
-                self._append_text("[Fehler] Syntax: msg <user> <text>\n")
+
             self.text_entry.delete("1.0", "end")
             return
 
         if text.startswith("msgall ") or text.startswith("msg all "):
             message = text.split(" ", 1)[1].split(" ", 1)[1] if text.startswith("msg all ") else text.split(" ", 1)[1]
             if not self.peers:
-                self._append_text("[Fehler] Keine anderen Peers\n")
+
             else:
                 for h, (host, port) in self.peers.items():
                     try:
                         client_send_msg(host, port, self.config["handle"], message)
                     except OSError as e:
-                        self._append_text(f"[Fehler] zu {h}: {e}\n")
-                self._append_text(f"[Du -> alle] {message}\n")
+
             self.text_entry.delete("1.0", "end")
             return
 
@@ -234,22 +212,14 @@ class ChatGUI(tk.Tk):
                     host, port = self.peers[handle]
                     try:
                         if client_send_img(host, port, self.config["handle"], path):
-                            self._append_image(f"Du -> {handle}", path)
-                        else:
-                            self._append_text("[Fehler] Datei nicht gefunden\n")
-                    except OSError as e:
-                        self._append_text(f"[Fehler] {e}\n")
-                else:
-                    self._append_text("[Fehler] Unbekannter Nutzer\n")
-            else:
-                self._append_text("[Fehler] Syntax: img <user> <pfad>\n")
+
             self.text_entry.delete("1.0", "end")
             return
 
         if text == "who":
             client_send_who(self.config)
             self.chat_text.configure(state="normal")
-            self._append_text("[Info] Peer-Liste angefordert\n")
+
             self.text_entry.delete("1.0", "end")
             return
 
@@ -257,16 +227,12 @@ class ChatGUI(tk.Tk):
             if self.joined:
                 client_send_leave(self.config)
                 self.joined = False
-                self._append_text("[Info] Netzwerk verlassen\n")
-            else:
-                self._append_text("[Info] Nicht im Netzwerk\n")
+
             self.text_entry.delete("1.0", "end")
             return
 
         if text == "help":
-            self._append_text(
-                "Befehle: msg <user> <text>, msgall <text>, img <user> <pfad>, who, leave, help\n"
-            )
+
             self.text_entry.delete("1.0", "end")
             return
 
@@ -278,9 +244,7 @@ class ChatGUI(tk.Tk):
             host, port = self.peers[handle]
             try:
                 client_send_msg(host, port, self.config["handle"], text)
-                self._append_text(f"[Du -> {handle}] {text}\n")
-            except OSError as e:
-                self._append_text(f"[Fehler] {e}\n")
+
         self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
@@ -300,9 +264,7 @@ class ChatGUI(tk.Tk):
             if handle in self.peers:
                 host, port = self.peers[handle]
                 if client_send_img(host, port, self.config["handle"], filename):
-                    self._append_image(f"Du -> {handle}", filename)
-                else:
-                    self._append_text("[Fehler] Datei nicht gefunden\n")
+
 
     def on_close(self):
         if self.joined:
