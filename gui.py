@@ -34,7 +34,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         centralSizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         centralSizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(centralSizePolicy)
-        self.centralwidget.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.centralwidget.setLayoutDirection(QtCore.Qt.LeftToRight)# type: ignore[attr-defined]
         self.centralwidget.setObjectName("centralwidget")
 
         # Layouts
