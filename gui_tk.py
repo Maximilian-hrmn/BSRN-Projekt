@@ -53,25 +53,45 @@ class ChatGUI(tk.Tk):
         main_frame.pack(fill="both", expand=True)
 
         list_frame = tk.Frame(main_frame)
-        list_frame.pack(fill="both", expand=True)
+        list_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.chat_list = tk.Listbox(list_frame)
+        chat_frame = tk.Frame(list_frame)
+        chat_frame.pack(side="left", fill="both", expand=True)
+
+        chat_scroll = tk.Scrollbar(chat_frame)
+        chat_scroll.pack(side="right", fill="y")
+
+        self.chat_list = tk.Listbox(
+            chat_frame, yscrollcommand=chat_scroll.set, font=("Helvetica", 11)
+        )
         self.chat_list.pack(side="left", fill="both", expand=True)
+        chat_scroll.config(command=self.chat_list.yview)
 
-        self.peer_list = tk.Listbox(list_frame)
-        self.peer_list.pack(side="right", fill="both", expand=True)
+        peer_frame = tk.Frame(list_frame)
+        peer_frame.pack(side="right", fill="y")
+
+        peer_scroll = tk.Scrollbar(peer_frame)
+        peer_scroll.pack(side="right", fill="y")
+
+        self.peer_list = tk.Listbox(
+            peer_frame, yscrollcommand=peer_scroll.set, width=20, font=("Helvetica", 11)
+        )
+        self.peer_list.pack(side="left", fill="y")
+        peer_scroll.config(command=self.peer_list.yview)
 
         bottom_frame = tk.Frame(main_frame)
-        bottom_frame.pack(fill="x")
+        bottom_frame.pack(fill="x", pady=5)
 
-        self.text_entry = tk.Text(bottom_frame, height=3)
+        self.text_entry = tk.Text(bottom_frame, height=3, font=("Helvetica", 11))
         self.text_entry.pack(side="left", fill="both", expand=True)
 
-        self.image_btn = tk.Button(bottom_frame, text="📷", command=self.open_image_dialog)
-        self.image_btn.pack(side="left")
+        self.image_btn = tk.Button(bottom_frame, text="📷", width=4, command=self.open_image_dialog)
+        self.image_btn.pack(side="left", padx=(5, 0))
 
-        self.send_btn = tk.Button(bottom_frame, text="Senden", command=self._send_message)
-        self.send_btn.pack(side="left")
+        self.send_btn = tk.Button(bottom_frame, text="Senden", width=10, command=self._send_message)
+        self.send_btn.pack(side="left", padx=5)
+
+        self.text_entry.bind("<Return>", self._send_message_event)
 
     def _join_network(self):
         handle = self.config.get("user", {}).get("name")
@@ -137,6 +157,10 @@ class ChatGUI(tk.Tk):
             self.chat_list.insert("end", f"[Du -> {handle}] {text}")
             self.chat_list.yview_moveto(1)
         self.text_entry.delete("1.0", "end")
+
+    def _send_message_event(self, event):
+        self._send_message()
+        return "break"
 
     def open_image_dialog(self):
         sel = self.peer_list.curselection()
