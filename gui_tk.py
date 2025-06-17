@@ -3,6 +3,7 @@ from tkinter import simpledialog, filedialog
 import queue
 import time
 import sys
+import socket
 
 from client import (
     client_send_join,
@@ -34,16 +35,13 @@ class ChatGUI(tk.Tk):
         name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self)
         if name:
             self.config.setdefault("user", {})["name"] = name
-        port = simpledialog.askinteger(
-            "Port",
-            "Bitte gib deinen Port ein:",
-            parent=self,
-            initialvalue=5000,
-            minvalue=1024,
-            maxvalue=65535,
-        )
-        if port:
-            self.config.setdefault("network", {})["port"] = port
+
+        # Automatisch einen freien TCP-Port wählen anstatt den Nutzer zu fragen
+        tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tmp_sock.bind(("", 0))
+        port = tmp_sock.getsockname()[1]
+        tmp_sock.close()
+        self.config.setdefault("network", {})["port"] = port
 
     def _setup_ui(self):
         self.title("Messenger")
@@ -58,26 +56,14 @@ class ChatGUI(tk.Tk):
         chat_frame = tk.Frame(list_frame)
         chat_frame.pack(side="left", fill="both", expand=True)
 
-        chat_scroll = tk.Scrollbar(chat_frame)
-        chat_scroll.pack(side="right", fill="y")
-
-        self.chat_list = tk.Listbox(
-            chat_frame, yscrollcommand=chat_scroll.set, font=("Helvetica", 11)
-        )
+        self.chat_list = tk.Listbox(chat_frame, font=("Helvetica", 11))
         self.chat_list.pack(side="left", fill="both", expand=True)
-        chat_scroll.config(command=self.chat_list.yview)
 
         peer_frame = tk.Frame(list_frame)
         peer_frame.pack(side="right", fill="y")
 
-        peer_scroll = tk.Scrollbar(peer_frame)
-        peer_scroll.pack(side="right", fill="y")
-
-        self.peer_list = tk.Listbox(
-            peer_frame, yscrollcommand=peer_scroll.set, width=20, font=("Helvetica", 11)
-        )
+        self.peer_list = tk.Listbox(peer_frame, width=20, font=("Helvetica", 11))
         self.peer_list.pack(side="left", fill="y")
-        peer_scroll.config(command=self.peer_list.yview)
 
         bottom_frame = tk.Frame(main_frame)
         bottom_frame.pack(fill="x", pady=5)
