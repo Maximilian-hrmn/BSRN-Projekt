@@ -54,8 +54,8 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     
     mode = input("Modus wählen: [g] GUI  |  [c] CLI  > ").strip().lower() # Eingabe für den Modus (GUI oder CLI)
     if mode == 'g': # Wenn GUI-Modus gewählt wurde
-        from gui import startGui # GUI-Modul importieren
-        startGui(config, net_to_cli, disc_to_cli, cli_to_net)# GUI starten
+        from gui_tk import startGui  # Tkinter-basierte GUI importieren
+        startGui(config, net_to_cli, disc_to_cli, cli_to_net)  # GUI starten
     else: # Standardmäßig CLI-Modus
         # Fallback zu CLI
         cli = ChatCLI(config, net_to_cli, disc_to_cli, cli_to_net) # CLI-Instanz erstellen
