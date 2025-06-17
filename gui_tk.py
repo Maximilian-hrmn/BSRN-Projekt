@@ -3,6 +3,7 @@ from tkinter import simpledialog, filedialog
 import queue
 import time
 import sys
+import socket
 
 from client import (
     client_send_join,
@@ -34,16 +35,13 @@ class ChatGUI(tk.Tk):
         name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self)
         if name:
             self.config.setdefault("user", {})["name"] = name
-        port = simpledialog.askinteger(
-            "Port",
-            "Bitte gib deinen Port ein:",
-            parent=self,
-            initialvalue=5000,
-            minvalue=1024,
-            maxvalue=65535,
-        )
-        if port:
-            self.config.setdefault("network", {})["port"] = port
+
+        # Automatisch einen freien TCP-Port wählen anstatt den Nutzer zu fragen
+        tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tmp_sock.bind(("", 0))
+        port = tmp_sock.getsockname()[1]
+        tmp_sock.close()
+        self.config.setdefault("network", {})["port"] = port
 
     def _setup_ui(self):
         self.title("Messenger")
@@ -58,26 +56,14 @@ class ChatGUI(tk.Tk):
         chat_frame = tk.Frame(list_frame)
         chat_frame.pack(side="left", fill="both", expand=True)
 
-        chat_scroll = tk.Scrollbar(chat_frame)
-        chat_scroll.pack(side="right", fill="y")
-
-        self.chat_list = tk.Listbox(
-            chat_frame, yscrollcommand=chat_scroll.set, font=("Helvetica", 11)
-        )
+        self.chat_list = tk.Listbox(chat_frame, font=("Helvetica", 11))
         self.chat_list.pack(side="left", fill="both", expand=True)
-        chat_scroll.config(command=self.chat_list.yview)
 
         peer_frame = tk.Frame(list_frame)
         peer_frame.pack(side="right", fill="y")
 
-        peer_scroll = tk.Scrollbar(peer_frame)
-        peer_scroll.pack(side="right", fill="y")
-
-        self.peer_list = tk.Listbox(
-            peer_frame, yscrollcommand=peer_scroll.set, width=20, font=("Helvetica", 11)
-        )
+        self.peer_list = tk.Listbox(peer_frame, width=20, font=("Helvetica", 11))
         self.peer_list.pack(side="left", fill="y")
-        peer_scroll.config(command=self.peer_list.yview)
 
         bottom_frame = tk.Frame(main_frame)
         bottom_frame.pack(fill="x", pady=5)
@@ -147,14 +133,105 @@ class ChatGUI(tk.Tk):
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
             return
+
+        # Erlaube die bekannte CLI-Syntax wie "msg <user> <text>" oder
+        # "img <user> <pfad>" direkt im Eingabefeld. Weitere Befehle wie
+        # "msg all", "who", "leave" und "help" werden ebenfalls interpretiert.
+        if text.startswith("msg "):
+            parts = text.split(" ", 2)
+            if len(parts) == 3:
+                handle, message = parts[1], parts[2]
+                if handle in self.peers:
+                    host, port = self.peers[handle]
+                    try:
+                        client_send_msg(host, port, self.config["handle"], message)
+                        self.chat_list.insert("end", f"[Du -> {handle}] {message}")
+                    except OSError as e:
+                        self.chat_list.insert("end", f"[Fehler] {e}")
+                else:
+                    self.chat_list.insert("end", "[Fehler] Unbekannter Nutzer")
+            else:
+                self.chat_list.insert("end", "[Fehler] Syntax: msg <user> <text>")
+            self.chat_list.yview_moveto(1)
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text.startswith("msgall ") or text.startswith("msg all "):
+            message = text.split(" ", 1)[1].split(" ", 1)[1] if text.startswith("msg all ") else text.split(" ", 1)[1]
+            if not self.peers:
+                self.chat_list.insert("end", "[Fehler] Keine anderen Peers")
+            else:
+                for h, (host, port) in self.peers.items():
+                    try:
+                        client_send_msg(host, port, self.config["handle"], message)
+                    except OSError as e:
+                        self.chat_list.insert("end", f"[Fehler] zu {h}: {e}")
+                self.chat_list.insert("end", f"[Du -> alle] {message}")
+            self.chat_list.yview_moveto(1)
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text.startswith("img "):
+            parts = text.split(" ", 2)
+            if len(parts) == 3:
+                handle, path = parts[1], parts[2]
+                if handle in self.peers:
+                    host, port = self.peers[handle]
+                    try:
+                        if client_send_img(host, port, self.config["handle"], path):
+                            self.chat_list.insert(
+                                "end", f"[Du -> {handle}] Bild gesendet: {path}"
+                            )
+                        else:
+                            self.chat_list.insert("end", "[Fehler] Datei nicht gefunden")
+                    except OSError as e:
+                        self.chat_list.insert("end", f"[Fehler] {e}")
+                else:
+                    self.chat_list.insert("end", "[Fehler] Unbekannter Nutzer")
+            else:
+                self.chat_list.insert("end", "[Fehler] Syntax: img <user> <pfad>")
+            self.chat_list.yview_moveto(1)
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text == "who":
+            client_send_who(self.config)
+            self.chat_list.insert("end", "[Info] Peer-Liste angefordert")
+            self.chat_list.yview_moveto(1)
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text == "leave":
+            if self.joined:
+                client_send_leave(self.config)
+                self.joined = False
+                self.chat_list.insert("end", "[Info] Netzwerk verlassen")
+            else:
+                self.chat_list.insert("end", "[Info] Nicht im Netzwerk")
+            self.chat_list.yview_moveto(1)
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text == "help":
+            self.chat_list.insert(
+                "end",
+                "Befehle: msg <user> <text>, msgall <text>, img <user> <pfad>, who, leave, help",
+            )
+            self.chat_list.yview_moveto(1)
+            self.text_entry.delete("1.0", "end")
+            return
+
         sel = self.peer_list.curselection()
         if not sel:
             return
         handle = self.peer_list.get(sel[0])
         if handle in self.peers:
             host, port = self.peers[handle]
-            client_send_msg(host, port, self.config["handle"], text)
-            self.chat_list.insert("end", f"[Du -> {handle}] {text}")
+            try:
+                client_send_msg(host, port, self.config["handle"], text)
+                self.chat_list.insert("end", f"[Du -> {handle}] {text}")
+            except OSError as e:
+                self.chat_list.insert("end", f"[Fehler] {e}")
             self.chat_list.yview_moveto(1)
         self.text_entry.delete("1.0", "end")
 
@@ -190,3 +267,32 @@ def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
+
+
+if __name__ == "__main__":
+    import argparse
+    import toml
+    from multiprocessing import Process, Queue
+    import discovery_service
+    import server
+
+    parser = argparse.ArgumentParser(description="Start Tk GUI")
+    parser.add_argument("--config", default="config.toml", help="Pfad zur Konfig-Datei")
+    args = parser.parse_args()
+
+    config = toml.load(args.config)
+
+    cli_to_net = Queue()
+    cli_to_disc = Queue()
+    net_to_cli = Queue()
+    disc_to_cli = Queue()
+
+    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
+    disc_proc.daemon = True
+    disc_proc.start()
+
+    net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net))
+    net_proc.daemon = True
+    net_proc.start()
+
+    startGui(config, net_to_cli, disc_to_cli, cli_to_net)
