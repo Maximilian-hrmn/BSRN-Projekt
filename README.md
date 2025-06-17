@@ -18,7 +18,8 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 - Python 3.8+
 - Abhängigkeiten:
-  ```bash
+
+  ```
   pip install pyqt5 toml
   ```
 
@@ -61,7 +62,7 @@ autoreply = "Ich bin gerade nicht da. Ich melde mich später bei dir."
 
 ### Starten:
 
-```bash
+```
 python main.py
 ```
 
@@ -113,15 +114,3 @@ Dann wählen:
 
 - Dieses Tool ist **nicht für produktiven Einsatz** oder über öffentliche Netzwerke gedacht.
 - Die Nachrichten werden **nicht verschlüsselt** übertragen.
-
----
-
-## 🧪 Tests & Debugging
-
-Zum Testen können mehrere Instanzen im gleichen LAN gestartet werden (ggf. mit unterschiedlichen Ports). CLI/GUI-Mix ist möglich.
-
----
-
-## 📄 Lizenz
-
-MIT License – frei verwendbar, aber ohne Garantie.
