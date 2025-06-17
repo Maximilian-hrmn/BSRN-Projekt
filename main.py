@@ -54,7 +54,7 @@ if __name__ == '__main__':
     mode = input("Modus wählen: [g] GUI  |  [c] CLI  > ").strip().lower()
     if mode == 'g':
         from gui import startGui
-        startGui(config, net_to_cli, disc_to_cli)
+        startGui(config, net_to_cli, disc_to_cli, cli_to_net)
     else:
         # Fallback zu CLI
         cli = ChatCLI(config, net_to_cli, disc_to_cli, cli_to_net)
