@@ -83,10 +83,12 @@ def discovery_loop(config, cli_queue):
 
         # Verarbeite den "LEAVE"-Befehl
         elif cmd == 'LEAVE' and len(args) == 1:
-            leaving = args[0]   # Der Handle des Peers, der geht.
-            # Entferne den Peer aus dem Dictionary, falls er vorhanden ist.
+            leaving = args[0]
             if leaving in peers:
                 del peers[leaving]
+            response = build_knowusers(peers)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            sock.sendto(response, (config['broadcast'], whoisport))
 
         # Informiere die übergeordnete Anwendung (z.B. die CLI) über Änderungen in der Peerliste.
         # Hier wird eine Kopie der aktuellen Peerliste über eine IPC-Queue (cli_queue) verschickt.
