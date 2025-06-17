@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog
+from PIL import Image, ImageTk
 import queue
 import time
 import sys
@@ -46,35 +47,71 @@ class ChatGUI(tk.Tk):
     def _setup_ui(self):
         self.title("Messenger")
         self.geometry("800x600")
+        self.configure(bg="#2b2b2b")
 
-        main_frame = tk.Frame(self)
+        self.images = []
+
+        main_frame = tk.Frame(self, bg="#2b2b2b")
         main_frame.pack(fill="both", expand=True)
 
-        list_frame = tk.Frame(main_frame)
+        list_frame = tk.Frame(main_frame, bg="#2b2b2b")
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        chat_frame = tk.Frame(list_frame)
+        chat_frame = tk.Frame(list_frame, bg="#2b2b2b")
         chat_frame.pack(side="left", fill="both", expand=True)
 
-        self.chat_list = tk.Listbox(chat_frame, font=("Helvetica", 11))
-        self.chat_list.pack(side="left", fill="both", expand=True)
+        self.chat_text = tk.Text(
+            chat_frame,
+            font=("Helvetica", 11),
+            bg="#1e1e1e",
+            fg="#dcdcdc",
+            wrap="word",
+            state="disabled",
+        )
+        chat_scroll = tk.Scrollbar(chat_frame, command=self.chat_text.yview)
+        self.chat_text.configure(yscrollcommand=chat_scroll.set)
+        chat_scroll.pack(side="right", fill="y")
+        self.chat_text.pack(side="left", fill="both", expand=True)
 
-        peer_frame = tk.Frame(list_frame)
+        peer_frame = tk.Frame(list_frame, bg="#2b2b2b")
         peer_frame.pack(side="right", fill="y")
 
-        self.peer_list = tk.Listbox(peer_frame, width=20, font=("Helvetica", 11))
+        self.peer_list = tk.Listbox(
+            peer_frame, width=20, font=("Helvetica", 11), bg="#333", fg="#ffffff"
+        )
+        peer_scroll = tk.Scrollbar(peer_frame, command=self.peer_list.yview)
+        self.peer_list.configure(yscrollcommand=peer_scroll.set)
+        peer_scroll.pack(side="right", fill="y")
         self.peer_list.pack(side="left", fill="y")
 
-        bottom_frame = tk.Frame(main_frame)
+        bottom_frame = tk.Frame(main_frame, bg="#2b2b2b")
         bottom_frame.pack(fill="x", pady=5)
 
-        self.text_entry = tk.Text(bottom_frame, height=3, font=("Helvetica", 11))
+        self.text_entry = tk.Text(
+            bottom_frame, height=3, font=("Helvetica", 11), bg="#1e1e1e", fg="#dcdcdc"
+        )
         self.text_entry.pack(side="left", fill="both", expand=True)
 
-        self.image_btn = tk.Button(bottom_frame, text="📷", width=4, command=self.open_image_dialog)
+        self.image_btn = tk.Button(
+            bottom_frame,
+            text="📷",
+            width=4,
+            command=self.open_image_dialog,
+            bg="#3a3a3a",
+            fg="#ffffff",
+            activebackground="#555555",
+        )
         self.image_btn.pack(side="left", padx=(5, 0))
 
-        self.send_btn = tk.Button(bottom_frame, text="Senden", width=10, command=self._send_message)
+        self.send_btn = tk.Button(
+            bottom_frame,
+            text="Senden",
+            width=10,
+            command=self._send_message,
+            bg="#3a3a3a",
+            fg="#ffffff",
+            activebackground="#555555",
+        )
         self.send_btn.pack(side="left", padx=5)
 
         self.text_entry.bind("<Return>", self._send_message_event)
@@ -106,13 +143,31 @@ class ChatGUI(tk.Tk):
                     if auto_msg and from_handle in self.peers:
                         thost, tport = self.peers[from_handle]
                         client_send_msg(thost, tport, self.config["handle"], auto_msg)
-                self.chat_list.insert("end", f"{from_handle}: {text}")
-                self.chat_list.yview_moveto(1)
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", f"{from_handle}: {text}\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             elif msg[0] == "IMG":
                 from_handle = msg[1]
                 path = msg[2]
-                self.chat_list.insert("end", f"[Bild von {from_handle}] {path}")
-                self.chat_list.yview_moveto(1)
+                try:
+                    img = Image.open(path)
+                    img.thumbnail((200, 200))
+                    photo = ImageTk.PhotoImage(img)
+                    self.images.append(photo)
+                    self.chat_text.configure(state="normal")
+                    self.chat_text.insert("end", f"{from_handle}: ")
+                    self.chat_text.image_create("end", image=photo)
+                    self.chat_text.insert("end", "\n")
+                    self.chat_text.configure(state="disabled")
+                    self.chat_text.see("end")
+                except Exception:
+                    self.chat_text.configure(state="normal")
+                    self.chat_text.insert(
+                        "end", f"[Bild von {from_handle}] {path}\n"
+                    )
+                    self.chat_text.configure(state="disabled")
+                    self.chat_text.see("end")
         while True:
             try:
                 dmsg = self.disc_to_cli.get_nowait()
@@ -145,29 +200,48 @@ class ChatGUI(tk.Tk):
                     host, port = self.peers[handle]
                     try:
                         client_send_msg(host, port, self.config["handle"], message)
-                        self.chat_list.insert("end", f"[Du -> {handle}] {message}")
+                        self.chat_text.configure(state="normal")
+                        self.chat_text.insert("end", f"[Du -> {handle}] {message}\n")
+                        self.chat_text.configure(state="disabled")
+                        self.chat_text.see("end")
                     except OSError as e:
-                        self.chat_list.insert("end", f"[Fehler] {e}")
+                        self.chat_text.configure(state="normal")
+                        self.chat_text.insert("end", f"[Fehler] {e}\n")
+                        self.chat_text.configure(state="disabled")
+                        self.chat_text.see("end")
                 else:
-                    self.chat_list.insert("end", "[Fehler] Unbekannter Nutzer")
+                    self.chat_text.configure(state="normal")
+                    self.chat_text.insert("end", "[Fehler] Unbekannter Nutzer\n")
+                    self.chat_text.configure(state="disabled")
+                    self.chat_text.see("end")
             else:
-                self.chat_list.insert("end", "[Fehler] Syntax: msg <user> <text>")
-            self.chat_list.yview_moveto(1)
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", "[Fehler] Syntax: msg <user> <text>\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             self.text_entry.delete("1.0", "end")
             return
 
         if text.startswith("msgall ") or text.startswith("msg all "):
             message = text.split(" ", 1)[1].split(" ", 1)[1] if text.startswith("msg all ") else text.split(" ", 1)[1]
             if not self.peers:
-                self.chat_list.insert("end", "[Fehler] Keine anderen Peers")
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", "[Fehler] Keine anderen Peers\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             else:
                 for h, (host, port) in self.peers.items():
                     try:
                         client_send_msg(host, port, self.config["handle"], message)
                     except OSError as e:
-                        self.chat_list.insert("end", f"[Fehler] zu {h}: {e}")
-                self.chat_list.insert("end", f"[Du -> alle] {message}")
-            self.chat_list.yview_moveto(1)
+                        self.chat_text.configure(state="normal")
+                        self.chat_text.insert("end", f"[Fehler] zu {h}: {e}\n")
+                        self.chat_text.configure(state="disabled")
+                        self.chat_text.see("end")
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", f"[Du -> alle] {message}\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             self.text_entry.delete("1.0", "end")
             return
 
@@ -179,25 +253,41 @@ class ChatGUI(tk.Tk):
                     host, port = self.peers[handle]
                     try:
                         if client_send_img(host, port, self.config["handle"], path):
-                            self.chat_list.insert(
-                                "end", f"[Du -> {handle}] Bild gesendet: {path}"
+                            self.chat_text.configure(state="normal")
+                            self.chat_text.insert(
+                                "end", f"[Du -> {handle}] Bild gesendet: {path}\n"
                             )
+                            self.chat_text.configure(state="disabled")
+                            self.chat_text.see("end")
                         else:
-                            self.chat_list.insert("end", "[Fehler] Datei nicht gefunden")
+                            self.chat_text.configure(state="normal")
+                            self.chat_text.insert("end", "[Fehler] Datei nicht gefunden\n")
+                            self.chat_text.configure(state="disabled")
+                            self.chat_text.see("end")
                     except OSError as e:
-                        self.chat_list.insert("end", f"[Fehler] {e}")
+                        self.chat_text.configure(state="normal")
+                        self.chat_text.insert("end", f"[Fehler] {e}\n")
+                        self.chat_text.configure(state="disabled")
+                        self.chat_text.see("end")
                 else:
-                    self.chat_list.insert("end", "[Fehler] Unbekannter Nutzer")
+                    self.chat_text.configure(state="normal")
+                    self.chat_text.insert("end", "[Fehler] Unbekannter Nutzer\n")
+                    self.chat_text.configure(state="disabled")
+                    self.chat_text.see("end")
             else:
-                self.chat_list.insert("end", "[Fehler] Syntax: img <user> <pfad>")
-            self.chat_list.yview_moveto(1)
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", "[Fehler] Syntax: img <user> <pfad>\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             self.text_entry.delete("1.0", "end")
             return
 
         if text == "who":
             client_send_who(self.config)
-            self.chat_list.insert("end", "[Info] Peer-Liste angefordert")
-            self.chat_list.yview_moveto(1)
+            self.chat_text.configure(state="normal")
+            self.chat_text.insert("end", "[Info] Peer-Liste angefordert\n")
+            self.chat_text.configure(state="disabled")
+            self.chat_text.see("end")
             self.text_entry.delete("1.0", "end")
             return
 
@@ -205,19 +295,26 @@ class ChatGUI(tk.Tk):
             if self.joined:
                 client_send_leave(self.config)
                 self.joined = False
-                self.chat_list.insert("end", "[Info] Netzwerk verlassen")
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", "[Info] Netzwerk verlassen\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             else:
-                self.chat_list.insert("end", "[Info] Nicht im Netzwerk")
-            self.chat_list.yview_moveto(1)
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", "[Info] Nicht im Netzwerk\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             self.text_entry.delete("1.0", "end")
             return
 
         if text == "help":
-            self.chat_list.insert(
+            self.chat_text.configure(state="normal")
+            self.chat_text.insert(
                 "end",
-                "Befehle: msg <user> <text>, msgall <text>, img <user> <pfad>, who, leave, help",
+                "Befehle: msg <user> <text>, msgall <text>, img <user> <pfad>, who, leave, help\n",
             )
-            self.chat_list.yview_moveto(1)
+            self.chat_text.configure(state="disabled")
+            self.chat_text.see("end")
             self.text_entry.delete("1.0", "end")
             return
 
@@ -229,10 +326,15 @@ class ChatGUI(tk.Tk):
             host, port = self.peers[handle]
             try:
                 client_send_msg(host, port, self.config["handle"], text)
-                self.chat_list.insert("end", f"[Du -> {handle}] {text}")
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", f"[Du -> {handle}] {text}\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
             except OSError as e:
-                self.chat_list.insert("end", f"[Fehler] {e}")
-            self.chat_list.yview_moveto(1)
+                self.chat_text.configure(state="normal")
+                self.chat_text.insert("end", f"[Fehler] {e}\n")
+                self.chat_text.configure(state="disabled")
+                self.chat_text.see("end")
         self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
@@ -252,10 +354,12 @@ class ChatGUI(tk.Tk):
             if handle in self.peers:
                 host, port = self.peers[handle]
                 if client_send_img(host, port, self.config["handle"], filename):
-                    self.chat_list.insert(
-                        "end", f"[Du -> {handle}] Bild gesendet: {filename}"
+                    self.chat_text.configure(state="normal")
+                    self.chat_text.insert(
+                        "end", f"[Du -> {handle}] Bild gesendet: {filename}\n"
                     )
-                    self.chat_list.yview_moveto(1)
+                    self.chat_text.configure(state="disabled")
+                    self.chat_text.see("end")
 
     def on_close(self):
         if self.joined:
