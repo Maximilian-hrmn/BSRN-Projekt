@@ -11,7 +11,7 @@ Discovery Service:
  - Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
  - Sendet KNOWUSERS-Antworten per Broadcast an alle Peers.
 """
-#discoveryLoop
+
 def discovery_loop(config, cli_queue):
     # Erstelle ein leeres Array zum Speichern der bekannten Peers.
     # Jeder Eintrag hat die Form: handle -> (IP-Adresse, Port)
