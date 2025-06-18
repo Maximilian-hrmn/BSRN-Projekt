@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog
+from tkinter.scrolledtext import ScrolledText
 from PIL import Image, ImageTk
 import queue
 import time
@@ -60,7 +61,7 @@ class ChatGUI(tk.Tk):
         chat_frame = tk.Frame(list_frame, bg="#2b2b2b")
         chat_frame.pack(side="left", fill="both", expand=True)
 
-        self.chat_text = tk.Text(
+        self.chat_text = ScrolledText(
             chat_frame,
             font=("Helvetica", 11),
             bg="#1e1e1e",
@@ -309,12 +310,57 @@ class ChatGUI(tk.Tk):
 
 
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
-    app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
-    app.protocol("WM_DELETE_WINDOW", app.on_close)
-    app.mainloop()
+    """
+    Startet die Tkinter-basierte GUI für den Chat-Client.
+    
+    Parameter:
+      config       - Konfiguration (z. B. Handle, Ports), aus der nebenbei der Fenstertitel gesetzt wird.
+      net_to_cli   - Queue für Nachrichten vom Netzwerk zur GUI.
+      disc_to_cli  - Queue für Nachrichten vom Discovery-Service zur GUI.
+      cli_to_net   - Queue für Nachrichten, die von der GUI ins Netzwerk gesendet werden.
+    """
+    # Erstelle das Hauptfenster der GUI.
+    root = tk.Tk()
+    # Setze den Fenstertitel, z.B. "Chat Client - user_name".
+    root.title(f"Chat Client - {config['handle']}")
 
+    # Erstelle einen gescrollten Textbereich, in dem der Chat-Verlauf angezeigt wird.
+    # Der 'state' ist auf 'disabled' gesetzt, damit der Benutzer den Text nicht direkt bearbeiten kann.
+    chat_display = ScrolledText(root, state='disabled', width=80, height=20)
+    chat_display.pack(padx=10, pady=10)
 
-if __name__ == "__main__":
+    # Erstelle ein Eingabefeld, über das der Benutzer Nachrichten eintippen kann.
+    entry = tk.Entry(root, width=80)
+    entry.pack(padx=10, pady=5)
+    
+    def send_message(event=None):
+        """
+        Diese Funktion wird aufgerufen, wenn der Benutzer die Eingabetaste drückt.
+        
+        Sie liest den Text aus dem Eingabefeld, sendet die Nachricht an das Netzwerk
+        (zum Beispiel über die Queue 'cli_to_net') und fügt die gesendete Nachricht
+        dem Chat-Display hinzu. Anschließend wird das Eingabefeld geleert.
+        """
+        msg = entry.get().strip()  # Hole den Inhalt des Eingabefelds und entferne unnötige Leerzeichen.
+        if msg:
+            # Hier könntest du die Nachricht z.B. ins Queue-System einfügen:
+            # cli_to_net.put(('MSG', msg))
+            #
+            # Aktualisiere das Chat-Display mit der eigenen gesendeten Nachricht.
+            chat_display.config(state='normal')  # Mache den Textbereich schreibbar, um Text hinzuzufügen.
+            chat_display.insert(tk.END, f"Ich: {msg}\n")  # Füge die Nachricht am Ende ein.
+            chat_display.config(state='disabled')  # Setze den Textbereich wieder auf 'disabled'.
+            chat_display.see(tk.END)  # Scrolle zum Ende, damit die neueste Nachricht sichtbar ist.
+            entry.delete(0, tk.END)  # Leere das Eingabefeld.
+
+    # Binde das Drücken der Return-Taste an die Funktion send_message.
+    entry.bind('<Return>', send_message)
+    
+    # Starte die Hauptschleife der GUI, die das Fenster offen hält und auf Ereignisse reagiert.
+    root.mainloop()
+
+# Falls diese Datei direkt ausgeführt wird, kann man hier z.B. einen einfachen Test starten:
+if __name__ == '__main__':
     import argparse
     import toml
     from multiprocessing import Process, Queue
