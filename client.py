@@ -22,13 +22,17 @@ def _send_discovery(msg: bytes, config: dict) -> None:
     vermieden, dass Peers im LAN versehentlich die localhost-Adresse
     austauschen und Nachrichten an sich selbst schicken.
     """
+    # Erstelle einen UDP-Socket für den Broadcast
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # Setze die Socket-Optionen für Wiederverwendbarkeit und Broadcast
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     try:
+        # Sende die Nachricht an die konfigurierte Broadcast-Adresse und den Port
         sock.sendto(msg, (config['broadcast'], config['whoisport']))
     except OSError as e:
         # Fallback nur bei lokalen Broadcast-Adressen verwenden
         if e.errno == 101 and config['broadcast'].startswith('127.'):
+            # Sende die Nachricht an localhost, wenn die Broadcast-Adresse im Loopback-Bereich liegt
             sock.sendto(msg, ("127.0.0.1", config['whoisport']))
         else:
             raise
@@ -38,35 +42,46 @@ def _send_discovery(msg: bytes, config: dict) -> None:
 
 # Funktion zum Senden einer JOIN-Nachricht an den Server
 def client_send_join(config):
+    # Erstelle eine JOIN-Nachricht mit dem Handle und Port aus der Konfiguration
     msg = build_join(config['handle'], config['port'])
     _send_discovery(msg, config)
 
 # Funktion zum Senden einer WHO-Nachricht an den Server
 def client_send_who(config):
+    # Erstelle eine WHO-Nachricht, um die Liste der aktiven Clients abzufragen
     msg = build_who()
     _send_discovery(msg, config)
 
 # Funktion zum Senden einer LEAVE-Nachricht an den Server
 def client_send_leave(config):
+    # Erstelle eine LEAVE-Nachricht mit dem Handle aus der Konfiguration
     msg = build_leave(config['handle'])
+    # Sende die LEAVE-Nachricht an den Server
     _send_discovery(msg, config)
 
 #Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port
 def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):
-    """Sende eine Textnachricht über TCP."""
+    # Sende eine Textnachricht über TCP.
     with socket.create_connection((target_host, target_port)) as sock:
+        # Erstelle die Nachricht im SLCP-Format
         data = build_msg(from_handle, text)
+        # Sende die Nachricht an den angegebenen Host und Port
         sock.sendall(data)
     
 #Funktion zum Senden eines Bildes an einen bestimmten Host und Port
 def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
-    """Sende eine Bildnachricht über TCP."""
+   # Überprüfe, ob der angegebene Pfad zu einem Bild existiert
     if not os.path.isfile(img_path):
         return False
     size = os.path.getsize(img_path)
+    # Überprüfe, ob die Bildgröße größer als 0 ist
     with socket.create_connection((target_host, target_port)) as sock:
+        # Sende den Header mit dem Handle und der Größe des Bildes
         header = build_img(from_handle, size)
+        # Sende den Header und dann den Bildinhalt
         sock.sendall(header)
+        # Öffne das Bild im Binärmodus und sende den Inhalt
         with open(img_path, 'rb') as f:
+            # Sende den Bildinhalt über den Socket
             sock.sendall(f.read())
     return True
