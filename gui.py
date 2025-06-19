@@ -233,10 +233,3 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                     )
                     self.chat_model.appendRow(item)
             # Hier könntest du die Datei laden, versenden oder anzeigen etc.
-
-# Startfunktion
-def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
-    app = QtWidgets.QApplication(sys.argv)
-    window = Ui_MainWindow(config, net_to_cli, disc_to_cli, cli_to_net)
-    window.show()
-    sys.exit(app.exec_())
