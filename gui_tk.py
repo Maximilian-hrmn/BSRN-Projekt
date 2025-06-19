@@ -4,7 +4,7 @@ from tkinter import simpledialog, filedialog
 import time
 import socket
 import queue
-from Pillow import Image, ImageTk
+from PIL import Image, ImageTk
 
 from client import (
     client_send_join,
