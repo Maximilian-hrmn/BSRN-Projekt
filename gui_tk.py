@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog
-from PIL import Image, ImageTk
-import queue
+
 import time
-import sys
 import socket
+import queue
+from Pillow import Image, ImageTk
 
 from client import (
     client_send_join,
