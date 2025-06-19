@@ -1,10 +1,10 @@
-# 🗨️ Peer-to-Peer LAN Messenger
+# Peer-to-Peer LAN Messenger
 
 Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommandozeilen-Interface (CLI)** als auch eine **grafische Benutzeroberfläche (GUI)** unterstützt. Nachrichten und Bilder können direkt zwischen Peers ausgetauscht werden – ohne zentralen Server.
 
 ---
 
-## 🚀 Funktionen
+## Funktionen
 
 - Text- und Bildnachrichten im lokalen Netzwerk
 - Automatische Peer-Erkennung via UDP-Broadcast
@@ -14,7 +14,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 ---
 
-## 🧰 Voraussetzungen
+## Voraussetzungen
 
 - Python 3.8+
 - Abhängigkeiten:
@@ -25,7 +25,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 ---
 
-## 🗂️ Projektstruktur
+## Projektstruktur
 
 ```
 .
@@ -43,7 +43,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 ---
 
-## ⚙️ Konfiguration (`config.toml`)
+##  Konfigurationsdatei (toml)
 
 Beispiel:
 
@@ -58,7 +58,7 @@ autoreply = "Ich bin gerade nicht da. Ich melde mich später bei dir."
 
 ---
 
-## 🧑‍💻 Nutzung
+## Nutzung
 
 ### Starten:
 
@@ -86,7 +86,7 @@ Dann wählen:
 
 ---
 
-## 💬 Textnachrichten senden
+## Textnachrichten senden
 
 - In CLI via:
 
@@ -98,7 +98,7 @@ Dann wählen:
 
 ---
 
-## 📸 Bilder senden
+## Bilder senden
 
 - In CLI via:
 
@@ -110,7 +110,7 @@ Dann wählen:
 
 ---
 
-## 🔐 Hinweise
+## Hinweise
 
 - Dieses Tool ist **nicht für produktiven Einsatz** oder über öffentliche Netzwerke gedacht.
 - Die Nachrichten werden **nicht verschlüsselt** übertragen.
