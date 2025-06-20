@@ -192,9 +192,11 @@ class ChatGUI(tk.Tk):
         except Exception:
             self._append_text(f"[Bild {prefix}] {path}\n")
 
-    
+    # Diese Methode sendet eine Nachricht, die im Eingabefeld eingegeben wurde.
     def _send_message(self):
+        # Aktualisiere die letzte Aktivitätszeit, um Inaktivität zu verfolgen
         self.last_activity = time.time()
+        # Lese den Text aus dem Eingabefeld und entferne führende und nachfolgende Leerzeichen
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
             return
@@ -203,20 +205,32 @@ class ChatGUI(tk.Tk):
         # "img <user> <pfad>" direkt im Eingabefeld. Weitere Befehle wie
         # "msg all", "who", "leave" und "help" werden ebenfalls interpretiert.
         if text.startswith("msg "):
+            # Teile den Text in Teile auf, um den Nutzer und die Nachricht zu extrahieren
             parts = text.split(" ", 2)
+            # Wenn genau 3 Teile vorhanden sind, sende die Nachricht an den Nutzer
             if len(parts) == 3:
+                # Extrahiere den Nutzer und die Nachricht
+                # parts[0] ist "msg", parts[1] ist der Nutzer, parts
                 handle, message = parts[1], parts[2]
-                if handle in self.peers:
+                # Überprüfe, ob der Nutzer in der Peer-Liste vorhanden ist
+                if handle in self.peers:    
+                    # Hole die Host- und Port-Informationen des Nutzers
                     host, port = self.peers[handle]
                     try:
+                        # Sende die Nachricht an den Nutzer
                         client_send_msg(host, port, self.config["handle"], message)
+                        # Füge die Nachricht zum Chat-Fenster hinzu
                         self._append_text(f"[Du -> {handle}] {message}\n")
                     except OSError as e:
+                        # Wenn ein Fehler auftritt, füge eine Fehlermeldung zum Chat-Fenster hinzu
                         self._append_text(f"[Fehler] {e}\n")
                 else:
+                    # Wenn der Nutzer nicht in der Peer-Liste ist, füge eine Fehlermeldung hinzu
                     self._append_text("[Fehler] Unbekannter Nutzer\n")
             else:
+                # Wenn die Syntax nicht korrekt ist, füge eine Fehlermeldung hinzu
                 self._append_text("[Fehler] Syntax: msg <user> <text>\n")
+                # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
 
