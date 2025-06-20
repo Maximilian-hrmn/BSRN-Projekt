@@ -1,7 +1,17 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog
+<<<<<<< HEAD
+from tkinter.scrolledtext import ScrolledText
+from PIL import Image, ImageTk
+import queue
+import time
+import sys
+=======
+>>>>>>> 5ff4adfae68a71acfe17f5af0d6baf577e8fb86a
 import socket
 import queue
+import os
+
 
 from client import (
     client_send_join,
@@ -36,6 +46,75 @@ class ChatGUI(tk.Tk):
 
     def _setup_ui(self):
         self.title("Messenger")
+<<<<<<< HEAD
+        self.geometry("800x600")
+        self.configure(bg="#2b2b2b")
+
+        self.images = []
+
+        main_frame = tk.Frame(self, bg="#2b2b2b")
+        main_frame.pack(fill="both", expand=True)
+
+        list_frame = tk.Frame(main_frame, bg="#2b2b2b")
+        list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+        chat_frame = tk.Frame(list_frame, bg="#2b2b2b")
+        chat_frame.pack(side="left", fill="both", expand=True)
+
+        self.chat_text = ScrolledText(
+            chat_frame,
+            font=("Helvetica", 11),
+            bg="#1e1e1e",
+            fg="#dcdcdc",
+            wrap="word",
+            state="disabled",
+        )
+        self.chat_text.pack(side="left", fill="both", expand=True)
+
+        peer_frame = tk.Frame(list_frame, bg="#2b2b2b")
+        peer_frame.pack(side="right", fill="y")
+
+        self.peer_list = tk.Listbox(
+            peer_frame, width=20, font=("Helvetica", 11), bg="#333", fg="#ffffff"
+        )
+        self.peer_list.pack(side="left", fill="y")
+
+        bottom_frame = tk.Frame(main_frame, bg="#2b2b2b")
+        bottom_frame.pack(fill="x", pady=5)
+
+        self.text_entry = tk.Text(
+            bottom_frame, height=3, font=("Helvetica", 11), bg="#1e1e1e", fg="#dcdcdc"
+        )
+        self.text_entry.pack(side="left", fill="both", expand=True)
+
+        self.image_btn = tk.Button(
+            bottom_frame,
+            text="📷",
+            width=4,
+            command=self.open_image_dialog,
+            bg="#007acc",
+            fg="#ffffff",
+            activebackground="#005f99",
+            relief="flat",
+            bd=0,
+        )
+        self.image_btn.pack(side="left", padx=(5, 0))
+
+        self.send_btn = tk.Button(
+            bottom_frame,
+            text="Senden",
+            width=10,
+            command=self._send_message,
+            bg="#007acc",
+            fg="#ffffff",
+            activebackground="#005f99",
+            relief="flat",
+            bd=0,
+        )
+        self.send_btn.pack(side="left", padx=5)
+
+        self.text_entry.bind("<Return>", self._send_message_event)
+=======
         self.geometry("600x400")
         frame = tk.Frame(self)
         frame.pack(fill="both", expand=True)
@@ -53,6 +132,7 @@ class ChatGUI(tk.Tk):
         tk.Button(btn_frame, text="Senden", command=self._send_message).pack(side="left")
         tk.Button(btn_frame, text="Aktualisieren", command=self._refresh_peers).pack(side="left")
         self.entry.bind("<Return>", self._send_message)
+>>>>>>> 5ff4adfae68a71acfe17f5af0d6baf577e8fb86a
 
     def _join_network(self):
         handle = self.config.get("user", {}).get("name")
@@ -99,6 +179,13 @@ class ChatGUI(tk.Tk):
 
     def _append_image(self, prefix, path):
         try:
+            img = tk.PhotoImage(file=os.path.abspath(path))
+            # verkleinere große Bilder rudimentär, um das Layout nicht zu sprengen
+            m = max(img.width(), img.height())
+            if m > 200:
+                f = max(m // 200, 1)
+                img = img.subsample(f)
+
             img = tk.PhotoImage(file=path)
             self.images.append(img)
             self.chat.configure(state="normal")
@@ -149,6 +236,86 @@ class ChatGUI(tk.Tk):
 
 
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
+<<<<<<< HEAD
+    """
+    Startet die Tkinter-basierte GUI für den Chat-Client.
+    
+    Parameter:
+      config       - Konfiguration (z. B. Handle, Ports), aus der nebenbei der Fenstertitel gesetzt wird.
+      net_to_cli   - Queue für Nachrichten vom Netzwerk zur GUI.
+      disc_to_cli  - Queue für Nachrichten vom Discovery-Service zur GUI.
+      cli_to_net   - Queue für Nachrichten, die von der GUI ins Netzwerk gesendet werden.
+    """
+    # Erstelle das Hauptfenster der GUI.
+    root = tk.Tk()
+    # Setze den Fenstertitel, z.B. "Chat Client - user_name".
+    root.title(f"Chat Client - {config['handle']}")
+
+    # Erstelle einen gescrollten Textbereich, in dem der Chat-Verlauf angezeigt wird.
+    # Der 'state' ist auf 'disabled' gesetzt, damit der Benutzer den Text nicht direkt bearbeiten kann.
+    chat_display = ScrolledText(root, state='disabled', width=80, height=20)
+    chat_display.pack(padx=10, pady=10)
+
+    # Erstelle ein Eingabefeld, über das der Benutzer Nachrichten eintippen kann.
+    entry = tk.Entry(root, width=80)
+    entry.pack(padx=10, pady=5)
+    
+    def send_message(event=None):
+        """
+        Diese Funktion wird aufgerufen, wenn der Benutzer die Eingabetaste drückt.
+        
+        Sie liest den Text aus dem Eingabefeld, sendet die Nachricht an das Netzwerk
+        (zum Beispiel über die Queue 'cli_to_net') und fügt die gesendete Nachricht
+        dem Chat-Display hinzu. Anschließend wird das Eingabefeld geleert.
+        """
+        msg = entry.get().strip()  # Hole den Inhalt des Eingabefelds und entferne unnötige Leerzeichen.
+        if msg:
+            # Hier könntest du die Nachricht z.B. ins Queue-System einfügen:
+            # cli_to_net.put(('MSG', msg))
+            #
+            # Aktualisiere das Chat-Display mit der eigenen gesendeten Nachricht.
+            chat_display.config(state='normal')  # Mache den Textbereich schreibbar, um Text hinzuzufügen.
+            chat_display.insert(tk.END, f"Ich: {msg}\n")  # Füge die Nachricht am Ende ein.
+            chat_display.config(state='disabled')  # Setze den Textbereich wieder auf 'disabled'.
+            chat_display.see(tk.END)  # Scrolle zum Ende, damit die neueste Nachricht sichtbar ist.
+            entry.delete(0, tk.END)  # Leere das Eingabefeld.
+
+    # Binde das Drücken der Return-Taste an die Funktion send_message.
+    entry.bind('<Return>', send_message)
+    
+    # Starte die Hauptschleife der GUI, die das Fenster offen hält und auf Ereignisse reagiert.
+    root.mainloop()
+
+# Falls diese Datei direkt ausgeführt wird, kann man hier z.B. einen einfachen Test starten:
+if __name__ == '__main__':
+    import argparse
+    import toml
+    from multiprocessing import Process, Queue
+    import discovery_service
+    import server
+
+    parser = argparse.ArgumentParser(description="Start Tk GUI")
+    parser.add_argument("--config", default="config.toml", help="Pfad zur Konfig-Datei")
+    args = parser.parse_args()
+
+    config = toml.load(args.config)
+
+    cli_to_net = Queue()
+    cli_to_disc = Queue()
+    net_to_cli = Queue()
+    disc_to_cli = Queue()
+
+    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
+    disc_proc.daemon = True
+    disc_proc.start()
+
+    net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net))
+    net_proc.daemon = True
+    net_proc.start()
+
+    startGui(config, net_to_cli, disc_to_cli, cli_to_net)
+=======
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
+>>>>>>> 5ff4adfae68a71acfe17f5af0d6baf577e8fb86a
