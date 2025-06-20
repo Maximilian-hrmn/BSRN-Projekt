@@ -4,6 +4,7 @@ import socket
 import queue
 import os
 
+
 from client import (
     client_send_join,
     client_send_leave,
@@ -106,6 +107,8 @@ class ChatGUI(tk.Tk):
             if m > 200:
                 f = max(m // 200, 1)
                 img = img.subsample(f)
+
+            img = tk.PhotoImage(file=path)
             self.images.append(img)
             self.chat.configure(state="normal")
             if prefix:
