@@ -1,3 +1,11 @@
+# Hier werden wesendliche Bibilotheken importiert, die für die GUI und Netzwerkkommunikation benötigt werden.
+# Die Bibliotheken tkinter, simpledialog und filedialog sind für die GUI-Komponenten zuständig
+# Die Bibliothek PIL (Pillow) wird für die Bildverarbeitung verwendet, um Bilder anzuzeigen.
+# Die Bibliothek queue wird für die Kommunikation zwischen Prozessen verwendet, um Nachrichten zu senden und empfangen.
+# Die Bibliothek time wird für Zeitmessungen verwendet, um Inaktivitätszeiten zu verfolgen
+# Die Bibliothek sys wird für Systemoperationen verwendet, z.B. um das Skript zu beenden.
+# Die Bibliothek socket wird für die Netzwerkkommunikation verwendet, um Verbindungen zu anderen Peers herzustellen.
+
 import tkinter as tk
 from tkinter import simpledialog, filedialog
 from PIL import Image, ImageTk
@@ -6,7 +14,8 @@ import time
 import sys
 import socket
 
-from client import (
+#Aus der Client Klasse werden die relevanten Funktionen importiert, die für die Kommunikation mit dem Netzwerk und anderen Peers zuständig sind. 
+from client import ( # 
     client_send_join,
     client_send_leave,
     client_send_msg,
