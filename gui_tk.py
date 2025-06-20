@@ -52,19 +52,23 @@ class ChatGUI(tk.Tk):
         #Durch socket.socket wird ein neues Socket-Objekt erstellt, das für die Netzwerkkommunikation verwendet wird.
         # tmp_sock ist eine Variable, die ein temporäres Socket-Objekt repräsentiert.
         # Mit bind wird das Socket an eine Adresse und einen Port gebunden
+
         tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tmp_sock.bind(("", 0))
-        port = tmp_sock.getsockname()[1]
+        port = tmp_sock.getsockname()[1] # getsockname() gibt die Adresse und den Port des Sockets zurück, und [1] gibt den Port zurück.
         tmp_sock.close()
-        self.config.setdefault("network", {})["port"] = port
+        self.config.setdefault("network", {})["port"] = port 
+    
+    # Diese Methode richtet die Benutzeroberfläche der Chat-Anwendung ein und baut alle erforderlichen Komponenten auf.
+    # Sie erstellt Frames, Textfelder, Buttons und Listboxen für die Anzeige von Nachrichten
 
     def _setup_ui(self):
         self.title("Messenger")
-        self.geometry("800x600")
-        self.configure(bg="#2b2b2b")
+        self.geometry("800x600") # Setzt die Größe des Fensters auf 800x600 Pixel
+        self.configure(bg="#2b2b2b") # Setzt die Hintergrundfarbe des Fensters auf ein dunkles Grau
 
         self.images = []
-
+    
         main_frame = tk.Frame(self, bg="#2b2b2b")
         main_frame.pack(fill="both", expand=True)
 
