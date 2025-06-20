@@ -253,11 +253,17 @@ class ChatGUI(tk.Tk):
             # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
+        
 
+        # Wenn der Text mit "img " beginnt, sende ein Bild an den Nutzer
+        # Teile den Text in Teile auf, um den Nutzer und den Pfad zum Bild zu extrahieren
         if text.startswith("img "):
             parts = text.split(" ", 2)
             if len(parts) == 3:
                 handle, path = parts[1], parts[2]
+                # Überprüfe, ob der Nutzer in der Peer-Liste vorhanden ist
+                # Wenn der Nutzer in der Peer-Liste ist, sende das Bild
+                # Ansonsten füge eine Fehlermeldung hinzu
                 if handle in self.peers:
                     host, port = self.peers[handle]
                     try:
@@ -271,33 +277,37 @@ class ChatGUI(tk.Tk):
                     self._append_text("[Fehler] Unbekannter Nutzer\n")
             else:
                 self._append_text("[Fehler] Syntax: img <user> <pfad>\n")
+            # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
 
-        if text == "who":
-            client_send_who(self.config)
-            self.chat_text.configure(state="normal")
-            self._append_text("[Info] Peer-Liste angefordert\n")
-            self.text_entry.delete("1.0", "end")
-            return
-
+        # Wenn der Text "leave" eingegeben wird, verlasse das Netzwerk
         if text == "leave":
             if self.joined:
+                # Sende eine Nachricht an den Server, um das Netzwerk zu verlassen
                 client_send_leave(self.config)
+                # Setze den Beitrittsstatus auf False und füge eine Nachricht zum Chat-Fenster hinzu
                 self.joined = False
+                # Aktualisiere die Peer-Liste
                 self._append_text("[Info] Netzwerk verlassen\n")
             else:
+                # Wenn der Nutzer nicht im Netzwerk ist, füge eine Nachricht zum Chat-Fenster hinzu
                 self._append_text("[Info] Nicht im Netzwerk\n")
+                # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
 
+        # help Funktion, die eine Liste von Befehlen anzeigt
         if text == "help":
+            # Zeigt im Textfeld die Liste der verfügbaren Befehle an
             self._append_text(
                 "Befehle: msg <user> <text>, msgall <text>, img <user> <pfad>, who, leave, help\n"
             )
+            # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
 
+        
         sel = self.peer_list.curselection()
         if not sel:
             return
