@@ -328,43 +328,43 @@ class ChatGUI(tk.Tk):
         # Leere das Texteingabefeld nach dem Senden der Nachricht
         self.text_entry.delete("1.0", "end")
 
-        # Diese Methode wird aufgerufen, wenn der Nutzer die Eingabetaste drückt, um eine Nachricht zu senden.
-        def _send_message_event(self, event):
-            # Verhindert das automatische Einfügen eines Zeilenumbruchs im Textfeld
-            self._send_message()
-            return "break"
+    # Diese Methode wird aufgerufen, wenn der Nutzer die Eingabetaste drückt, um eine Nachricht zu senden.
+    def _send_message_event(self, event):
+        # Verhindert das automatische Einfügen eines Zeilenumbruchs im Textfeld
+        self._send_message()
+        return "break"
 
-        # Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer
-        def open_image_dialog(self):
-            sel = self.peer_list.curselection()
-            if not sel:
-                # Kein Peer ausgewählt, daher abbrechen
-                return
-            # Öffnet einen Dateiauswahldialog für Bilddateien
-            filename = filedialog.askopenfilename(
-                title="Bild auswählen",
-                filetypes=[("Bilder", "*.png *.jpg *.jpeg *.bmp *.gif")],
-            )
-            if filename:
-                # Holt den Handle des ausgewählten Peers
-                handle = self.peer_list.get(sel[0])
-                if handle in self.peers:
-                    host, port = self.peers[handle]
-                    # Versucht, das Bild an den Peer zu senden
-                    if client_send_img(host, port, self.config["handle"], filename):
-                        # Zeigt das gesendete Bild im Chatfenster an
-                        self._append_image(f"Du -> {handle}", filename)
-                    else:
-                        # Zeigt eine Fehlermeldung an, falls das Bild nicht gefunden wurde
-                        self._append_text("[Fehler] Datei nicht gefunden\n")
+    # Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer
+    def open_image_dialog(self):
+        sel = self.peer_list.curselection()
+        if not sel:
+            # Kein Peer ausgewählt, daher abbrechen
+            return
+        # Öffnet einen Dateiauswahldialog für Bilddateien
+        filename = filedialog.askopenfilename(
+            title="Bild auswählen",
+            filetypes=[("Bilder", "*.png *.jpg *.jpeg *.bmp *.gif")],
+        )
+        if filename:
+            # Holt den Handle des ausgewählten Peers
+            handle = self.peer_list.get(sel[0])
+            if handle in self.peers:
+                host, port = self.peers[handle]
+                # Versucht, das Bild an den Peer zu senden
+                if client_send_img(host, port, self.config["handle"], filename):
+                    # Zeigt das gesendete Bild im Chatfenster an
+                    self._append_image(f"Du -> {handle}", filename)
+                else:
+                    # Zeigt eine Fehlermeldung an, falls das Bild nicht gefunden wurde
+                    self._append_text("[Fehler] Datei nicht gefunden\n")
 
-        # Wird aufgerufen, wenn das Fenster geschlossen wird
-        def on_close(self):
-            if self.joined:
-                # Sende LEAVE-Nachricht an den Server, wenn der Nutzer beigetreten ist
-                client_send_leave(self.config)
-            # Schließt das Fenster
-            self.destroy()
+    # Wird aufgerufen, wenn das Fenster geschlossen wird
+    def on_close(self):
+        if self.joined:
+            # Sende LEAVE-Nachricht an den Server, wenn der Nutzer beigetreten ist
+            client_send_leave(self.config)
+        # Schließt das Fenster
+        self.destroy()
 
 # Startet die GUI-Anwendung
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
