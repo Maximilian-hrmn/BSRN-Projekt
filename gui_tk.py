@@ -14,39 +14,44 @@ import time
 import sys
 import socket
 
-#Aus der Client Klasse werden die relevanten Funktionen importiert, die für die Kommunikation mit dem Netzwerk und anderen Peers zuständig sind. 
-from client import ( # 
+# Aus der Client Klasse werden die relevanten Funktionen importiert, die für die Kommunikation mit dem Netzwerk und anderen Peers zuständig sind. 
+from client import ( 
     client_send_join,
     client_send_leave,
     client_send_msg,
     client_send_img,
     client_send_who,
 )
-
+# Hier wird die Timeout für die automatische Abwesenheitsnachricht festgelegt (ab 30 Sekunden)
 AWAY_TIMEOUT = 30
 
+# Die ChatGUI-Klasse erbt von tk.Tk und stellt die Benutzeroberfläche für den Chat-Client dar.
+# Sie verwaltet die Netzwerkkommunikation, die Anzeige von Nachrichten und Bildern sowie die Interaktion in grafischen Oberfläche
+class ChatGUI(tk.Tk): 
+    def __init__(self, config, net_to_cli, disc_to_cli, cli_to_net): # Initialisierung der Klasse (Konstruktor)
+        
+        super().__init__() # Super bezeichnet die Elternklasse, von der diese Klasse erbt. In diesem Fall ist es tk.Tk, die Hauptklasse für Tkinter-Anwendungen.
+        self.config = config #Ruft die Konfiguration des Chat-Clients ab, die aus der config.toml geladen wurde
+        self.net_to_cli = net_to_cli # IPC Queue für Nachrichten vom Netzwerk zum Client
+        self.disc_to_cli = disc_to_cli # IPC Queue für Nachrichten vom Discovery-Service zum Client
+        self.cli_to_net = cli_to_net # IPC Queue für Nachrichten vom Client zum Netzwerk
+        self.peers = {} # Leeres Dictonary für die Peers
+        self.last_activity = time.time() # Zeitstempel der letzten Aktivität, um Inaktivität zu verfolgen
+        self.joined = False # Hier wird festgelegt, ob der Client einem Netzwerk beigetreten ist oder nicht 
+        self._ask_user_info() # Durch den Aufruf der Methode wird der Nutzer nach seinem Namen gefragt und ein freier TCP-Port gewählt
+        self._setup_ui() # Alle Bauteile der UI werden hier initialisiert
+        self._join_network() # Sobald Nutzername und Port eingegeben wurden wird versucht, dem Netzwerk beizutreten.
+        self._poll_queues() # Diese Methode wird regelmäßig aufgerufen, um Nachrichten aus den IPC-Queues zu verarbeiten und die Benutzeroberfläche zu aktualisieren
 
-class ChatGUI(tk.Tk):
-    def __init__(self, config, net_to_cli, disc_to_cli, cli_to_net):
-        super().__init__()
-        self.config = config
-        self.net_to_cli = net_to_cli
-        self.disc_to_cli = disc_to_cli
-        self.cli_to_net = cli_to_net
-        self.peers = {}
-        self.last_activity = time.time()
-        self.joined = False
-        self._ask_user_info()
-        self._setup_ui()
-        self._join_network()
-        self._poll_queues()
-
-    def _ask_user_info(self):
-        name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self)
+    def _ask_user_info(self): # Diese Methode fragt den Nutzer nach seinem Namen und wählt automatisch einen freien TCP-Port.
+        name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self) #Hier wird der Name abgefragt. parent=self bindet das Dialogfenster an die Hauptanwendung, sodass es im Vordergrund bleibt.
         if name:
-            self.config.setdefault("user", {})["name"] = name
+            self.config.setdefault("user", {})["name"] = name #Die config wird aktualisiert, indem der Nutzername im Dictonary unter dem Schlüssel "user" gespeichert wird. `setdefault` sorgt dafür, dass das Dictonary existiert, auch wenn es vorher leer war.
 
         # Automatisch einen freien TCP-Port wählen anstatt den Nutzer zu fragen
+        #Durch socket.socket wird ein neues Socket-Objekt erstellt, das für die Netzwerkkommunikation verwendet wird.
+        # tmp_sock ist eine Variable, die ein temporäres Socket-Objekt repräsentiert.
+        # Mit bind wird das Socket an eine Adresse und einen Port gebunden
         tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tmp_sock.bind(("", 0))
         port = tmp_sock.getsockname()[1]
@@ -122,7 +127,7 @@ class ChatGUI(tk.Tk):
         self.send_btn.pack(side="left", padx=5)
 
         self.text_entry.bind("<Return>", self._send_message_event)
-
+    #
     def _join_network(self):
         handle = self.config.get("user", {}).get("name")
         port = self.config.get("network", {}).get("port")

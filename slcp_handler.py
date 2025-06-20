@@ -40,7 +40,7 @@ def build_knowusers(peers: dict) -> bytes:
     Erzeugt eine KNOWUSERS-Antwort mit allen (handle:host:port)-Paaren,
     kommagetrennt.
     """
-    parts = []                                      # Initialisiert eine leere Liste, in der die formatierten Strings gespeichert werden.
+    parts = []          # Initialisiert eine leere Liste, in der die formatierten Strings gespeichert werden.
     for h, (host, port) in peers.items():
         parts.append(f"{h}:{host}:{port}")          # Fügt der Liste einen formatierten String hinzu, der das handle, den host und den port enthält.
     payload = ",".join(parts)                       # Verbindet alle formatierten Strings in der Liste mit einem Komma.
