@@ -94,8 +94,8 @@ def discovery_loop(config, cli_queue):
         # Hier wird eine Kopie der aktuellen Peerliste über eine IPC-Queue (cli_queue) verschickt.
         cli_queue.put(('PEERS', peers.copy()))
 
-"""Importiere die Konfigurationsdatei (config.toml) und die SLCP-Handler-Funktionen."""
 if __name__ == '__main__':
+    """Importiere die Konfigurationsdatei (config.toml) und die SLCP-Handler-Funktionen."""
     # Lädt die Konfigurationsdatei (config.toml)
     config = toml.load('config.toml')
     from multiprocessing import Queue

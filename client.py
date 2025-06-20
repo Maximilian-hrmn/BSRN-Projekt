@@ -16,10 +16,10 @@ import os
 """
 
 def _send_discovery(msg: bytes, config: dict) -> None:
-    """Funktion zum Senden von Discovery-Nachrichten (JOIN, WHO, LEAVE) an den Server."""
+    """Funktion zum Senden von Discovery-Nachrichten (JOIN, WHO, LEAVE) an den Server.
 
 
-    """Send a discovery message via broadcast.
+    Senden einer discovery message via broadcast.
 
     Fällt nur dann auf 127.0.0.1 zurück, wenn die konfigurierte
     Broadcast-Adresse selbst im 127.0.0.0/8-Netz liegt. Dadurch wird
