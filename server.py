@@ -16,9 +16,8 @@ Server-Prozess (Network-Empfang):
 
 """
 
-"""Funktion namens `server_loop`, die den Serverprozess implementiert."""
-
 def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
+    """Funktion namens `server_loop`, die den Serverprozess implementiert."""
 
     #Stelle sicher, dass der imagepath existiert
     imagepath = os.path.abspath(config['imagepath'])
@@ -29,8 +28,8 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
     # Setze den aktuellen Port aus der Konfiguration
     current_port = config['port']
 
-    """Funktion zum Binden des Sockets an den angegebenen Port"""
     def bind_socket(port):
+        """Funktion zum Binden des Sockets an den angegebenen Port"""
         # Erstelle einen TCP/IP-Socket und binde ihn an den angegebenen Port
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Setze die Socket-Option
@@ -46,9 +45,11 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
     # Setze eine Timeout für den Socket, um nicht ewig zu blockieren
     sock.settimeout(0.5)
 
-    """Endlosschleife, um auf eingehende Verbindungen zu warten"""
     while True:
-        # Überprüfe, ob eine neue Portänderung angefordert wurde
+        """
+        Endlosschleife, um auf eingehende Verbindungen zu warten
+        """
+        #Überprüfe, ob eine neue Portänderung angefordert wurde
         if cli_to_net_queue is not None:
             try:
                 # Versuche, eine Nachricht aus der Queue zu lesen

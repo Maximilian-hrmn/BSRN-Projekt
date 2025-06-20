@@ -12,8 +12,8 @@ Discovery Service:
  - Sendet KNOWUSERS-Antworten per Broadcast an alle Peers.
 """
 
-"""Funktion namens `discovery_loop`, die den Discovery-Service implementiert."""
 def discovery_loop(config, cli_queue):
+    """Funktion namens `discovery_loop`, die den Discovery-Service implementiert."""
     # Erstelle ein leeres Array zum Speichern der bekannten Peers.
     # Jeder Eintrag hat die Form: handle -> (IP-Adresse, Port)
     peers = {} 

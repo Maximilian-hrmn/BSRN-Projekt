@@ -17,8 +17,8 @@ Main Entry Point:
 - Anschließend startet CLI (ChatCLI) oder GUI (je nach Eingabe) im Hauptprozess
 """
 
-"""Main-Block, um das Skript direkt auszuführen"""
 if __name__ == '__main__': # main.py wird direkt ausgeführt
+    """Main-Block, um das Skript direkt auszuführen"""
     parser = argparse.ArgumentParser(description="Start chat client") # Initialisiert Kommandozeilenparser für Port und Broadcast-Optionen
     parser.add_argument("--port", type=int, help="UDP port for this client") # Port für den Client
     parser.add_argument("--broadcast", help="Broadcast address for discovery") # Broadcast-Adresse für Discovery
