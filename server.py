@@ -21,7 +21,7 @@ import queue
 def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
 
     # Stelle sicher, dass der imagepath existiert
-    imagepath = config['imagepath']
+    imagepath = os.path.abspath(config['imagepath'])
     # Erstelle den Ordner, falls er nicht existiert
     if not os.path.exists(imagepath):
         os.makedirs(imagepath)
