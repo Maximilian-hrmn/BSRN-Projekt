@@ -307,49 +307,69 @@ class ChatGUI(tk.Tk):
             self.text_entry.delete("1.0", "end")
             return
 
-        
+        # Ermittelt die aktuell ausgewählte Zeile in der Peer-Liste
         sel = self.peer_list.curselection()
         if not sel:
+            # Falls kein Peer ausgewählt wurde, Funktion beenden
             return
+        # Holt den Handle (Benutzernamen) des ausgewählten Peers
         handle = self.peer_list.get(sel[0])
+        # Prüft, ob der Handle in der bekannten Peerliste existiert
         if handle in self.peers:
-            host, port = self.peers[handle]
+            host, port = self.peers[handle]  # IP-Adresse und Port des Peers holen
             try:
+                # Sende die Nachricht an den ausgewählten Peer
                 client_send_msg(host, port, self.config["handle"], text)
+                # Zeige die gesendete Nachricht im Chatfenster an
                 self._append_text(f"[Du -> {handle}] {text}\n")
             except OSError as e:
+                # Zeige eine Fehlermeldung im Chatfenster an, falls das Senden fehlschlägt
                 self._append_text(f"[Fehler] {e}\n")
+        # Leere das Texteingabefeld nach dem Senden der Nachricht
         self.text_entry.delete("1.0", "end")
 
-    def _send_message_event(self, event):
-        self._send_message()
-        return "break"
+        # Diese Methode wird aufgerufen, wenn der Nutzer die Eingabetaste drückt, um eine Nachricht zu senden.
+        def _send_message_event(self, event):
+            # Verhindert das automatische Einfügen eines Zeilenumbruchs im Textfeld
+            self._send_message()
+            return "break"
 
-    def open_image_dialog(self):
-        sel = self.peer_list.curselection()
-        if not sel:
-            return
-        filename = filedialog.askopenfilename(
-            title="Bild auswählen",
-            filetypes=[("Bilder", "*.png *.jpg *.jpeg *.bmp *.gif")],
-        )
-        if filename:
-            handle = self.peer_list.get(sel[0])
-            if handle in self.peers:
-                host, port = self.peers[handle]
-                if client_send_img(host, port, self.config["handle"], filename):
-                    self._append_image(f"Du -> {handle}", filename)
-                else:
-                    self._append_text("[Fehler] Datei nicht gefunden\n")
+        # Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer
+        def open_image_dialog(self):
+            sel = self.peer_list.curselection()
+            if not sel:
+                # Kein Peer ausgewählt, daher abbrechen
+                return
+            # Öffnet einen Dateiauswahldialog für Bilddateien
+            filename = filedialog.askopenfilename(
+                title="Bild auswählen",
+                filetypes=[("Bilder", "*.png *.jpg *.jpeg *.bmp *.gif")],
+            )
+            if filename:
+                # Holt den Handle des ausgewählten Peers
+                handle = self.peer_list.get(sel[0])
+                if handle in self.peers:
+                    host, port = self.peers[handle]
+                    # Versucht, das Bild an den Peer zu senden
+                    if client_send_img(host, port, self.config["handle"], filename):
+                        # Zeigt das gesendete Bild im Chatfenster an
+                        self._append_image(f"Du -> {handle}", filename)
+                    else:
+                        # Zeigt eine Fehlermeldung an, falls das Bild nicht gefunden wurde
+                        self._append_text("[Fehler] Datei nicht gefunden\n")
 
-    def on_close(self):
-        if self.joined:
-            client_send_leave(self.config)
-        self.destroy()
+        # Wird aufgerufen, wenn das Fenster geschlossen wird
+        def on_close(self):
+            if self.joined:
+                # Sende LEAVE-Nachricht an den Server, wenn der Nutzer beigetreten ist
+                client_send_leave(self.config)
+            # Schließt das Fenster
+            self.destroy()
 
-
-def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
-    app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
-    app.protocol("WM_DELETE_WINDOW", app.on_close)
-    app.mainloop()
-
+        # Startet die GUI-Anwendung
+        def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
+            app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
+            # Setzt das Verhalten beim Schließen des Fensters
+            app.protocol("WM_DELETE_WINDOW", app.on_close)
+            # Startet die Haupt-Event-Schleife der GUI
+            app.mainloop()
