@@ -8,7 +8,8 @@ import server # Server-Modul für Netzwerkkommunikation
 from cli import ChatCLI # CLI-Modul für Kommandozeileninteraktion
 
 """
-Main Entry Point:
+@file main.py
+@brief Main Entry Point:
 
 - Lädt config.toml
 - Startet im Hintergrund jeweils:

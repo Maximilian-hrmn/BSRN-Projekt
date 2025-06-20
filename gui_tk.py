@@ -24,6 +24,11 @@ from client import (
 # Hier wird die Timeout für die automatische Abwesenheitsnachricht festgelegt (ab 30 Sekunden)
 AWAY_TIMEOUT = 30
 
+"""
+@file gui_tk.py
+@brief GUI für den Chat-Client mit Tkinter
+"""
+
 class ChatGUI(tk.Tk): 
     """
     Die ChatGUI-Klasse erbt von tk.Tk und stellt die Benutzeroberfläche für den Chat-Client dar.

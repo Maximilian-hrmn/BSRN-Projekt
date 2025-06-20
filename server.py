@@ -7,7 +7,8 @@ from slcp_handler import parse_slcp_line
 import queue
 
 """
-Server-Prozess (Network-Empfang):
+@file server.py
+@brief Server-Prozess (Network-Empfang):
 
 - Lauscht per TCP auf config['port'] auf eingehende SLCP-Nachrichten (MSG, IMG).
 - Bei MSG: Gibt Nachricht über IPC an CLI weiter.

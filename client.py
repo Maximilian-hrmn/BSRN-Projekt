@@ -5,7 +5,8 @@ from slcp_handler import build_join, build_leave, build_who, build_msg, build_im
 import os
 
 """
-Client-Funktionen (Network-Sender):
+@file client.py
+@brief Client-Funktionen (Network-Sender):
 
 - Broadcast (JOIN/WHO/LEAVE) an config['broadcast']:config['whoisport'].
 - Fallback auf localhost nur, wenn die Broadcast-Adresse bereits im

@@ -10,14 +10,14 @@ from client import client_send_join, client_send_leave, client_send_who, client_
 AWAY_TIMEOUT = 30  
 
 """
-    Hauptklasse für das Kommandozeilen-Interface des Peer-to-Peer-Chats.
-
-    Verwaltet Benutzereingaben, Nachrichtenversand und -empfang sowie Auto-Reply-Logik.
+@file cli.py
+@brief Hauptklasse für das Kommandozeilen-Interface des Peer-to-Peer-Chats. 
+Verwaltet Benutzereingaben, Nachrichtenversand und -empfang sowie Auto-Reply-Logik.
  """
 
 class ChatCLI(cmd.Cmd):
     """
-    ChatCLI-Klasse, die das cmd-Modul erweitert, 
+    brief ChatCLI-Klasse, die das cmd-Modul erweitert, 
     um eine Kommandozeilen-Schnittstelle für den Chat zu implementieren.
     """
 

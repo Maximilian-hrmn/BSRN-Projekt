@@ -5,7 +5,8 @@ from slcp_handler import parse_slcp_line, build_knowusers
 import toml
 
 """
-Discovery Service:
+@file discovery_service.py
+@brief Discovery Service:
  - Lauscht per UDP auf dem in der Konfiguration angegebenen Port (config['whoisport'])
  - Verarbeitet SLCP-Befehle: JOIN, WHO, LEAVE und KNOWUSERS.
  - Speichert eine lokale Peerliste, die jedem Handle (Benutzername) eine IP und einen Port zuordnet.
