@@ -1,7 +1,8 @@
 # File: slcp_handler.py
 
 """
-SLCP (Simple LAN Chat Protocol) Handler
+@file slcp_handler.py
+@brief SLCP (Simple LAN Chat Protocol) Handler
 
 Bietet Funktionen, um SLCP-Text-Befehle (JOIN, LEAVE, WHO, KNOWUSERS, MSG, IMG)
 aufzubauen und einzeln zu parsen.
