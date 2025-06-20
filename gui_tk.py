@@ -233,18 +233,24 @@ class ChatGUI(tk.Tk):
                 # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
-
+        
+        # Wenn der Text mit "msgall " oder "msg all " beginnt, sende die Nachricht an alle Peers
         if text.startswith("msgall ") or text.startswith("msg all "):
+            # Extrahiere die Nachricht, indem der Text nach dem Befehl aufgeteilt wird
             message = text.split(" ", 1)[1].split(" ", 1)[1] if text.startswith("msg all ") else text.split(" ", 1)[1]
+            # Fehlermeldung wenn keine anderen Peers vorhanden sind
             if not self.peers:
                 self._append_text("[Fehler] Keine anderen Peers\n")
+            # Wenn es Peers gibt, sende die Nachricht an alle
             else:
                 for h, (host, port) in self.peers.items():
                     try:
                         client_send_msg(host, port, self.config["handle"], message)
+                    #Fehlerbehandlung, wenn das Senden der Nachricht fehlschlägt
                     except OSError as e:
                         self._append_text(f"[Fehler] zu {h}: {e}\n")
                 self._append_text(f"[Du -> alle] {message}\n")
+            # Leere das Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
 
