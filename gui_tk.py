@@ -1,4 +1,8 @@
 import tkinter as tk
+from tkinter import simpledialog, filedialog, PhotoImage
+import socket
+import queue
+import os
 from tkinter import simpledialog, filedialog
 
 import socket
@@ -14,6 +18,7 @@ import sys
 import socket
 import queue
 import os
+
 
 
 from client import (
@@ -49,6 +54,26 @@ class ChatGUI(tk.Tk):
 
     def _setup_ui(self):
         self.title("Messenger")
+        self.geometry("600x400")
+        frame = tk.Frame(self)
+        frame.pack(fill="both", expand=True)
+        self.chat = tk.Text(frame, state="disabled", wrap="word")
+        self.chat.pack(side="left", fill="both", expand=True)
+        right = tk.Frame(frame)
+        right.pack(side="right", fill="y")
+        self.peers_box = tk.Listbox(right, width=20)
+        self.peers_box.pack(fill="y")
+        btn_frame = tk.Frame(self)
+        btn_frame.pack(fill="x")
+        self.entry = tk.Entry(btn_frame)
+        self.entry.pack(side="left", fill="x", expand=True)
+        tk.Button(btn_frame, text="📷", command=self._send_image).pack(side="left")
+        tk.Button(btn_frame, text="Senden", command=self._send_message).pack(side="left")
+        tk.Button(btn_frame, text="Aktualisieren", command=self._refresh_peers).pack(side="left")
+        tk.Button(btn_frame, text="Leave", command=self._leave).pack(side="left")
+        tk.Button(btn_frame, text="Join", command=self._join_network).pack(side="left")
+        self.entry.bind("<Return>", self._send_message)
+
 
         self.geometry("800x600")
         self.configure(bg="#2b2b2b")
@@ -118,6 +143,7 @@ class ChatGUI(tk.Tk):
 
         self.text_entry.bind("<Return>", self._send_message_event)
 
+
         self.geometry("600x400")
         frame = tk.Frame(self)
         frame.pack(fill="both", expand=True)
@@ -159,6 +185,10 @@ class ChatGUI(tk.Tk):
             self._refresh_peers()
 
 
+
+            self._refresh_peers()
+
+
     def _poll(self):
         while True:
             try:
@@ -193,6 +223,19 @@ class ChatGUI(tk.Tk):
     def _append_image(self, prefix, path):
         try:
 
+            path = os.path.abspath(path)
+            photo = PhotoImage(file=path)
+            w, h = photo.width(), photo.height()
+            if w > 200 or h > 200:
+                factor = max(w / 200, h / 200)
+                photo = photo.subsample(int(factor) + 1)
+            self.images.append(photo)
+            self.chat.configure(state="normal")
+            if prefix:
+                self.chat.insert("end", f"{prefix}: ")
+            self.chat.image_create("end", image=photo)
+
+
             img = Image.open(os.path.abspath(path))
             img.thumbnail((200, 200))
             photo = ImageTk.PhotoImage(img)
@@ -215,7 +258,6 @@ class ChatGUI(tk.Tk):
             if prefix:
                 self.chat.insert("end", f"{prefix}: ")
             self.chat.image_create("end", image=img)
-
             self.chat.insert("end", "\n")
             self.chat.configure(state="disabled")
             self.chat.see("end")
@@ -241,6 +283,8 @@ class ChatGUI(tk.Tk):
         sel = self.peers_box.curselection()
         if not sel:
             return
+
+        filename = filedialog.askopenfilename(title="Bild auswählen")
         filename = filedialog.askopenfilename(title="Bild auswählen", filetypes=[("Bilder", "*.png *.jpg *.jpeg *.gif")])
         if not filename:
             return
@@ -249,6 +293,14 @@ class ChatGUI(tk.Tk):
             host, port = self.peers[handle]
             if client_send_img(host, port, self.config["handle"], filename):
                 self._append_image(f"Du -> {handle}", filename)
+
+    # backward compatibility for older code expecting open_image_dialog
+    def open_image_dialog(self):
+        self._send_image()
+
+    def _refresh_peers(self):
+        client_send_who(self.config)
+
 
     def _refresh_peers(self):
         client_send_who(self.config)
@@ -272,6 +324,7 @@ def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
+
 
     """
     Startet die Tkinter-basierte GUI für den Chat-Client.
@@ -354,4 +407,3 @@ if __name__ == '__main__':
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
-
