@@ -313,31 +313,3 @@ def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
 
-
-if __name__ == "__main__":
-    import argparse
-    import toml
-    from multiprocessing import Process, Queue
-    import discovery_service
-    import server
-
-    parser = argparse.ArgumentParser(description="Start Tk GUI")
-    parser.add_argument("--config", default="config.toml", help="Pfad zur Konfig-Datei")
-    args = parser.parse_args()
-
-    config = toml.load(args.config)
-
-    cli_to_net = Queue()
-    cli_to_disc = Queue()
-    net_to_cli = Queue()
-    disc_to_cli = Queue()
-
-    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
-    disc_proc.daemon = True
-    disc_proc.start()
-
-    net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net))
-    net_proc.daemon = True
-    net_proc.start()
-
-    startGui(config, net_to_cli, disc_to_cli, cli_to_net)
