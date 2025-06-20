@@ -2,6 +2,8 @@ import argparse # ArgumentParser für Kommandozeilenargumente
 import toml # Zum Laden der Konfigurationsdatei
 from multiprocessing import Process, Queue # Multiprocessing für parallele Prozesse
 import discovery_service # Discovery-Service für Peer-Erkennung
+import fcntl
+import os
 import server # Server-Modul für Netzwerkkommunikation
 from cli import ChatCLI # CLI-Modul für Kommandozeileninteraktion
 
@@ -40,11 +42,16 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     net_to_cli = Queue() # Queue für Kommunikation von Netzwerk zu CLI
     disc_to_cli = Queue() # Queue für Kommunikation von Discovery zu CLI
 
-    # Discovery-Service als eigener Process
-    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli)) # Discovery-Service starten
-    disc_proc.daemon = True # Daemon-Prozess, damit er beim Beenden des Hauptprozesses automatisch beendet wird
-    disc_proc.start() # Discovery-Service starten
-    print("Discovery-Service gestartet") #  Ausgabe, dass der Discovery-Service gestartet wurde
+    lock_file = open('/tmp/discovery.lock', 'w')
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
+        disc_proc.daemon = True
+        disc_proc.start()
+        print("Discovery-Service gestartet")
+    except BlockingIOError:
+        disc_proc = None
+        print("Discovery-Service läuft bereits")
 
     # Server/Network als eigener Process
     net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net)) # Netzwerk-Server starten

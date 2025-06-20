@@ -1,13 +1,16 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog
-<<<<<<< HEAD
+
+import socket
+import queue
+import os
+from PIL import Image, ImageTk
+
 from tkinter.scrolledtext import ScrolledText
 from PIL import Image, ImageTk
 import queue
 import time
 import sys
-=======
->>>>>>> 5ff4adfae68a71acfe17f5af0d6baf577e8fb86a
 import socket
 import queue
 import os
@@ -46,7 +49,7 @@ class ChatGUI(tk.Tk):
 
     def _setup_ui(self):
         self.title("Messenger")
-<<<<<<< HEAD
+
         self.geometry("800x600")
         self.configure(bg="#2b2b2b")
 
@@ -114,7 +117,7 @@ class ChatGUI(tk.Tk):
         self.send_btn.pack(side="left", padx=5)
 
         self.text_entry.bind("<Return>", self._send_message_event)
-=======
+
         self.geometry("600x400")
         frame = tk.Frame(self)
         frame.pack(fill="both", expand=True)
@@ -131,10 +134,17 @@ class ChatGUI(tk.Tk):
         tk.Button(btn_frame, text="📷", command=self._send_image).pack(side="left")
         tk.Button(btn_frame, text="Senden", command=self._send_message).pack(side="left")
         tk.Button(btn_frame, text="Aktualisieren", command=self._refresh_peers).pack(side="left")
+
+        tk.Button(btn_frame, text="Leave", command=self._leave).pack(side="left")
+        tk.Button(btn_frame, text="Join", command=self._join_network).pack(side="left")
         self.entry.bind("<Return>", self._send_message)
->>>>>>> 5ff4adfae68a71acfe17f5af0d6baf577e8fb86a
+
+        self.entry.bind("<Return>", self._send_message)
+
 
     def _join_network(self):
+        if getattr(self, "joined", False):
+            return
         handle = self.config.get("user", {}).get("name")
         port = self.config.get("network", {}).get("port")
         if handle and port:
@@ -145,6 +155,9 @@ class ChatGUI(tk.Tk):
             client_send_join(self.config)
             client_send_who(self.config)
             self.joined = True
+
+            self._refresh_peers()
+
 
     def _poll(self):
         while True:
@@ -179,6 +192,16 @@ class ChatGUI(tk.Tk):
 
     def _append_image(self, prefix, path):
         try:
+
+            img = Image.open(os.path.abspath(path))
+            img.thumbnail((200, 200))
+            photo = ImageTk.PhotoImage(img)
+            self.images.append(photo)
+            self.chat.configure(state="normal")
+            if prefix:
+                self.chat.insert("end", f"{prefix}: ")
+            self.chat.image_create("end", image=photo)
+
             img = tk.PhotoImage(file=os.path.abspath(path))
             # verkleinere große Bilder rudimentär, um das Layout nicht zu sprengen
             m = max(img.width(), img.height())
@@ -192,6 +215,7 @@ class ChatGUI(tk.Tk):
             if prefix:
                 self.chat.insert("end", f"{prefix}: ")
             self.chat.image_create("end", image=img)
+
             self.chat.insert("end", "\n")
             self.chat.configure(state="disabled")
             self.chat.see("end")
@@ -229,6 +253,14 @@ class ChatGUI(tk.Tk):
     def _refresh_peers(self):
         client_send_who(self.config)
 
+
+    def _leave(self):
+        if getattr(self, "joined", False):
+            client_send_leave(self.config)
+            self.joined = False
+            self._refresh_peers()
+
+
     def on_close(self):
         if getattr(self, "joined", False):
             client_send_leave(self.config)
@@ -236,7 +268,11 @@ class ChatGUI(tk.Tk):
 
 
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
-<<<<<<< HEAD
+
+    app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
+    app.protocol("WM_DELETE_WINDOW", app.on_close)
+    app.mainloop()
+
     """
     Startet die Tkinter-basierte GUI für den Chat-Client.
     
@@ -314,8 +350,8 @@ if __name__ == '__main__':
     net_proc.start()
 
     startGui(config, net_to_cli, disc_to_cli, cli_to_net)
-=======
+
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
->>>>>>> 5ff4adfae68a71acfe17f5af0d6baf577e8fb86a
+
