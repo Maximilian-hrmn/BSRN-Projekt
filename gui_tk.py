@@ -366,10 +366,10 @@ class ChatGUI(tk.Tk):
             # Schließt das Fenster
             self.destroy()
 
-        # Startet die GUI-Anwendung
-        def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
-            app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
-            # Setzt das Verhalten beim Schließen des Fensters
-            app.protocol("WM_DELETE_WINDOW", app.on_close)
-            # Startet die Haupt-Event-Schleife der GUI
-            app.mainloop()
+# Startet die GUI-Anwendung
+def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
+    app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
+    # Setzt das Verhalten beim Schließen des Fensters
+    app.protocol("WM_DELETE_WINDOW", app.on_close)
+    # Startet die Haupt-Event-Schleife der GUI
+    app.mainloop()
