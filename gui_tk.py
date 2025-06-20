@@ -13,8 +13,6 @@ import queue
 import time
 import sys
 import socket
-
-# Aus der Client Klasse werden die relevanten Funktionen importiert, die für die Kommunikation mit dem Netzwerk und anderen Peers zuständig sind. 
 from client import ( 
     client_send_join,
     client_send_leave,
@@ -22,11 +20,14 @@ from client import (
     client_send_img,
     client_send_who,
 )
+
 # Hier wird die Timeout für die automatische Abwesenheitsnachricht festgelegt (ab 30 Sekunden)
 AWAY_TIMEOUT = 30
 
-# Die ChatGUI-Klasse erbt von tk.Tk und stellt die Benutzeroberfläche für den Chat-Client dar.
-# Sie verwaltet die Netzwerkkommunikation, die Anzeige von Nachrichten und Bildern sowie die Interaktion in grafischen Oberfläche
+"""
+Die ChatGUI-Klasse erbt von tk.Tk und stellt die Benutzeroberfläche für den Chat-Client dar.
+Sie verwaltet die Netzwerkkommunikation, die Anzeige von Nachrichten und Bildern sowie die Interaktion in grafischen Oberfläche
+"""
 class ChatGUI(tk.Tk): 
     def __init__(self, config, net_to_cli, disc_to_cli, cli_to_net): # Initialisierung der Klasse (Konstruktor)
         
@@ -43,24 +44,28 @@ class ChatGUI(tk.Tk):
         self._join_network() # Sobald Nutzername und Port eingegeben wurden wird versucht, dem Netzwerk beizutreten.
         self._poll_queues() # Diese Methode wird regelmäßig aufgerufen, um Nachrichten aus den IPC-Queues zu verarbeiten und die Benutzeroberfläche zu aktualisieren
 
-    def _ask_user_info(self): # Diese Methode fragt den Nutzer nach seinem Namen und wählt automatisch einen freien TCP-Port.
+    """ Diese Methode fragt den Nutzer nach seinem Namen und wählt automatisch einen freien TCP-Port."""
+    def _ask_user_info(self): 
         name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self) #Hier wird der Name abgefragt. parent=self bindet das Dialogfenster an die Hauptanwendung, sodass es im Vordergrund bleibt.
         if name:
             self.config.setdefault("user", {})["name"] = name #Die config wird aktualisiert, indem der Nutzername im Dictonary unter dem Schlüssel "user" gespeichert wird. `setdefault` sorgt dafür, dass das Dictonary existiert, auch wenn es vorher leer war.
 
-        # Automatisch einen freien TCP-Port wählen anstatt den Nutzer zu fragen
-        #Durch socket.socket wird ein neues Socket-Objekt erstellt, das für die Netzwerkkommunikation verwendet wird.
-        # tmp_sock ist eine Variable, die ein temporäres Socket-Objekt repräsentiert.
-        # Mit bind wird das Socket an eine Adresse und einen Port gebunden
-
+        """
+        Automatisch einen freien TCP-Port wählen anstatt den Nutzer zu fragen
+        Durch socket.socket wird ein neues Socket-Objekt erstellt, das für die Netzwerkkommunikation verwendet wird.
+        tmp_sock ist eine Variable, die ein temporäres Socket-Objekt repräsentiert.
+        Mit bind wird das Socket an eine Adresse und einen Port gebunden
+        """
         tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tmp_sock.bind(("", 0))
         port = tmp_sock.getsockname()[1] # getsockname() gibt die Adresse und den Port des Sockets zurück, und [1] gibt den Port zurück.
         tmp_sock.close()
         self.config.setdefault("network", {})["port"] = port 
     
-    # Diese Methode richtet die Benutzeroberfläche der Chat-Anwendung ein und baut alle erforderlichen Komponenten auf.
-    # Sie erstellt Frames, Textfelder, Buttons und Listboxen für die Anzeige von Nachrichten
+    """
+    Diese Methode richtet die Benutzeroberfläche der Chat-Anwendung ein und baut alle erforderlichen Komponenten auf.
+    Sie erstellt Frames, Textfelder, Buttons und Listboxen für die Anzeige von Nachrichten
+    """
 
     def _setup_ui(self):
         self.title("Messenger")
@@ -131,7 +136,8 @@ class ChatGUI(tk.Tk):
         self.send_btn.pack(side="left", padx=5)
 
         self.text_entry.bind("<Return>", self._send_message_event)
-    #
+
+    """Diese Methode versucht, dem Netzwerk beizutreten, indem sie den Nutzernamen und den Port aus der Konfiguration verwendet."""
     def _join_network(self):
         handle = self.config.get("user", {}).get("name")
         port = self.config.get("network", {}).get("port")
@@ -144,6 +150,7 @@ class ChatGUI(tk.Tk):
             self.joined = True
             client_send_who(self.config)
 
+    """Diese Methode wird regelmäßig aufgerufen, um Nachrichten aus den IPC-Queues zu verarbeiten und die Benutzeroberfläche zu aktualisieren."""
     def _poll_queues(self):
         now = time.time()
         while True:
@@ -174,17 +181,20 @@ class ChatGUI(tk.Tk):
                 self._update_peer_list()
         self.after(100, self._poll_queues)
 
+    """Diese Methode aktualisiert die Peer-Liste in der Benutzeroberfläche."""
     def _update_peer_list(self):
         self.peer_list.delete(0, "end")
         for h in sorted(self.peers.keys()):
             self.peer_list.insert("end", h)
 
+    """Diese Methode fügt Text zum Chat-Fenster hinzu."""
     def _append_text(self, text):
         self.chat_text.configure(state="normal")
         self.chat_text.insert("end", text)
         self.chat_text.configure(state="disabled")
         self.chat_text.see("end")
 
+    """Diese Methode fügt ein Bild zum Chat-Fenster hinzu."""
     def _append_image(self, prefix, path):
         try:
             img = Image.open(path)
@@ -201,7 +211,7 @@ class ChatGUI(tk.Tk):
         except Exception:
             self._append_text(f"[Bild {prefix}] {path}\n")
 
-    # Diese Methode sendet eine Nachricht, die im Eingabefeld eingegeben wurde.
+    """Diese Methode sendet eine Nachricht, die im Eingabefeld eingegeben wurde."""
     def _send_message(self):
         # Aktualisiere die letzte Aktivitätszeit, um Inaktivität zu verfolgen
         self.last_activity = time.time()
@@ -264,8 +274,11 @@ class ChatGUI(tk.Tk):
             return
         
 
-        # Wenn der Text mit "img " beginnt, sende ein Bild an den Nutzer
-        # Teile den Text in Teile auf, um den Nutzer und den Pfad zum Bild zu extrahieren
+        """ 
+        Wenn der Text mit "img " beginnt, sende ein Bild an den Nutzer
+        Teile den Text in Teile auf, um den Nutzer und den Pfad zum Bild zu extrahieren
+        """
+
         if text.startswith("img "):
             parts = text.split(" ", 2)
             if len(parts) == 3:
@@ -337,13 +350,13 @@ class ChatGUI(tk.Tk):
         # Leere das Texteingabefeld nach dem Senden der Nachricht
         self.text_entry.delete("1.0", "end")
 
-    # Diese Methode wird aufgerufen, wenn der Nutzer die Eingabetaste drückt, um eine Nachricht zu senden.
+    """Diese Methode wird aufgerufen, wenn der Nutzer die Eingabetaste drückt, um eine Nachricht zu senden."""
     def _send_message_event(self, event):
         # Verhindert das automatische Einfügen eines Zeilenumbruchs im Textfeld
         self._send_message()
         return "break"
 
-    # Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer
+    """Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer"""
     def open_image_dialog(self):
         sel = self.peer_list.curselection()
         if not sel:
@@ -367,7 +380,7 @@ class ChatGUI(tk.Tk):
                     # Zeigt eine Fehlermeldung an, falls das Bild nicht gefunden wurde
                     self._append_text("[Fehler] Datei nicht gefunden\n")
 
-    # Wird aufgerufen, wenn das Fenster geschlossen wird
+    """Wird aufgerufen, wenn das Fenster geschlossen wird"""
     def on_close(self):
         if self.joined:
             # Sende LEAVE-Nachricht an den Server, wenn der Nutzer beigetreten ist
@@ -375,7 +388,7 @@ class ChatGUI(tk.Tk):
         # Schließt das Fenster
         self.destroy()
 
-# Startet die GUI-Anwendung
+"""Startet die GUI-Anwendung"""
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     # Setzt das Verhalten beim Schließen des Fensters

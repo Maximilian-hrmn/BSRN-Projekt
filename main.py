@@ -17,7 +17,7 @@ Main Entry Point:
 - Anschließend startet CLI (ChatCLI) oder GUI (je nach Eingabe) im Hauptprozess
 """
 
-# Main-Block, um das Skript direkt auszuführen
+"""Main-Block, um das Skript direkt auszuführen"""
 if __name__ == '__main__': # main.py wird direkt ausgeführt
     parser = argparse.ArgumentParser(description="Start chat client") # Initialisiert Kommandozeilenparser für Port und Broadcast-Optionen
     parser.add_argument("--port", type=int, help="UDP port for this client") # Port für den Client
@@ -36,7 +36,7 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
         config['whoisport'] = args.whoisport # Port für den Discovery-Service in der Konfiguration setzen
     
 
-    # IPC-Queues (für Prozesskommunikation zwischen CLI, Server und Discovery)
+    """IPC-Queues (für Prozesskommunikation zwischen CLI, Server und Discovery)"""
     cli_to_net = Queue() # Queue für Kommunikation von CLI zu Netzwerk
     cli_to_disc = Queue() # Queue für Kommunikation von CLI zu Discovery
     net_to_cli = Queue() # Queue für Kommunikation von Netzwerk zu CLI
@@ -53,7 +53,7 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
         disc_proc = None
         print("Discovery-Service läuft bereits")
 
-    # Server/Network als eigener Process
+    """Server/Network als eigener Process"""
     net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net)) # Netzwerk-Server starten
     net_proc.daemon = True # Daemon-Prozess, der im Hintergrund läuft
     net_proc.start() # Netzwerk-Server starten

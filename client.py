@@ -14,6 +14,7 @@ Client-Funktionen (Network-Sender):
 - Unicast (MSG/IMG) an target_host:target_port erfolgt jetzt per TCP.
 """
 
+"""Funktion zum Senden von Discovery-Nachrichten (JOIN, WHO, LEAVE) an den Server."""
 def _send_discovery(msg: bytes, config: dict) -> None:
     """Send a discovery message via broadcast.
 
@@ -40,26 +41,26 @@ def _send_discovery(msg: bytes, config: dict) -> None:
         sock.close()
 
 
-# Funktion zum Senden einer JOIN-Nachricht an den Server
+"""Funktion zum Senden einer JOIN-Nachricht an den Server"""
 def client_send_join(config):
     # Erstelle eine JOIN-Nachricht mit dem Handle und Port aus der Konfiguration
     msg = build_join(config['handle'], config['port'])
     _send_discovery(msg, config)
 
-# Funktion zum Senden einer WHO-Nachricht an den Server
+"""Funktion zum Senden einer WHO-Nachricht an den Server"""
 def client_send_who(config):
     # Erstelle eine WHO-Nachricht, um die Liste der aktiven Clients abzufragen
     msg = build_who()
     _send_discovery(msg, config)
 
-# Funktion zum Senden einer LEAVE-Nachricht an den Server
+"""Funktion zum Senden einer LEAVE-Nachricht an den Server"""
 def client_send_leave(config):
     # Erstelle eine LEAVE-Nachricht mit dem Handle aus der Konfiguration
     msg = build_leave(config['handle'])
     # Sende die LEAVE-Nachricht an den Server
     _send_discovery(msg, config)
 
-#Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port
+"""Funktion zum Senden einer MSG-Nachricht an einen bestimmten Host und Port"""
 def client_send_msg(target_host: str, target_port: int, from_handle: str, text: str):
     # Sende eine Textnachricht über TCP.
     with socket.create_connection((target_host, target_port)) as sock:
@@ -68,7 +69,7 @@ def client_send_msg(target_host: str, target_port: int, from_handle: str, text: 
         # Sende die Nachricht an den angegebenen Host und Port
         sock.sendall(data)
     
-#Funktion zum Senden eines Bildes an einen bestimmten Host und Port
+"""Funktion zum Senden eines Bildes an einen bestimmten Host und Port"""
 def client_send_img(target_host: str, target_port: int, from_handle: str, img_path: str):
    # Überprüfe, ob der angegebene Pfad zu einem Bild existiert
     if not os.path.isfile(img_path):

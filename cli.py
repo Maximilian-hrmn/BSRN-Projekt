@@ -1,26 +1,28 @@
-# Importieren des cmd-Moduls für die Kommandozeilen-Interface
 import cmd
-# Importieren von threading, queue und socket für die parallele Verarbeitung und Netzwerkkommunikation
 import threading
 import queue
 import socket
-# Importieren von time für Zeitoperationen
 import time
-# Importieren der Client-Funktionen für die Kommunikation mit dem Peer-to-Peer-Netzwerk
 from client import client_send_join, client_send_leave, client_send_who, client_send_msg, client_send_img
 
 # Timeout für Auto-Reply (in Sekunden)
 # 30 Sekunden Inaktivität, bevor Auto-Reply ausgelöst wird
 AWAY_TIMEOUT = 30  
 
-# Hauptklasse für das Kommandozeilen-Interface (CLI) des Peer-to-Peer Chats
+"""
+    Hauptklasse für das Kommandozeilen-Interface des Peer-to-Peer-Chats.
+
+    Verwaltet Benutzereingaben, Nachrichtenversand und -empfang sowie Auto-Reply-Logik.
+ """
+
+"""ChatCLI-Klasse, die das cmd-Modul erweitert, um eine Kommandozeilen-Schnittstelle für den Chat zu implementieren."""
 class ChatCLI(cmd.Cmd):
     # Text der aufgrund des cmd Moduls automatisch angezeigt wird wenn man die CLI startet
     intro = "Willkommen zum Peer-to-Peer Chat. Tippe 'help', um alle Befehle zu sehen."
     # Prompt, der vor jeder Eingabe angezeigt wird (auch automatisch durch cmd gesetzt)
     prompt = "> "
 
-    # Konstruktor der ChatCLI-Klasse
+    """Konstruktor der ChatCLI-Klasse"""
     def __init__(self, config, net_to_cli_queue, disc_to_cli_queue, cli_to_net_queue):
         # Ruft den Konstruktor der Basisklasse cmd.Cmd auf 
         super().__init__()
@@ -50,7 +52,7 @@ class ChatCLI(cmd.Cmd):
         # Startet den Polling-Thread self._poll_thread
         self._poll_thread.start()
 
-    # Diese Methode wird im Hintergrund-Thread ausgeführt und pollt die Queues
+    """Diese Methode wird im Hintergrund-Thread ausgeführt und pollt die Queues"""
     def _poll_queues(self): 
         #läuft bis das _stop_event gesetzt wird
         while not self._stop_event.is_set():
@@ -106,7 +108,7 @@ class ChatCLI(cmd.Cmd):
 
     # Die folgenden Methoden sind die Befehle, die der Nutzer in der CLI eingeben kann.
 
-    # Implementierung des join-Befehls
+    """Implementierung des join-Befehls"""
     def do_join(self, arg):
         #Docstring für den join-Befehl: nutzt man durch Eingabe von 'help join'
         """join <username>  –  So trittst du dem Netzwerk bei. Dein Port wird automatisch vergeben."""
@@ -145,7 +147,7 @@ class ChatCLI(cmd.Cmd):
         self.joined = True
         print(f"Eingetreten als {handle} auf Port {port}")
 
-    # Implementierung des leave-Befehls
+    """Implementierung des leave-Befehls"""
     def do_leave(self, arg):
         """leave  –  Verlässt das Netzwerk."""
         self.last_activity = time.time()
@@ -160,7 +162,7 @@ class ChatCLI(cmd.Cmd):
         self.joined = False
         print("Du hast das Netzwerk verlassen.")
 
-    # Implementierung des who-Befehls
+    """Implementierung des who-Befehls"""
     def do_who(self, arg):
         """who  –  Fragt die Peer-Liste ab und zeigt sie an."""
         self.last_activity = time.time()
@@ -181,7 +183,7 @@ class ChatCLI(cmd.Cmd):
         for h, (hhost, hport) in self.peers.items():
             print(f"  {h} @ {hhost}:{hport}")
 
-    # Implementierung des msg-Befehls
+    """Implementierung des msg-Befehls"""
     def do_msg(self, arg):
         """msg <user> <text>  –  Sendet eine Textnachricht an <user>."""
         self.last_activity = time.time()
@@ -205,7 +207,7 @@ class ChatCLI(cmd.Cmd):
         else:
             print("Unbekannter Nutzer.")
     
-    # Implementierung des msgall-Befehls
+    """Implementierung des msgall-Befehls"""
     def do_msgall(self, arg):
         """msgall <text>  –  Sendet eine Textnachricht an alle aktuell im Chat befindlichen Nutzer."""
         self.last_activity = time.time()
@@ -231,7 +233,7 @@ class ChatCLI(cmd.Cmd):
                 print(f"Fehler beim Senden an {peer_handle}: {e}")
         print("Nachricht an alle gesendet.")
 
-    # Implementierung des img-Befehls
+    """Implementierung des img-Befehls"""
     def do_img(self, arg):
         """img <user> <pfad>  –  Sendet ein Bild an <user>."""
         self.last_activity = time.time()
@@ -256,14 +258,14 @@ class ChatCLI(cmd.Cmd):
             print("Unbekannter Nutzer.")
 
     
-    # Implementierung des show_config-Befehls
+    """Implementierung des show_config-Befehls"""
     def do_show_config(self, arg):
         """show_config  –  Zeigt die aktuelle Konfiguration an."""
         self.last_activity = time.time()
         # ausgabe der aktuellen Konfiguration
         print(self.config)
 
-    # Implementierung des set_config-Befehls
+    """Implementierung des set_config-Befehls"""
     def do_set_config(self, arg):
         """set_config <parameter> <wert>  –  Ändert einen Konfigurationsparameter."""
         self.last_activity = time.time()
@@ -289,7 +291,7 @@ class ChatCLI(cmd.Cmd):
         self.config[key] = val
         print(f"Konfig {key} = {val}")
 
-    # Implementierung des exit-Befehls
+    """Implementierung des exit-Befehls"""
     def do_exit(self, arg):
         """exit  –  Beendet CLI und Hintergrund-Thread."""
         self.last_activity = time.time()
@@ -298,7 +300,7 @@ class ChatCLI(cmd.Cmd):
         self._stop_event.set()
         return True
 
-    # Standardmethode, die aufgerufen wird, wenn ein unbekannter Befehl eingegeben wird
+    """Standardmethode, die aufgerufen wird, wenn ein unbekannter Befehl eingegeben wird"""
     def default(self, line):
         """Fängt unbekannte Befehle ab und zeigt korrekte Syntax."""
         self.last_activity = time.time()

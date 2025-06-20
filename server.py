@@ -4,6 +4,7 @@ import socket
 import os
 import time
 from slcp_handler import parse_slcp_line
+import queue
 
 """
 Server-Prozess (Network-Empfang):
@@ -15,21 +16,20 @@ Server-Prozess (Network-Empfang):
 
 """
 
-#Funktion namens `server_loop`, die den Serverprozess implementiert.
-import queue
+"""Funktion namens `server_loop`, die den Serverprozess implementiert."""
 
 def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
 
-    # Stelle sicher, dass der imagepath existiert
+    #Stelle sicher, dass der imagepath existiert
     imagepath = os.path.abspath(config['imagepath'])
-    # Erstelle den Ordner, falls er nicht existiert
+    #Erstelle den Ordner, falls er nicht existiert
     if not os.path.exists(imagepath):
         os.makedirs(imagepath)
 
     # Setze den aktuellen Port aus der Konfiguration
     current_port = config['port']
 
-    # Funktion zum Binden des Sockets an den angegebenen Port
+    """Funktion zum Binden des Sockets an den angegebenen Port"""
     def bind_socket(port):
         # Erstelle einen TCP/IP-Socket und binde ihn an den angegebenen Port
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,6 +46,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
     # Setze eine Timeout für den Socket, um nicht ewig zu blockieren
     sock.settimeout(0.5)
 
+    """Endlosschleife, um auf eingehende Verbindungen zu warten"""
     while True:
         # Überprüfe, ob eine neue Portänderung angefordert wurde
         if cli_to_net_queue is not None:
@@ -86,7 +87,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
             except Exception:
                 continue
 
-            # Verarbeite die empfangene Nachricht basierend auf dem Befehl
+            #Verarbeite die empfangene Nachricht basierend auf dem Befehl
             if cmd == 'MSG' and len(args) >= 2:
                 # Bei MSG: Leite die Nachricht an die CLI weiter
                 from_handle = args[0]
@@ -94,7 +95,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
                 # Füge den Rest der Nachricht (falls vorhanden) zusammen
                 net_to_cli_queue.put(('MSG', from_handle, text))
 
-            # Bei IMG: Lese den Header und die Bilddaten
+            #Bei IMG: Lese den Header und die Bilddaten
             elif cmd == 'IMG' and len(args) == 2:
                 # Lese den Header und die Bilddaten
                 from_handle = args[0]
