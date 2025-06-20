@@ -1,20 +1,10 @@
 import tkinter as tk
 from tkinter import simpledialog, filedialog
-
-import socket
-import queue
-import os
-from PIL import Image, ImageTk
-
-from tkinter.scrolledtext import ScrolledText
 from PIL import Image, ImageTk
 import queue
 import time
 import sys
 import socket
-import queue
-import os
-
 
 from client import (
     client_send_join,
@@ -23,6 +13,8 @@ from client import (
     client_send_img,
     client_send_who,
 )
+
+AWAY_TIMEOUT = 30
 
 
 class ChatGUI(tk.Tk):
@@ -33,23 +25,27 @@ class ChatGUI(tk.Tk):
         self.disc_to_cli = disc_to_cli
         self.cli_to_net = cli_to_net
         self.peers = {}
-        self.images = []
-        self._ask_info()
+        self.last_activity = time.time()
+        self.joined = False
+        self._ask_user_info()
         self._setup_ui()
         self._join_network()
-        self.after(100, self._poll)
+        self._poll_queues()
 
-    def _ask_info(self):
+    def _ask_user_info(self):
         name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self)
         if name:
             self.config.setdefault("user", {})["name"] = name
-        s = socket.socket(); s.bind(("", 0))
-        self.config.setdefault("network", {})["port"] = s.getsockname()[1]
-        s.close()
+
+        # Automatisch einen freien TCP-Port wählen anstatt den Nutzer zu fragen
+        tmp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tmp_sock.bind(("", 0))
+        port = tmp_sock.getsockname()[1]
+        tmp_sock.close()
+        self.config.setdefault("network", {})["port"] = port
 
     def _setup_ui(self):
         self.title("Messenger")
-
         self.geometry("800x600")
         self.configure(bg="#2b2b2b")
 
@@ -64,7 +60,7 @@ class ChatGUI(tk.Tk):
         chat_frame = tk.Frame(list_frame, bg="#2b2b2b")
         chat_frame.pack(side="left", fill="both", expand=True)
 
-        self.chat_text = ScrolledText(
+        self.chat_text = tk.Text(
             chat_frame,
             font=("Helvetica", 11),
             bg="#1e1e1e",
@@ -118,33 +114,7 @@ class ChatGUI(tk.Tk):
 
         self.text_entry.bind("<Return>", self._send_message_event)
 
-        self.geometry("600x400")
-        frame = tk.Frame(self)
-        frame.pack(fill="both", expand=True)
-        self.chat = tk.Text(frame, state="disabled", wrap="word")
-        self.chat.pack(side="left", fill="both", expand=True)
-        right = tk.Frame(frame)
-        right.pack(side="right", fill="y")
-        self.peers_box = tk.Listbox(right, width=20)
-        self.peers_box.pack(fill="y")
-        btn_frame = tk.Frame(self)
-        btn_frame.pack(fill="x")
-        self.entry = tk.Entry(btn_frame)
-        self.entry.pack(side="left", fill="x", expand=True)
-        tk.Button(btn_frame, text="📷", command=self._send_image).pack(side="left")
-        tk.Button(btn_frame, text="Senden", command=self._send_message).pack(side="left")
-        tk.Button(btn_frame, text="Aktualisieren", command=self._refresh_peers).pack(side="left")
-
-        tk.Button(btn_frame, text="Leave", command=self._leave).pack(side="left")
-        tk.Button(btn_frame, text="Join", command=self._join_network).pack(side="left")
-        self.entry.bind("<Return>", self._send_message)
-
-        self.entry.bind("<Return>", self._send_message)
-
-
     def _join_network(self):
-        if getattr(self, "joined", False):
-            return
         handle = self.config.get("user", {}).get("name")
         port = self.config.get("network", {}).get("port")
         if handle and port:
@@ -153,22 +123,29 @@ class ChatGUI(tk.Tk):
             if self.cli_to_net:
                 self.cli_to_net.put(("SET_PORT", port))
             client_send_join(self.config)
-            client_send_who(self.config)
             self.joined = True
+            client_send_who(self.config)
 
-            self._refresh_peers()
-
-
-    def _poll(self):
+    def _poll_queues(self):
+        now = time.time()
         while True:
             try:
                 msg = self.net_to_cli.get_nowait()
             except queue.Empty:
                 break
             if msg[0] == "MSG":
-                self._append_text(f"{msg[1]}: {msg[2]}\n")
+                from_handle = msg[1]
+                text = msg[2]
+                if now - self.last_activity > AWAY_TIMEOUT and self.joined:
+                    auto_msg = self.config.get("autoreply")
+                    if auto_msg and from_handle in self.peers:
+                        thost, tport = self.peers[from_handle]
+                        client_send_msg(thost, tport, self.config["handle"], auto_msg)
+                self._append_text(f"{from_handle}: {text}\n")
             elif msg[0] == "IMG":
-                self._append_image(msg[1], msg[2])
+                from_handle = msg[1]
+                path = msg[2]
+                self._append_image(from_handle, path)
         while True:
             try:
                 dmsg = self.disc_to_cli.get_nowait()
@@ -176,181 +153,163 @@ class ChatGUI(tk.Tk):
                 break
             if dmsg[0] == "PEERS":
                 self.peers = dmsg[1]
-                self._update_peers()
-        self.after(100, self._poll)
+                self._update_peer_list()
+        self.after(100, self._poll_queues)
 
-    def _update_peers(self):
-        self.peers_box.delete(0, "end")
-        for h in sorted(self.peers):
-            self.peers_box.insert("end", h)
+    def _update_peer_list(self):
+        self.peer_list.delete(0, "end")
+        for h in sorted(self.peers.keys()):
+            self.peer_list.insert("end", h)
 
     def _append_text(self, text):
-        self.chat.configure(state="normal")
-        self.chat.insert("end", text)
-        self.chat.configure(state="disabled")
-        self.chat.see("end")
+        self.chat_text.configure(state="normal")
+        self.chat_text.insert("end", text)
+        self.chat_text.configure(state="disabled")
+        self.chat_text.see("end")
 
     def _append_image(self, prefix, path):
         try:
-
-            img = Image.open(os.path.abspath(path))
+            img = Image.open(path)
             img.thumbnail((200, 200))
             photo = ImageTk.PhotoImage(img)
             self.images.append(photo)
-            self.chat.configure(state="normal")
+            self.chat_text.configure(state="normal")
             if prefix:
-                self.chat.insert("end", f"{prefix}: ")
-            self.chat.image_create("end", image=photo)
-
-            img = tk.PhotoImage(file=os.path.abspath(path))
-            # verkleinere große Bilder rudimentär, um das Layout nicht zu sprengen
-            m = max(img.width(), img.height())
-            if m > 200:
-                f = max(m // 200, 1)
-                img = img.subsample(f)
-
-            img = tk.PhotoImage(file=path)
-            self.images.append(img)
-            self.chat.configure(state="normal")
-            if prefix:
-                self.chat.insert("end", f"{prefix}: ")
-            self.chat.image_create("end", image=img)
-
-            self.chat.insert("end", "\n")
-            self.chat.configure(state="disabled")
-            self.chat.see("end")
+                self.chat_text.insert("end", f"{prefix}: ")
+            self.chat_text.image_create("end", image=photo)
+            self.chat_text.insert("end", "\n")
+            self.chat_text.configure(state="disabled")
+            self.chat_text.see("end")
         except Exception:
             self._append_text(f"[Bild {prefix}] {path}\n")
 
-    def _send_message(self, event=None):
-        text = self.entry.get().strip()
+    
+    def _send_message(self):
+        self.last_activity = time.time()
+        text = self.text_entry.get("1.0", "end").strip()
         if not text:
-            return "break"
-        sel = self.peers_box.curselection()
+            return
+
+        # Erlaube die bekannte CLI-Syntax wie "msg <user> <text>" oder
+        # "img <user> <pfad>" direkt im Eingabefeld. Weitere Befehle wie
+        # "msg all", "who", "leave" und "help" werden ebenfalls interpretiert.
+        if text.startswith("msg "):
+            parts = text.split(" ", 2)
+            if len(parts) == 3:
+                handle, message = parts[1], parts[2]
+                if handle in self.peers:
+                    host, port = self.peers[handle]
+                    try:
+                        client_send_msg(host, port, self.config["handle"], message)
+                        self._append_text(f"[Du -> {handle}] {message}\n")
+                    except OSError as e:
+                        self._append_text(f"[Fehler] {e}\n")
+                else:
+                    self._append_text("[Fehler] Unbekannter Nutzer\n")
+            else:
+                self._append_text("[Fehler] Syntax: msg <user> <text>\n")
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text.startswith("msgall ") or text.startswith("msg all "):
+            message = text.split(" ", 1)[1].split(" ", 1)[1] if text.startswith("msg all ") else text.split(" ", 1)[1]
+            if not self.peers:
+                self._append_text("[Fehler] Keine anderen Peers\n")
+            else:
+                for h, (host, port) in self.peers.items():
+                    try:
+                        client_send_msg(host, port, self.config["handle"], message)
+                    except OSError as e:
+                        self._append_text(f"[Fehler] zu {h}: {e}\n")
+                self._append_text(f"[Du -> alle] {message}\n")
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text.startswith("img "):
+            parts = text.split(" ", 2)
+            if len(parts) == 3:
+                handle, path = parts[1], parts[2]
+                if handle in self.peers:
+                    host, port = self.peers[handle]
+                    try:
+                        if client_send_img(host, port, self.config["handle"], path):
+                            self._append_image(f"Du -> {handle}", path)
+                        else:
+                            self._append_text("[Fehler] Datei nicht gefunden\n")
+                    except OSError as e:
+                        self._append_text(f"[Fehler] {e}\n")
+                else:
+                    self._append_text("[Fehler] Unbekannter Nutzer\n")
+            else:
+                self._append_text("[Fehler] Syntax: img <user> <pfad>\n")
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text == "who":
+            client_send_who(self.config)
+            self.chat_text.configure(state="normal")
+            self._append_text("[Info] Peer-Liste angefordert\n")
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text == "leave":
+            if self.joined:
+                client_send_leave(self.config)
+                self.joined = False
+                self._append_text("[Info] Netzwerk verlassen\n")
+            else:
+                self._append_text("[Info] Nicht im Netzwerk\n")
+            self.text_entry.delete("1.0", "end")
+            return
+
+        if text == "help":
+            self._append_text(
+                "Befehle: msg <user> <text>, msgall <text>, img <user> <pfad>, who, leave, help\n"
+            )
+            self.text_entry.delete("1.0", "end")
+            return
+
+        sel = self.peer_list.curselection()
         if not sel:
-            return "break"
-        handle = self.peers_box.get(sel[0])
+            return
+        handle = self.peer_list.get(sel[0])
         if handle in self.peers:
             host, port = self.peers[handle]
-            client_send_msg(host, port, self.config["handle"], text)
-            self._append_text(f"[Du -> {handle}] {text}\n")
-        self.entry.delete(0, "end")
+            try:
+                client_send_msg(host, port, self.config["handle"], text)
+                self._append_text(f"[Du -> {handle}] {text}\n")
+            except OSError as e:
+                self._append_text(f"[Fehler] {e}\n")
+        self.text_entry.delete("1.0", "end")
+
+    def _send_message_event(self, event):
+        self._send_message()
         return "break"
 
-    def _send_image(self):
-        sel = self.peers_box.curselection()
+    def open_image_dialog(self):
+        sel = self.peer_list.curselection()
         if not sel:
             return
-        filename = filedialog.askopenfilename(title="Bild auswählen", filetypes=[("Bilder", "*.png *.jpg *.jpeg *.gif")])
-        if not filename:
-            return
-        handle = self.peers_box.get(sel[0])
-        if handle in self.peers:
-            host, port = self.peers[handle]
-            if client_send_img(host, port, self.config["handle"], filename):
-                self._append_image(f"Du -> {handle}", filename)
-
-    def _refresh_peers(self):
-        client_send_who(self.config)
-
-
-    def _leave(self):
-        if getattr(self, "joined", False):
-            client_send_leave(self.config)
-            self.joined = False
-            self._refresh_peers()
-
+        filename = filedialog.askopenfilename(
+            title="Bild auswählen",
+            filetypes=[("Bilder", "*.png *.jpg *.jpeg *.bmp *.gif")],
+        )
+        if filename:
+            handle = self.peer_list.get(sel[0])
+            if handle in self.peers:
+                host, port = self.peers[handle]
+                if client_send_img(host, port, self.config["handle"], filename):
+                    self._append_image(f"Du -> {handle}", filename)
+                else:
+                    self._append_text("[Fehler] Datei nicht gefunden\n")
 
     def on_close(self):
-        if getattr(self, "joined", False):
+        if self.joined:
             client_send_leave(self.config)
         self.destroy()
 
 
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
-
-    app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
-    app.protocol("WM_DELETE_WINDOW", app.on_close)
-    app.mainloop()
-
-    """
-    Startet die Tkinter-basierte GUI für den Chat-Client.
-    
-    Parameter:
-      config       - Konfiguration (z. B. Handle, Ports), aus der nebenbei der Fenstertitel gesetzt wird.
-      net_to_cli   - Queue für Nachrichten vom Netzwerk zur GUI.
-      disc_to_cli  - Queue für Nachrichten vom Discovery-Service zur GUI.
-      cli_to_net   - Queue für Nachrichten, die von der GUI ins Netzwerk gesendet werden.
-    """
-    # Erstelle das Hauptfenster der GUI.
-    root = tk.Tk()
-    # Setze den Fenstertitel, z.B. "Chat Client - user_name".
-    root.title(f"Chat Client - {config['handle']}")
-
-    # Erstelle einen gescrollten Textbereich, in dem der Chat-Verlauf angezeigt wird.
-    # Der 'state' ist auf 'disabled' gesetzt, damit der Benutzer den Text nicht direkt bearbeiten kann.
-    chat_display = ScrolledText(root, state='disabled', width=80, height=20)
-    chat_display.pack(padx=10, pady=10)
-
-    # Erstelle ein Eingabefeld, über das der Benutzer Nachrichten eintippen kann.
-    entry = tk.Entry(root, width=80)
-    entry.pack(padx=10, pady=5)
-    
-    def send_message(event=None):
-        """
-        Diese Funktion wird aufgerufen, wenn der Benutzer die Eingabetaste drückt.
-        
-        Sie liest den Text aus dem Eingabefeld, sendet die Nachricht an das Netzwerk
-        (zum Beispiel über die Queue 'cli_to_net') und fügt die gesendete Nachricht
-        dem Chat-Display hinzu. Anschließend wird das Eingabefeld geleert.
-        """
-        msg = entry.get().strip()  # Hole den Inhalt des Eingabefelds und entferne unnötige Leerzeichen.
-        if msg:
-            # Hier könntest du die Nachricht z.B. ins Queue-System einfügen:
-            # cli_to_net.put(('MSG', msg))
-            #
-            # Aktualisiere das Chat-Display mit der eigenen gesendeten Nachricht.
-            chat_display.config(state='normal')  # Mache den Textbereich schreibbar, um Text hinzuzufügen.
-            chat_display.insert(tk.END, f"Ich: {msg}\n")  # Füge die Nachricht am Ende ein.
-            chat_display.config(state='disabled')  # Setze den Textbereich wieder auf 'disabled'.
-            chat_display.see(tk.END)  # Scrolle zum Ende, damit die neueste Nachricht sichtbar ist.
-            entry.delete(0, tk.END)  # Leere das Eingabefeld.
-
-    # Binde das Drücken der Return-Taste an die Funktion send_message.
-    entry.bind('<Return>', send_message)
-    
-    # Starte die Hauptschleife der GUI, die das Fenster offen hält und auf Ereignisse reagiert.
-    root.mainloop()
-
-# Falls diese Datei direkt ausgeführt wird, kann man hier z.B. einen einfachen Test starten:
-if __name__ == '__main__':
-    import argparse
-    import toml
-    from multiprocessing import Process, Queue
-    import discovery_service
-    import server
-
-    parser = argparse.ArgumentParser(description="Start Tk GUI")
-    parser.add_argument("--config", default="config.toml", help="Pfad zur Konfig-Datei")
-    args = parser.parse_args()
-
-    config = toml.load(args.config)
-
-    cli_to_net = Queue()
-    cli_to_disc = Queue()
-    net_to_cli = Queue()
-    disc_to_cli = Queue()
-
-    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli))
-    disc_proc.daemon = True
-    disc_proc.start()
-
-    net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net))
-    net_proc.daemon = True
-    net_proc.start()
-
-    startGui(config, net_to_cli, disc_to_cli, cli_to_net)
-
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
