@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import simpledialog, filedialog
 import socket
 import queue
+import os
+
 
 from client import (
     client_send_join,
@@ -99,6 +101,13 @@ class ChatGUI(tk.Tk):
 
     def _append_image(self, prefix, path):
         try:
+            img = tk.PhotoImage(file=os.path.abspath(path))
+            # verkleinere große Bilder rudimentär, um das Layout nicht zu sprengen
+            m = max(img.width(), img.height())
+            if m > 200:
+                f = max(m // 200, 1)
+                img = img.subsample(f)
+
             img = tk.PhotoImage(file=path)
             self.images.append(img)
             self.chat.configure(state="normal")
