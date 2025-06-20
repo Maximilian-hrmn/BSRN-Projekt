@@ -35,7 +35,6 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 ├── client.py            # Sendet Nachrichten (JOIN, MSG, IMG, etc.)
 ├── server.py            # Empfängt Nachrichten, speichert Bilder
 ├── discovery_service.py # Peer Discovery via UDP
-├── ipc_handler.py       # IPC-Integration (für UI)
 ├── slcp_handler.py      # SLCP-Nachrichtenformat (Parser & Builder)
 ├── config.toml          # Konfiguration
 └── images/              # Empfangene Bilder
