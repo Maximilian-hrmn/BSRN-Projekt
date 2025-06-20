@@ -1,9 +1,18 @@
+"""
+Zunächst werden alle notwendigen Module importiert 
+PyQt5 richtet das grafische User Interface ein mit QtCore, QtGui und QtWidgets
+sys beinhaltet Funktionen und Variablen, die mit dem Interpreter selbst zu tun haben
+queue richtet eine Warteschlange für die Kommunikation zwischen Prozessen ein
+time wird für Zeitmessungen verwendet, um Inaktivität zu erkennen
+"""
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QInputDialog, QFileDialog
 import sys
 import queue
 import time
 
+# Hier werden alle relevanten Module des client importiert
 from client import (
     client_send_join,
     client_send_leave,
@@ -12,17 +21,20 @@ from client import (
     client_send_who,
 )
 
+# Hier wird das Timeoutlimit festgelegt 
 AWAY_TIMEOUT = 30
 
-
+# Die Klasse Ui_MainWindow ist die Hauptklasse für das GUI, die von QMainWindow erbt
+# Sie initialisiert die Konfiguration, die IPC-Queues und startet die notwendigen Prozesse
 class Ui_MainWindow(QtWidgets.QMainWindow):
+    #Konstruktor der Klasse, der die Konfiguration und IPC-Queues initialisiert
     def __init__(self, config, net_to_cli, disc_to_cli, cli_to_net):
         super().__init__()
-        self.config = config
-        self.net_to_cli = net_to_cli
-        self.disc_to_cli = disc_to_cli
-        self.cli_to_net = cli_to_net
-        self.peers = {}
+        self.config = config # Speichert die Konfiguration, die aus der config.toml geladen wurde
+        self.net_to_cli = net_to_cli 
+        self.disc_to_cli = disc_to_cli # Beschreibt die Queue, die Nachrichten vom Discovery-Service empfängt
+        self.cli_to_net = cli_to_net # Beschreibt die Queue, die Nachrichten an das Netzwerk sendet
+        self.peers = {} # Dictonary, das die Peers im Netzwerk speichert
         self.last_activity = time.time()
         self.joined = False
         self.userInfoAbfrage()
