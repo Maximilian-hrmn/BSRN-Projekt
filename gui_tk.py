@@ -78,17 +78,17 @@ class ChatGUI(tk.Tk):
         self.geometry("800x600") # Setzt die Größe des Fensters auf 800x600 Pixel
         self.configure(bg="#2b2b2b") # Setzt die Hintergrundfarbe des Fensters auf ein dunkles Grau
 
-        self.images = []
-    
+        self.images = [] #Leere Liste für Bilder, die im Chat angezeigt werden sollen
+
         main_frame = tk.Frame(self, bg="#2b2b2b")
         main_frame.pack(fill="both", expand=True)
-
+        # Frame für den Hauptinhalt der Anwendung, der die Chat- und Peer-Bereiche enthält
         list_frame = tk.Frame(main_frame, bg="#2b2b2b")
         list_frame.pack(fill="both", expand=True, padx=5, pady=5)
-
+        # Frame für den Chat-Bereich, der links im Fenster angezeigt wird
         chat_frame = tk.Frame(list_frame, bg="#2b2b2b")
         chat_frame.pack(side="left", fill="both", expand=True)
-
+        # Textfeld für den Chat-Bereich, in dem Nachrichten angezeigt werden
         self.chat_text = tk.Text(
             chat_frame,
             font=("Helvetica", 11),
@@ -98,7 +98,7 @@ class ChatGUI(tk.Tk):
             state="disabled",
         )
         self.chat_text.pack(side="left", fill="both", expand=True)
-
+        # Scrollbar für das Chat-Fenster hinzufügen
         peer_frame = tk.Frame(list_frame, bg="#2b2b2b")
         peer_frame.pack(side="right", fill="y")
 
@@ -106,7 +106,7 @@ class ChatGUI(tk.Tk):
             peer_frame, width=20, font=("Helvetica", 11), bg="#333", fg="#ffffff"
         )
         self.peer_list.pack(side="left", fill="y")
-
+        # Scrollbar für die Peer-Liste hinzufügen
         bottom_frame = tk.Frame(main_frame, bg="#2b2b2b")
         bottom_frame.pack(fill="x", pady=5)
 
@@ -114,7 +114,7 @@ class ChatGUI(tk.Tk):
             bottom_frame, height=3, font=("Helvetica", 11), bg="#1e1e1e", fg="#dcdcdc"
         )
         self.text_entry.pack(side="left", fill="both", expand=True)
-
+        #
         self.image_btn = tk.Button(
             bottom_frame,
             text="📷",
@@ -127,8 +127,8 @@ class ChatGUI(tk.Tk):
             bd=0,
         )
         self.image_btn.pack(side="left", padx=(5, 0))
-
-        self.send_btn = tk.Button(
+        # Button zum Senden von Nachrichten#
+        self.send_btn = tk.Button( 
             bottom_frame,
             text="Senden",
             width=10,
@@ -140,9 +140,9 @@ class ChatGUI(tk.Tk):
             bd=0,
         )
         self.send_btn.pack(side="left", padx=5)
-
-        self.text_entry.bind("<Return>", self._send_message_event)
-
+        #.bind bindet die Methode _send_message_event an das Textfeld, sodass beim Drücken der Eingabetaste eine Nachricht gesendet wird.
+        self.text_entry.bind("<Return>", self._send_message_event) 
+    #
     def _join_network(self):
         """
         Diese Methode versucht, dem Netzwerk beizutreten, indem sie

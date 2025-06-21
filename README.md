@@ -16,11 +16,11 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 ## Voraussetzungen
 
-- Python 3.8+
+- Python 3.1+
 - Abhängigkeiten:
 
   ```
-  pip install pyqt5 toml
+  pip install tkinter toml pillow
   ```
 
 ---
@@ -31,7 +31,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 .
 ├── main.py              # Einstiegspunkt, wählt GUI oder CLI
 ├── cli.py               # Kommandozeilen-Oberfläche
-├── gui.py               # PyQt-basierte GUI
+├── gui_tk.py               # PyQt-basierte GUI
 ├── client.py            # Sendet Nachrichten (JOIN, MSG, IMG, etc.)
 ├── server.py            # Empfängt Nachrichten, speichert Bilder
 ├── discovery_service.py # Peer Discovery via UDP
