@@ -90,7 +90,7 @@ class ChatGUI(tk.Tk):
 
         # Lower Frame
         lower_frame = tk.Frame(main_frame, bg="#2b2b2b")
-        lower_frame.grid(row=1, column=0, sticky="ew", pady=(0, 0))
+        lower_frame.grid(row=1, column=0, sticky="ew", pady=(10, 0))
         lower_frame.columnconfigure(0, weight=70)
         lower_frame.columnconfigure(1, weight=15)
         lower_frame.columnconfigure(2, weight=15)
