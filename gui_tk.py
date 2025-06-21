@@ -53,6 +53,8 @@ class ChatGUI(tk.Tk):
         self.base_font = tkfont.Font(family="Helvetica", size=11)
         self.image_size_base = 200
         self.image_size = self.image_size_base
+        self.peer_list_width_base = 20
+        self.peer_list_width = self.peer_list_width_base
         self.bind("<Configure>", self._on_resize)
         self._ask_user_info() # Durch den Aufruf der Methode wird der Nutzer nach seinem Namen gefragt und ein freier TCP-Port gewählt
         self._setup_ui() # Alle Bauteile der UI werden hier initialisiert
@@ -112,7 +114,7 @@ class ChatGUI(tk.Tk):
 
         self.peer_list = tk.Listbox(
             peer_frame,
-            width=20,
+            width=self.peer_list_width,
             font=self.base_font,
             bg="#333",
             fg="#ffffff"
@@ -135,6 +137,7 @@ class ChatGUI(tk.Tk):
         )
         self.text_entry.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
         
+        #Image Button zum auswählen von Bildern
         self.image_btn = tk.Button(
             bottom_frame,
             text="📷",
@@ -148,7 +151,7 @@ class ChatGUI(tk.Tk):
             font=self.base_font,
         )
 
-        # Button zum Senden von Nachrichten#
+        #Button zum Senden von Nachrichten
         self.send_btn = tk.Button(
             bottom_frame,
             text="Senden",
@@ -406,6 +409,9 @@ class ChatGUI(tk.Tk):
         size = max(int(11 * self.scale), 8)
         self.base_font.configure(size=size)
         self.image_size = int(self.image_size_base * self.scale)
+        self.peer_list_width = max(int(self.peer_list_width_base * self.scale), 10)
+        if hasattr(self, "peer_list"):
+            self.peer_list.configure(width=self.peer_list_width)
 
     def open_image_dialog(self):
         """Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer"""
