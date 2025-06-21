@@ -13,7 +13,7 @@ import toml
  - Sendet KNOWUSERS-Antworten per Broadcast an alle Peers.
 """
 
-def discovery_loop(config, cli_queue):
+def discovery_loop(config, interface_queue):
     """Funktion namens `discovery_loop`, die den Discovery-Service implementiert."""
     # Erstelle ein leeres Array zum Speichern der bekannten Peers.
     # Jeder Eintrag hat die Form: handle -> (IP-Adresse, Port)
@@ -92,7 +92,7 @@ def discovery_loop(config, cli_queue):
 
         # Informiere die übergeordnete Anwendung (z.B. die CLI) über Änderungen in der Peerliste.
         # Hier wird eine Kopie der aktuellen Peerliste über eine IPC-Queue (cli_queue) verschickt.
-        cli_queue.put(('PEERS', peers.copy()))
+        interface_queue.put(('PEERS', peers.copy()))
 
 if __name__ == '__main__':
     """Importiere die Konfigurationsdatei (config.toml) und die SLCP-Handler-Funktionen."""

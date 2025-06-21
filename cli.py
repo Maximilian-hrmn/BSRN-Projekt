@@ -26,16 +26,16 @@ class ChatCLI(cmd.Cmd):
     # Prompt, der vor jeder Eingabe angezeigt wird (auch automatisch durch cmd gesetzt)
     prompt = "> "
 
-    def __init__(self, config, net_to_cli_queue, disc_to_cli_queue, cli_to_net_queue):
+    def __init__(self, config, net_to_interface_queue, disc_to_interface_queue, interface_to_net_queue):
         """Konstruktor der ChatCLI-Klasse"""
         # Ruft den Konstruktor der Basisklasse cmd.Cmd auf 
         super().__init__()
         # Enthält alle Einstellungen aus der config.toml Datei
         self.config = config
         # Thread sicheres Queue-Objekt für eingehende Nachrichten vom Netzwerk, Discovery und ausgehende Nachrichten an das Netzwerk
-        self.net_to_cli = net_to_cli_queue
-        self.disc_to_cli = disc_to_cli_queue
-        self.cli_to_net = cli_to_net_queue
+        self.net_to_interface = net_to_interface_queue
+        self.disc_to_interface = disc_to_interface_queue
+        self.interface_to_net = interface_to_net_queue
         # Flag, ob der Nutzer im Netzwerk eingeloggt ist
         # Wird auf True gesetzt, wenn der Nutzer dem Netzwerk beitritt
         self.joined = False
@@ -66,7 +66,7 @@ class ChatCLI(cmd.Cmd):
             # 1. Eingehende Chat-Nachrichten abholen
             try:
                 # get nowait() holt eine Nachricht aus der Queue, ohne zu blockieren
-                msg = self.net_to_cli.get_nowait()
+                msg = self.net_to_interface.get_nowait()
                 # --- Fall A: Textnachricht ---
                 if msg[0] == 'MSG':
                     from_handle = msg[1] # Absender der Nachricht
@@ -99,7 +99,7 @@ class ChatCLI(cmd.Cmd):
 
             # 2. Updates der Peer-Liste abholen
             try:
-                dmsg = self.disc_to_cli.get_nowait()
+                dmsg = self.disc_to_interface.get_nowait()
                 # Der Discovery-Service sendet Updates über die Peer-Liste
                 # ('PEERS', <dict>) – wir übernehmen das Dict.
                 if dmsg[0] == 'PEERS':
@@ -144,8 +144,8 @@ class ChatCLI(cmd.Cmd):
         self.config['handle'] = handle
         self.config['port'] = port
         # Falls eine CLI-zu-Netzwerk-Queue existiert, wird der Port gesetzt
-        if self.cli_to_net:
-            self.cli_to_net.put(('SET_PORT', port))
+        if self.interface_to_net:
+            self.interface_to_net.put(('SET_PORT', port))
         # 3: Beitrittsnachricht an das Netzwerk senden
         client_send_join(self.config)
         self.joined = True

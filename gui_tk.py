@@ -34,15 +34,15 @@ class ChatGUI(tk.Tk):
     Die ChatGUI-Klasse erbt von tk.Tk und stellt die Benutzeroberfläche für den Chat-Client dar.
     Sie verwaltet die Netzwerkkommunikation, die Anzeige von Nachrichten und Bildern sowie die Interaktion in grafischen Oberfläche
     """
-    def __init__(self, config, net_to_cli, disc_to_cli, cli_to_net): # Initialisierung der Klasse (Konstruktor)
+    def __init__(self, config, net_to_interface, disc_to_interface, interface_to_net): # Initialisierung der Klasse (Konstruktor)
         """ 
         Konstruktor der ChatGUI-Klasse, der die grundlegenden Einstellungen und die Benutzeroberfläche initialisiert
         """
         super().__init__() # Super bezeichnet die Elternklasse, von der diese Klasse erbt. In diesem Fall ist es tk.Tk, die Hauptklasse für Tkinter-Anwendungen.
         self.config = config #Ruft die Konfiguration des Chat-Clients ab, die aus der config.toml geladen wurde
-        self.net_to_cli = net_to_cli # IPC Queue für Nachrichten vom Netzwerk zum Client
-        self.disc_to_cli = disc_to_cli # IPC Queue für Nachrichten vom Discovery-Service zum Client
-        self.cli_to_net = cli_to_net # IPC Queue für Nachrichten vom Client zum Netzwerk
+        self.net_to_interface = net_to_interface # IPC Queue für Nachrichten vom Netzwerk zum Client
+        self.disc_to_interface = disc_to_interface # IPC Queue für Nachrichten vom Discovery-Service zum Client
+        self.interface_to_net = interface_to_net # IPC Queue für Nachrichten vom Client zum Netzwerk
         self.peers = {} # Leeres Dictonary für die Peers
         self.last_activity = time.time() # Zeitstempel der letzten Aktivität, um Inaktivität zu verfolgen
         self.joined = False # Hier wird festgelegt, ob der Client einem Netzwerk beigetreten ist oder nicht 
@@ -153,8 +153,8 @@ class ChatGUI(tk.Tk):
         if handle and port:
             self.config["handle"] = handle
             self.config["port"] = port
-            if self.cli_to_net:
-                self.cli_to_net.put(("SET_PORT", port))
+            if self.interface_to_net:
+                self.interface_to_net.put(("SET_PORT", port))
             client_send_join(self.config)
             self.joined = True
             client_send_who(self.config)
@@ -167,7 +167,7 @@ class ChatGUI(tk.Tk):
         now = time.time()
         while True:
             try:
-                msg = self.net_to_cli.get_nowait()
+                msg = self.net_to_interface.get_nowait()
             except queue.Empty:
                 break
             if msg[0] == "MSG":
@@ -185,7 +185,7 @@ class ChatGUI(tk.Tk):
                 self._append_image(from_handle, path)
         while True:
             try:
-                dmsg = self.disc_to_cli.get_nowait()
+                dmsg = self.disc_to_interface.get_nowait()
             except queue.Empty:
                 break
             if dmsg[0] == "PEERS":

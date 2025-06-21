@@ -3,7 +3,6 @@ import toml # Zum Laden der Konfigurationsdatei
 from multiprocessing import Process, Queue # Multiprocessing für parallele Prozesse
 import discovery_service # Discovery-Service für Peer-Erkennung
 import fcntl # Für Dateisperren (Locking)
-import os # Für Betriebssysteminteraktionen
 import server # Server-Modul für Netzwerkkommunikation
 from cli import ChatCLI # CLI-Modul für Kommandozeileninteraktion
 
@@ -38,10 +37,10 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     
 
     """IPC-Queues (für Prozesskommunikation zwischen CLI, Server und Discovery)"""
-    cli_to_net = Queue() # Queue für Kommunikation von CLI zu Netzwerk
-    cli_to_disc = Queue() # Queue für Kommunikation von CLI zu Discovery
-    net_to_cli = Queue() # Queue für Kommunikation von Netzwerk zu CLI
-    disc_to_cli = Queue() # Queue für Kommunikation von Discovery zu CLI
+    interface_to_net = Queue() # Queue für Kommunikation von CLI zu Netzwerk
+    interface_to_disc = Queue() # Queue für Kommunikation von CLI zu Discovery
+    net_to_interface = Queue() # Queue für Kommunikation von Netzwerk zu CLI
+    disc_to_interface = Queue() # Queue für Kommunikation von Discovery zu CLI
     
     """
     Discovery-Service als eigener Process(stellt sicher, dass pro Rechner nur eine Instanz des Discovery-Service läuft und aktiv ist)
@@ -50,7 +49,7 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     lock_file = open('/tmp/discovery.lock', 'w') # Lock-Datei für den Discovery-Service
     try:
         fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB) # Versucht, die Lock-Datei exklusiv zu sperren
-        disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_cli)) # Discovery-Service starten
+        disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_interface)) # Discovery-Service starten
         disc_proc.daemon = True # Daemon-Prozess, der im Hintergrund läuft
         disc_proc.start() # Discovery-Service starten
         print("Discovery-Service gestartet") # Ausgabe, dass der Discovery-Service gestartet wurde
@@ -59,7 +58,7 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
         print("Discovery-Service läuft bereits") # Ausgabe, dass der Discovery-Service bereits läuft
 
     """Server/Network als eigener Process"""
-    net_proc = Process(target=server.server_loop, args=(config, net_to_cli, cli_to_net)) # Netzwerk-Server starten
+    net_proc = Process(target=server.server_loop, args=(config, net_to_interface, interface_to_net)) # Netzwerk-Server starten
     net_proc.daemon = True # Daemon-Prozess, der im Hintergrund läuft
     net_proc.start() # Netzwerk-Server starten
 
@@ -67,10 +66,10 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     mode = input("Modus wählen: [g] GUI  |  [c] CLI  > ").strip().lower() # Eingabe für den Modus (GUI oder CLI)
     if mode == 'g': # Wenn GUI-Modus gewählt wurde
         from gui_tk import startGui  # Tkinter-basierte GUI importieren
-        startGui(config, net_to_cli, disc_to_cli, cli_to_net)  # GUI starten
+        startGui(config, net_to_interface, disc_to_interface, interface_to_net)  # GUI starten
     else: # Standardmäßig CLI-Modus
         # Fallback zu CLI
-        cli = ChatCLI(config, net_to_cli, disc_to_cli, cli_to_net) # CLI-Instanz erstellen
+        cli = ChatCLI(config, net_to_interface, disc_to_interface, interface_to_net) # CLI-Instanz erstellen
         try: # CLI starten
             cli.cmdloop() # Kommandozeilen-Loop starten
         except KeyboardInterrupt: # Abfangen von KeyboardInterrupt (Strg+C)

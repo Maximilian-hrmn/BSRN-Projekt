@@ -17,7 +17,7 @@ import queue
 
 """
 
-def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
+def server_loop(config, net_to_interface_queue, interface_to_net_queue=None):
     """Funktion namens `server_loop`, die den Serverprozess implementiert."""
 
     #Stelle sicher, dass der imagepath existiert
@@ -51,10 +51,10 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
         Endlosschleife, um auf eingehende Verbindungen zu warten
         """
         #Überprüfe, ob eine neue Portänderung angefordert wurde
-        if cli_to_net_queue is not None:
+        if interface_to_net_queue is not None:
             try:
                 # Versuche, eine Nachricht aus der Queue zu lesen
-                msg = cli_to_net_queue.get_nowait()
+                msg = interface_to_net_queue.get_nowait()
                 # Wenn die Nachricht den Befehl 'SET_PORT' enthält, ändere den Port
                 if msg[0] == 'SET_PORT':
                     # Extrahiere den neuen Port aus der Nachricht
@@ -95,7 +95,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
                 from_handle = args[0]
                 text = args[1]
                 # Füge den Rest der Nachricht (falls vorhanden) zusammen
-                net_to_cli_queue.put(('MSG', from_handle, text))
+                net_to_interface_queue.put(('MSG', from_handle, text))
 
             #Bei IMG: Lese den Header und die Bilddaten
             elif cmd == 'IMG' and len(args) == 2:
@@ -113,7 +113,7 @@ def server_loop(config, net_to_cli_queue, cli_to_net_queue=None):
                 with open(filepath, 'wb') as imgf:
                     imgf.write(img_data)
                 # Füge den Pfad des gespeicherten Bildes zur Queue hinzu
-                net_to_cli_queue.put(('IMG', from_handle, filepath))
+                net_to_interface_queue.put(('IMG', from_handle, filepath))
 
 """
 Test Main-Funktion zum Testen des Servers
