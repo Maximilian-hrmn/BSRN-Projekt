@@ -93,11 +93,17 @@ class ChatGUI(tk.Tk):
         main_frame = tk.Frame(self, bg="#2b2b2b")
         main_frame.pack(fill="both", expand=True)
         # Frame für den Hauptinhalt der Anwendung, der die Chat- und Peer-Bereiche enthält
-        list_frame = tk.Frame(main_frame, bg="#2b2b2b")
-        list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        self.list_frame = tk.Frame(main_frame, bg="#2b2b2b")
+        self.list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Grid-Konfiguration, damit die Peer-Liste nicht verschwindet
+        self.list_frame.grid_columnconfigure(0, weight=1)
+        self.list_frame.grid_columnconfigure(1, weight=0)
+        char_width = self.base_font.measure("0")
+        self.list_frame.grid_columnconfigure(1, minsize=self.peer_list_width * char_width + 20)
         # Frame für den Chat-Bereich, der links im Fenster angezeigt wird
-        chat_frame = tk.Frame(list_frame, bg="#2b2b2b")
-        chat_frame.pack(side="left", fill="both", expand=True)
+        chat_frame = tk.Frame(self.list_frame, bg="#2b2b2b")
+        chat_frame.grid(row=0, column=0, sticky="nsew")
         # Textfeld für den Chat-Bereich, in dem Nachrichten angezeigt werden
         self.chat_text = tk.Text(
             chat_frame,
@@ -108,12 +114,13 @@ class ChatGUI(tk.Tk):
             state="disabled",
         )
         self.chat_text.pack(side="left", fill="both", expand=True)
-        # Scrollbar für das Chat-Fenster hinzufügen
-        peer_frame = tk.Frame(list_frame, bg="#2b2b2b")
-        peer_frame.pack(side="right", fill="y")
+        # Frame für die Peer-Liste auf der rechten Seite
+        self.peer_frame = tk.Frame(self.list_frame, bg="#2b2b2b")
+        self.peer_frame.grid(row=0, column=1, sticky="ns")
+        self.peer_frame.grid_propagate(False)
 
         self.peer_list = tk.Listbox(
-            peer_frame,
+            self.peer_frame,
             width=self.peer_list_width,
             font=self.base_font,
             bg="#333",
@@ -412,6 +419,9 @@ class ChatGUI(tk.Tk):
         self.peer_list_width = max(int(self.peer_list_width_base * self.scale), 10)
         if hasattr(self, "peer_list"):
             self.peer_list.configure(width=self.peer_list_width)
+        if hasattr(self, "list_frame"):
+            char_width = self.base_font.measure("0")
+            self.list_frame.grid_columnconfigure(1, minsize=self.peer_list_width * char_width + 20)
 
     def open_image_dialog(self):
         """Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer"""
