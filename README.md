@@ -16,11 +16,11 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 ## Voraussetzungen
 
-- Python 3.8+
+- Python 3.1+
 - Abhängigkeiten:
 
   ```
-  pip install tkinter toml
+  pip install tkinter toml pillow
   ```
 
 ---
