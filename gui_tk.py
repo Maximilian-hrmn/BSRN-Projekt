@@ -94,7 +94,7 @@ class ChatGUI(tk.Tk):
         main_frame.pack(fill="both", expand=True)
         # Frame für den Hauptinhalt der Anwendung, der die Chat- und Peer-Bereiche enthält
         self.list_frame = tk.Frame(main_frame, bg="#2b2b2b")
-        self.list_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        self.list_frame.pack(fill="both", expand=True, padx=5, pady=(5, 0))
 
         # Grid-Konfiguration, damit die Peer-Liste nicht verschwindet
         self.list_frame.grid_columnconfigure(0, weight=1)
@@ -129,7 +129,7 @@ class ChatGUI(tk.Tk):
         self.peer_list.pack(side="left", fill="y")
         # Scrollbar für die Peer-Liste hinzufügen
         bottom_frame = tk.Frame(main_frame, bg="#2b2b2b")
-        bottom_frame.pack(fill="x", pady=5)
+        bottom_frame.pack(fill="x", pady=(0, 5))
 
         bottom_frame.columnconfigure(0, weight=1)
         bottom_frame.columnconfigure(1, weight=0)
