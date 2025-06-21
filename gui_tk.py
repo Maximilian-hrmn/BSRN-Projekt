@@ -111,10 +111,10 @@ class ChatGUI(tk.Tk):
         peer_frame.pack(side="right", fill="y")
 
         self.peer_list = tk.Listbox(
-            peer_frame, 
-            width=20, 
-            font=self.base_font, 
-            bg="#333", 
+            peer_frame,
+            width=20,
+            font=self.base_font,
+            bg="#333",
             fg="#ffffff"
         )
         self.peer_list.pack(side="left", fill="y")
@@ -123,14 +123,14 @@ class ChatGUI(tk.Tk):
         bottom_frame.pack(fill="x", pady=5)
 
         self.text_entry = tk.Text(
-            bottom_frame, 
-            height=3, 
-            font=self.base_font, 
-            bg="#1e1e1e", 
+            bottom_frame,
+            height=3,
+            font=self.base_font,
+            bg="#1e1e1e",
             fg="#dcdcdc"
         )
         self.text_entry.pack(side="left", fill="both", expand=True)
-        #
+        
         self.image_btn = tk.Button(
             bottom_frame,
             text="📷",
@@ -144,6 +144,7 @@ class ChatGUI(tk.Tk):
             font=self.base_font,
         )
         self.image_btn.pack(side="left", padx=(5, 0))
+
         # Button zum Senden von Nachrichten#
         self.send_btn = tk.Button( 
             bottom_frame,
@@ -157,7 +158,10 @@ class ChatGUI(tk.Tk):
             bd=0,
             font=self.base_font,
         )
-        self.send_btn.pack(side="left", padx=5)
+        self.send_btn.pack(side="right", padx=(0, 5))
+
+        # das Texteingabefeld füllt den übrigen Platz aus
+        self.text_entry.pack(side="left", fill="both", expand=True)
         #.bind bindet die Methode _send_message_event an das Textfeld, sodass beim Drücken der Eingabetaste eine Nachricht gesendet wird.
         self.text_entry.bind("<Return>", self._send_message_event) 
     #
@@ -396,6 +400,7 @@ class ChatGUI(tk.Tk):
             self._apply_scaling()
 
     def _apply_scaling(self):
+        """Wendet die Skalierung auf Schriftgröße und Bildgröße an."""
         size = max(int(11 * self.scale), 8)
         self.base_font.configure(size=size)
         self.image_size = int(self.image_size_base * self.scale)
