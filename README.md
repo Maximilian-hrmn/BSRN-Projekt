@@ -20,7 +20,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 - Abhängigkeiten:
 
   ```
-  pip install pyqt5 toml
+  pip install tkinter toml
   ```
 
 ---
