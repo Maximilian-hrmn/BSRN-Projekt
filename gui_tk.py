@@ -143,7 +143,6 @@ class ChatGUI(tk.Tk):
             bd=0,
             font=self.base_font,
         )
-        self.image_btn.pack(side="left", padx=(5, 0))
 
         # Button zum Senden von Nachrichten#
         self.send_btn = tk.Button( 
@@ -159,12 +158,13 @@ class ChatGUI(tk.Tk):
             font=self.base_font,
         )
         self.send_btn.pack(side="right", padx=(0, 5))
+        self.image_btn.pack(side="right", padx=(5, 0))
 
-        # das Texteingabefeld füllt den übrigen Platz aus
+        # das Texteingabefeld nimmt den verbleibenden Platz ein
         self.text_entry.pack(side="left", fill="both", expand=True)
-        #.bind bindet die Methode _send_message_event an das Textfeld, sodass beim Drücken der Eingabetaste eine Nachricht gesendet wird.
-        self.text_entry.bind("<Return>", self._send_message_event) 
-    #
+        # Bindet die Eingabetaste an das Sende-Ereignis
+        self.text_entry.bind("<Return>", self._send_message_event)
+    
     def _join_network(self):
         """
         Diese Methode versucht, dem Netzwerk beizutreten, indem sie
