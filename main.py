@@ -1,3 +1,5 @@
+# File: main.py
+
 import argparse # ArgumentParser für Kommandozeilenargumente
 import toml # Zum Laden der Konfigurationsdatei
 from multiprocessing import Process, Queue # Multiprocessing für parallele Prozesse

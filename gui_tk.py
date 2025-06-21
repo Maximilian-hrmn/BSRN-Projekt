@@ -1,3 +1,5 @@
+# File: gui_tk.py
+
 # Hier werden wesendliche Bibilotheken importiert, die für die GUI und Netzwerkkommunikation benötigt werden.
 # Die Bibliotheken tkinter, simpledialog und filedialog sind für die GUI-Komponenten zuständig
 # Die Bibliothek PIL (Pillow) wird für die Bildverarbeitung verwendet, um Bilder anzuzeigen.
@@ -7,11 +9,10 @@
 # Die Bibliothek socket wird für die Netzwerkkommunikation verwendet, um Verbindungen zu anderen Peers herzustellen.
 
 import tkinter as tk
-from tkinter import simpledialog, filedialog
+from tkinter import simpledialog, filedialog, font as tkfont
 from PIL import Image, ImageTk
 import queue
 import time
-import sys
 import socket
 from client import ( 
     client_send_join,
@@ -46,6 +47,13 @@ class ChatGUI(tk.Tk):
         self.peers = {} # Leeres Dictonary für die Peers
         self.last_activity = time.time() # Zeitstempel der letzten Aktivität, um Inaktivität zu verfolgen
         self.joined = False # Hier wird festgelegt, ob der Client einem Netzwerk beigetreten ist oder nicht 
+        self.base_width = 800
+        self.base_height = 600
+        self.scale = 1.0
+        self.base_font = tkfont.Font(family="Helvetica", size=11)
+        self.image_size_base = 200
+        self.image_size = self.image_size_base
+        self.bind("<Configure>", self._on_resize)
         self._ask_user_info() # Durch den Aufruf der Methode wird der Nutzer nach seinem Namen gefragt und ein freier TCP-Port gewählt
         self._setup_ui() # Alle Bauteile der UI werden hier initialisiert
         self._join_network() # Sobald Nutzername und Port eingegeben wurden wird versucht, dem Netzwerk beizutreten.
@@ -91,7 +99,7 @@ class ChatGUI(tk.Tk):
         # Textfeld für den Chat-Bereich, in dem Nachrichten angezeigt werden
         self.chat_text = tk.Text(
             chat_frame,
-            font=("Helvetica", 11),
+            font=self.base_font,
             bg="#1e1e1e",
             fg="#dcdcdc",
             wrap="word",
@@ -103,7 +111,11 @@ class ChatGUI(tk.Tk):
         peer_frame.pack(side="right", fill="y")
 
         self.peer_list = tk.Listbox(
-            peer_frame, width=20, font=("Helvetica", 11), bg="#333", fg="#ffffff"
+            peer_frame, 
+            width=20, 
+            font=self.base_font, 
+            bg="#333", 
+            fg="#ffffff"
         )
         self.peer_list.pack(side="left", fill="y")
         # Scrollbar für die Peer-Liste hinzufügen
@@ -111,7 +123,11 @@ class ChatGUI(tk.Tk):
         bottom_frame.pack(fill="x", pady=5)
 
         self.text_entry = tk.Text(
-            bottom_frame, height=3, font=("Helvetica", 11), bg="#1e1e1e", fg="#dcdcdc"
+            bottom_frame, 
+            height=3, 
+            font=self.base_font, 
+            bg="#1e1e1e", 
+            fg="#dcdcdc"
         )
         self.text_entry.pack(side="left", fill="both", expand=True)
         #
@@ -125,6 +141,7 @@ class ChatGUI(tk.Tk):
             activebackground="#005f99",
             relief="flat",
             bd=0,
+            font=self.base_font,
         )
         self.image_btn.pack(side="left", padx=(5, 0))
         # Button zum Senden von Nachrichten#
@@ -138,6 +155,7 @@ class ChatGUI(tk.Tk):
             activebackground="#005f99",
             relief="flat",
             bd=0,
+            font=self.base_font,
         )
         self.send_btn.pack(side="left", padx=5)
         #.bind bindet die Methode _send_message_event an das Textfeld, sodass beim Drücken der Eingabetaste eine Nachricht gesendet wird.
@@ -210,7 +228,7 @@ class ChatGUI(tk.Tk):
         """Diese Methode fügt ein Bild zum Chat-Fenster hinzu."""
         try:
             img = Image.open(path)
-            img.thumbnail((200, 200))
+            img.thumbnail((self.image_size, self.image_size))
             photo = ImageTk.PhotoImage(img)
             self.images.append(photo)
             self.chat_text.configure(state="normal")
@@ -367,6 +385,20 @@ class ChatGUI(tk.Tk):
         # Verhindert das automatische Einfügen eines Zeilenumbruchs im Textfeld
         self._send_message()
         return "break"
+
+    def _on_resize(self, event):
+        """Passe Schrift- und Bildgrößen an die Fenstergröße an."""
+        if event.widget is not self:
+            return
+        new_scale = min(event.width / self.base_width, event.height / self.base_height)
+        if abs(new_scale - self.scale) > 0.05:
+            self.scale = new_scale
+            self._apply_scaling()
+
+    def _apply_scaling(self):
+        size = max(int(11 * self.scale), 8)
+        self.base_font.configure(size=size)
+        self.image_size = int(self.image_size_base * self.scale)
 
     def open_image_dialog(self):
         """Öffnet einen Dialog zum Auswählen und Senden eines Bildes an den ausgewählten Peer"""
