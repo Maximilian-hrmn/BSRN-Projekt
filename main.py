@@ -43,8 +43,10 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     net_to_cli = Queue() # Queue für Kommunikation von Netzwerk zu CLI
     disc_to_cli = Queue() # Queue für Kommunikation von Discovery zu CLI
     
-    """Discovery-Service als eigener Process(stellt sicher, dass pro Rechner nur eine Instanz des Discovery-Service läuft und aktiv ist)"""
-    """ Lock-Datei dient somit als einfache gegenseitige Absicherung gegen doppelt gestartete Discovery-Services """
+    """
+    Discovery-Service als eigener Process(stellt sicher, dass pro Rechner nur eine Instanz des Discovery-Service läuft und aktiv ist)
+    Lock-Datei dient somit als einfache gegenseitige Absicherung gegen doppelt gestartete Discovery-Services
+    """
     lock_file = open('/tmp/discovery.lock', 'w') # Lock-Datei für den Discovery-Service
     try:
         fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB) # Versucht, die Lock-Datei exklusiv zu sperren
