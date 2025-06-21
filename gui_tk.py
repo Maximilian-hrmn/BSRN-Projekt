@@ -122,6 +122,10 @@ class ChatGUI(tk.Tk):
         bottom_frame = tk.Frame(main_frame, bg="#2b2b2b")
         bottom_frame.pack(fill="x", pady=5)
 
+        bottom_frame.columnconfigure(0, weight=1)
+        bottom_frame.columnconfigure(1, weight=0)
+        bottom_frame.columnconfigure(2, weight=0)
+
         self.text_entry = tk.Text(
             bottom_frame,
             height=3,
@@ -129,7 +133,7 @@ class ChatGUI(tk.Tk):
             bg="#1e1e1e",
             fg="#dcdcdc"
         )
-        self.text_entry.pack(side="left", fill="both", expand=True)
+        self.text_entry.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
         
         self.image_btn = tk.Button(
             bottom_frame,
@@ -145,7 +149,7 @@ class ChatGUI(tk.Tk):
         )
 
         # Button zum Senden von Nachrichten#
-        self.send_btn = tk.Button( 
+        self.send_btn = tk.Button(
             bottom_frame,
             text="Senden",
             width=10,
@@ -157,11 +161,9 @@ class ChatGUI(tk.Tk):
             bd=0,
             font=self.base_font,
         )
-        self.send_btn.pack(side="right", padx=(0, 5))
-        self.image_btn.pack(side="right", padx=(5, 0))
+        self.image_btn.grid(row=0, column=1, sticky="nsew", padx=(0, 5))
+        self.send_btn.grid(row=0, column=2, sticky="nsew")
 
-        # das Texteingabefeld nimmt den verbleibenden Platz ein
-        self.text_entry.pack(side="left", fill="both", expand=True)
         # Bindet die Eingabetaste an das Sende-Ereignis
         self.text_entry.bind("<Return>", self._send_message_event)
     
