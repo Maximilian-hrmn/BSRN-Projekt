@@ -197,7 +197,18 @@ class ChatGUI(tk.Tk):
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
             return
-        # hier sollte der eigentliche Nachrichtensende-Code stehen (abgekürzt)
+        sel = self.peer_list.curselection()
+        if not sel:
+            self._append_text("[Fehler] Kein Empfänger ausgewählt\n")
+            self.text_entry.delete("1.0", "end")
+            return
+        handle = self.peer_list.get(sel[0])
+        if handle in self.peers:
+            host, port = self.peers[handle]
+            client_send_msg(host, port, self.config["handle"], text)
+            self._append_text(f"Du -> {handle}: {text}\n")
+        else:
+            self._append_text("[Fehler] Unbekannter Peer\n")
         self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
