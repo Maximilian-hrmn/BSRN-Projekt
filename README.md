@@ -1,6 +1,6 @@
 # Peer-to-Peer LAN Messenger
 
-Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommandozeilen-Interface (CLI)** als auch eine **grafische Benutzeroberfläche (GUI)** unterstützt. Nachrichten und Bilder können direkt zwischen Peers ausgetauscht werden – ohne zentralen Server.
+Ein einfacher Chat-Client, der sowohl eine **Kommandozeilen-Interface (CLI)** als auch eine **grafische Benutzeroberfläche (GUI)** unterstützt. Nachrichten und Bilder können direkt zwischen Peers ausgetauscht werden – ohne zentralen Server.
 
 ---
 
@@ -16,7 +16,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 ## Voraussetzungen
 
-- Python 3.1+
+- Python >= 3.8
 - Abhängigkeiten:
 
   ```
@@ -31,7 +31,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 .
 ├── main.py              # Einstiegspunkt, wählt GUI oder CLI
 ├── cli.py               # Kommandozeilen-Oberfläche
-├── gui_tk.py               # PyQt-basierte GUI
+├── gui_tk.py            # Tkinter-basierte GUI
 ├── client.py            # Sendet Nachrichten (JOIN, MSG, IMG, etc.)
 ├── server.py            # Empfängt Nachrichten, speichert Bilder
 ├── discovery_service.py # Peer Discovery via UDP
@@ -46,7 +46,7 @@ Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine **Kommand
 
 Beispiel:
 
-```toml
+''toml''
 handle = "user_name"
 port = 5005
 whoisport = 4000
@@ -71,17 +71,17 @@ Dann wählen:
 
 ### CLI-Befehle:
 
-| Befehl             | Beschreibung                          |
-|--------------------|----------------------------------------|
-| `join <name>`      | Netzwerk beitreten                     |
-| `leave`            | Netzwerk verlassen                     |
-| `who`              | Peerliste anzeigen                     |
-| `msg <user> <text>`| Nachricht an Benutzer senden           |
-| `msgall <text>`    | Nachricht an alle senden               |
-| `img <user> <pfad>`| Bild senden                            |
-| `show_config`      | Aktuelle Konfiguration anzeigen        |
+| Befehl                   | Beschreibung                    |
+|--------------------------|---------------------------------|
+| `join <name>`            | Netzwerk beitreten              |
+| `leave`                  | Netzwerk verlassen              |
+| `who`                    | Peerliste anzeigen              |
+| `msg <user> <text>`      | Nachricht an Benutzer senden    |
+| `msgall <text>`          | Nachricht an alle senden        |
+| `img <user> <pfad>`      | Bild senden                     |
+| `show_config`            | Aktuelle Konfiguration anzeigen |
 | `set_config <key> <val>` | Konfigurationsparameter ändern  |
-| `exit`             | Anwendung beenden                      |
+| `exit`                   | Anwendung beenden               |
 
 ---
 
@@ -111,5 +111,5 @@ Dann wählen:
 
 ## Hinweise
 
-- Dieses Tool ist **nicht für produktiven Einsatz** oder über öffentliche Netzwerke gedacht.
+- Dieser Client ist **nicht für produktiven Einsatz** oder über öffentliche Netzwerke gedacht.
 - Die Nachrichten werden **nicht verschlüsselt** übertragen.
