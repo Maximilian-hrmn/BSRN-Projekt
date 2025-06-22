@@ -4,10 +4,8 @@ import argparse # ArgumentParser für Kommandozeilenargumente
 import toml # Zum Laden der Konfigurationsdatei
 from multiprocessing import Process, Queue # Multiprocessing für parallele Prozesse
 import discovery_service # Discovery-Service für Peer-Erkennung
-import fcntl # Für Dateisperren (Locking)
 import server # Server-Modul für Netzwerkkommunikation
 from cli import ChatCLI # CLI-Modul für Kommandozeileninteraktion
-import os
 
 """
 @file main.py
