@@ -218,14 +218,33 @@ class ChatGUI(tk.Tk):
         if not sel:
             self._append_text("[Fehler] Kein Empfänger ausgewählt\n")
             self.text_entry.delete("1.0", "end")
-            return
-        handle = self.peer_list.get(sel[0])
-        if handle in self.peers:
-            host, port = self.peers[handle]
-            client_send_msg(host, port, self.config["handle"], text)
-            self._append_text(f"Du -> {handle}: {text}\n")
+            if text.lower().startswith("msgall"):
+                return
+            msg_text = text[6:].strip()
+            if not msg_text:
+                self._append_text("[Fehler] msgall ohne Text\n")
+                self.text_entry.delete("1.0", "end")
+                return
+            if not self.peers:
+                self._append_text("[Fehler] Keine anderen Peers im Chat\n")
+                self.text_entry.delete("1.0", "end")
+                return
+            for h, (host, port) in self.peers.items():
+                client_send_msg(host, port, self.config["handle"], msg_text)
+            self._append_text(f"Du -> Alle: {msg_text}\n")
         else:
-            self._append_text("[Fehler] Unbekannter Peer\n")
+            sel = self.peer_list.curselection()
+            if not sel:
+                self._append_text("[Fehler] Kein Empfänger ausgewählt\n")
+                self.text_entry.delete("1.0", "end")
+                return
+            handle = self.peer_list.get(sel[0])
+            if handle in self.peers:
+                host, port = self.peers[handle]
+                client_send_msg(host, port, self.config["handle"], text)
+                self._append_text(f"Du -> {handle}: {text}\n")
+            else:
+                self._append_text("[Fehler] Unbekannter Peer\n")
         self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
