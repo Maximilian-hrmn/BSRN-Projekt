@@ -32,8 +32,6 @@ class ChatGUI(tk.Tk):
         self.base_font = tkfont.Font(family="Helvetica", size=11)
         self.image_size_base = 200
         self.image_size = self.image_size_base
-        self.peer_list_width_base = 20
-        self.peer_list_width = self.peer_list_width_base
 
         self.bind("<Configure>", self._on_resize)
         self._ask_user_info()
@@ -71,21 +69,21 @@ class ChatGUI(tk.Tk):
         upper_frame = tk.Frame(main_frame, bg="#2b2b2b")
         upper_frame.grid(row=0, column=0, sticky="nsew")
         upper_frame.grid_rowconfigure(0, weight=1)
-        upper_frame.grid_columnconfigure(0, weight=70)
-        upper_frame.grid_columnconfigure(1, weight=30)
+        upper_frame.grid_columnconfigure(0, weight=8)
+        upper_frame.grid_columnconfigure(1, weight=2)
 
         # Chat Frame
         chat_frame = tk.Frame(upper_frame, bg="#2b2b2b")
-        chat_frame.grid(row=0, column=0, sticky="nsew")
+        chat_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 3))
         self.chat_text = tk.Text(chat_frame, font=self.base_font, bg="#1e1e1e", fg="#dcdcdc", wrap="word", state="disabled")
         self.chat_text.pack(fill="both", expand=True)
 
         # Peer List Frame
         peer_frame = tk.Frame(upper_frame, bg="#2b2b2b")
-        peer_frame.grid(row=0, column=1, sticky="nsew")
+        peer_frame.grid(row=0, column=1, sticky="nsew", padx=(3, 0))
         peer_frame.grid_rowconfigure(0, weight=1)
         peer_frame.grid_columnconfigure(0, weight=1)
-        self.peer_list = tk.Listbox(peer_frame, width=self.peer_list_width, font=self.base_font, bg="#333", fg="#ffffff")
+        self.peer_list = tk.Listbox(peer_frame, width=15, font=self.base_font, bg="#333", fg="#ffffff")
         self.peer_list.grid(row=0, column=0, sticky="nsew")
 
         # Lower Frame
@@ -183,7 +181,8 @@ class ChatGUI(tk.Tk):
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
             return
-        # ... rest of message handling remains unchanged
+        # hier sollte der eigentliche Nachrichtensende-Code stehen (abgekürzt)
+        self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
         self._send_message()
@@ -201,9 +200,8 @@ class ChatGUI(tk.Tk):
         size = max(int(11 * self.scale), 8)
         self.base_font.configure(size=size)
         self.image_size = int(self.image_size_base * self.scale)
-        self.peer_list_width = max(int(self.peer_list_width_base * self.scale), 10)
         if hasattr(self, "peer_list"):
-            self.peer_list.configure(width=self.peer_list_width)
+            self.peer_list.configure(font=self.base_font)
 
     def open_image_dialog(self):
         sel = self.peer_list.curselection()
