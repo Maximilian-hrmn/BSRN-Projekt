@@ -120,6 +120,7 @@ class ChatGUI(tk.Tk):
 
     def _join_network(self):
         """Tritt dem Netzwerk bei, wenn der Benutzername und Port gesetzt sind."""
+        # Überprüft, ob der Benutzername und Port gesetzt sind, bevor dem Netzwerk beigetreten wird.
         handle = self.config.get("user", {}).get("name")
         port = self.config.get("network", {}).get("port")
         if handle and port:
@@ -127,8 +128,10 @@ class ChatGUI(tk.Tk):
             self.config["port"] = port
             if self.interface_to_net:
                 self.interface_to_net.put(("SET_PORT", port))
+            # Sende Join-Nachricht an das Netzwerk
             client_send_join(self.config)
             self.joined = True
+            # Sende Who-Nachricht, um die Peers zu erhalten
             client_send_who(self.config)
 
     def _poll_queues(self):
@@ -136,27 +139,36 @@ class ChatGUI(tk.Tk):
         now = time.time()
         while True:
             try:
+                # Polling for messages from the network
                 msg = self.net_to_interface.get_nowait()
             except queue.Empty:
                 break
+            # Verarbeite die empfangenen Nachrichten
             if msg[0] == "MSG":
                 from_handle = msg[1]
                 text = msg[2]
+                # Überprüfe, ob der Absender in der Peer-Liste ist
                 if now - self.last_activity > AWAY_TIMEOUT and self.joined:
                     auto_msg = self.config.get("autoreply")
+                    # Sende automatische Antwort, wenn konfiguriert
                     if auto_msg and from_handle in self.peers:
                         thost, tport = self.peers[from_handle]
+                        # Sende die automatische Antwort-Nachricht
                         client_send_msg(thost, tport, self.config["handle"], auto_msg)
                 self._append_text(f"{from_handle}: {text}\n")
+                # Wenn img im Text enthalten ist, wird es als Bild behandelt
             elif msg[0] == "IMG":
+                # Überprüfe, ob der Absender in der Peer-Liste ist
                 from_handle = msg[1]
                 path = msg[2]
                 self._append_image(from_handle, path)
         while True:
             try:
+                # Polling for messages from the discussion queue
                 dmsg = self.disc_to_interface.get_nowait()
             except queue.Empty:
                 break
+            # Verarbeite die empfangenen Diskussionsnachrichten
             if dmsg[0] == "PEERS":
                 self.peers = dmsg[1]
                 self._update_peer_list()
@@ -165,22 +177,30 @@ class ChatGUI(tk.Tk):
     def _update_peer_list(self):
         """Aktualisiert die Liste der Peers in der GUI."""
         self.peer_list.delete(0, "end")
+        # Sortiere die Peers nach ihrem Handle und füge sie der Liste hinzu
         for h in sorted(self.peers.keys()):
+            # Füge den Handle in die Peer-Liste ein
             self.peer_list.insert("end", h)
 
     def _append_text(self, text):
         """Fügt Text in den Chat ein, formatiert und skaliert."""
         self.chat_text.configure(state="normal")
+        # Entferne Zeilenumbrüche am Ende des Textes
         self.chat_text.insert("end", text)
+        # Skaliere den Text
         self.chat_text.configure(state="disabled")
+        # Scrolle zum Ende des Textes
         self.chat_text.see("end")
 
     def _append_image(self, prefix, path):
         """Fügt ein Bild in den Chat ein, skaliert es und fügt es hinzu."""
         try:
             img = Image.open(path)
+            # Skaliere das Bild auf die definierte Größe
             img.thumbnail((self.image_size, self.image_size))
+            # Konvertiere das Bild in ein Tkinter-kompatibles Format
             photo = ImageTk.PhotoImage(img)
+            # Füge das Bild in die Chat-Textbox ein
             self.images.append(photo)
             self.chat_text.configure(state="normal")
             if prefix:
@@ -208,52 +228,80 @@ class ChatGUI(tk.Tk):
     def _send_message(self):
         """Sendet die Nachricht aus dem Textfeld."""
         self.last_activity = time.time()
+        # Lese den Text aus dem Textfeld und entferne führende und nachfolgende Leerzeichen
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
             return
+        # Überprüfe, ob der Text "help" ist
         if text.lower() == "help":
             self._show_help()
+            # Lösche den Text im Eingabefeld
             self.text_entry.delete("1.0", "end")
             return
+        # Überprüfe, ob der Text "leave" ist
         if text.lower() == "leave":
             if not self.joined:
+                # Wenn der Benutzer nicht eingeloggt ist, zeige eine Fehlermeldung an
                 self._append_text("Du bist nicht eingeloggt.\n")
             else:
+                # Sende Leave-Nachricht an das Netzwerk
                 client_send_leave(self.config)
+                # Setze den Status auf nicht eingeloggt
                 self.joined = False
+                # prompte den Benutzer, dass er das Netzwerk verlassen hat
                 self._append_text("Du hast das Netzwerk verlassen.\n")
+                # Leere die Peer-Liste und aktualisiere die Anzeige
                 self.peers = {}
+                # Aktualisiere die Peer-Liste in der GUI
                 self._update_peer_list()
+            # Leere das Textfeld nach dem Senden
             self.text_entry.delete("1.0", "end")
             return
+        # Überprüfe, ob der Text mit "msgall" beginnt
         if text.lower().startswith("msgall"):
+            # Entferne "msgall" und führende Leerzeichen
             msg_text = text[6:].strip()
             if not msg_text:
+                # Wenn kein Text nach "msgall" eingegeben wurde, zeige eine Fehlermeldung an
                 self._append_text("[Fehler] msgall ohne Text\n")
+                # Leere das Textfeld nach dem Senden
                 self.text_entry.delete("1.0", "end")
                 return
             if not self.peers:
+                # Wenn keine Peers vorhanden sind, zeige eine Fehlermeldung an
                 self._append_text("[Fehler] Keine anderen Peers im Chat\n")
+                # Leere das Textfeld nach dem Senden
                 self.text_entry.delete("1.0", "end")
                 return
             for h, (host, port) in self.peers.items():
+                # Sende die Nachricht an alle Peers
                 client_send_msg(host, port, self.config["handle"], msg_text)
+                # Füge die Nachricht in den Chat ein
             self._append_text(f"Du -> Alle: {msg_text}\n")
+            # Leere das Textfeld nach dem Senden
             self.text_entry.delete("1.0", "end")
             return
 
         sel = self.peer_list.curselection()
         if not sel:
+            # Wenn kein Empfänger ausgewählt ist, zeige eine Fehlermeldung an
             self._append_text("[Fehler] Kein Empfänger ausgewählt\n")
+            # Leere das Textfeld nach dem Senden
             self.text_entry.delete("1.0", "end")
             return
+        # Wenn ein Empfänger ausgewählt ist, sende die Nachricht an diesen Peer
         handle = self.peer_list.get(sel[0])
         if handle in self.peers:
+            # Hole die Host- und Port-Informationen des ausgewählten Peers
             host, port = self.peers[handle]
+            # Sende die Nachricht an den ausgewählten Peer
             client_send_msg(host, port, self.config["handle"], text)
+            # Füge die Nachricht in den Chat ein
             self._append_text(f"Du -> {handle}: {text}\n")
         else:
+            # Wenn der Peer nicht in der Liste ist, zeige eine Fehlermeldung an
             self._append_text("[Fehler] Unbekannter Peer\n")
+        # Leere das Textfeld nach dem Senden
         self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
@@ -265,16 +313,22 @@ class ChatGUI(tk.Tk):
         """Skaliert die GUI-Elemente bei Größenänderung des Fensters."""
         if event.widget is not self:
             return
+        # Berechne den neuen Skalierungsfaktor basierend auf der Fenstergröße
         new_scale = min(event.width / self.base_width, event.height / self.base_height)
         if abs(new_scale - self.scale) > 0.05:
+            # Aktualisiere die Skalierung nur, wenn sie geändert wurde
             self.scale = new_scale
+            # Wende die Skalierung auf die GUI-Elemente an
             self._apply_scaling()
 
     def _apply_scaling(self):
         """Wendet die Skalierung auf die GUI-Elemente an."""
         size = max(int(11 * self.scale), 8)
+        # Aktualisiere die Schriftgröße und andere GUI-Elemente
         self.base_font.configure(size=size)
+        # Aktualisiere die Größe des Textfelds
         self.image_size = int(self.image_size_base * self.scale)
+        # Aktualisiere die Größe des Textfelds
         if hasattr(self, "peer_list"):
             self.peer_list.configure(font=self.base_font)
 
@@ -296,11 +350,13 @@ class ChatGUI(tk.Tk):
     def on_close(self):
         """Behandelt das Schließen des Fensters."""
         if self.joined:
+            # Sende Leave-Nachricht, wenn der Benutzer im Netzwerk ist
             client_send_leave(self.config)
         self.destroy()
 
 def startGui(config, net_to_interface, disc_to_interface, interface_to_net):
     """Startet die Chat-GUI."""
+    # Erstelle eine Instanz der ChatGUI und starte die Hauptschleife
     app = ChatGUI(config, net_to_interface, disc_to_interface, interface_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
