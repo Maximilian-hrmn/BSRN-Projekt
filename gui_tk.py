@@ -214,12 +214,7 @@ class ChatGUI(tk.Tk):
             self._show_help()
             self.text_entry.delete("1.0", "end")
             return
-        sel = self.peer_list.curselection()
-        if not sel:
-            self._append_text("[Fehler] Kein Empfänger ausgewählt\n")
-            self.text_entry.delete("1.0", "end")
-            if text.lower().startswith("msgall"):
-                return
+        if text.lower().startswith("msgall"):
             msg_text = text[6:].strip()
             if not msg_text:
                 self._append_text("[Fehler] msgall ohne Text\n")
