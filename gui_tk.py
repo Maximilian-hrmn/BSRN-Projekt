@@ -16,7 +16,15 @@ from client import (
 
 AWAY_TIMEOUT = 30
 
+"""
+@file gui_tk.py
+@brief Implementiert eine Chat-GUI mit Tkinter. Behandelt Benutzereingaben,
+stellt Nachrichten- und Bildversand/empfang dar, verwaltet die Peer-Liste und bietet Auto-Reply bei Inaktivität.
+"""
+
+
 class ChatGUI(tk.Tk):
+    """Die Hauptklasse für die Chat-GUI, die das Tkinter-Fenster verwaltet."""
     def __init__(self, config, net_to_interface, disc_to_interface, interface_to_net):
         super().__init__()
         self.config = config
@@ -40,6 +48,7 @@ class ChatGUI(tk.Tk):
         self._poll_queues()
 
     def _ask_user_info(self):
+        """Fragt den Benutzernamen und Port ab, wenn sie nicht gesetzt sind."""
         name = simpledialog.askstring("Name", "Bitte gib deinen Namen ein:", parent=self)
         if name:
             self.config.setdefault("user", {})["name"] = name
@@ -51,6 +60,7 @@ class ChatGUI(tk.Tk):
         self.config.setdefault("network", {})["port"] = port
 
     def _setup_ui(self):
+        """Initialisiert die Benutzeroberfläche der Chat-GUI."""
         self.title("Messenger")
         self.geometry("800x600")
         self.configure(bg="#2b2b2b")
@@ -108,6 +118,7 @@ class ChatGUI(tk.Tk):
         self.text_entry.bind("<Return>", self._send_message_event)
 
     def _join_network(self):
+        """Tritt dem Netzwerk bei, wenn der Benutzername und Port gesetzt sind."""
         handle = self.config.get("user", {}).get("name")
         port = self.config.get("network", {}).get("port")
         if handle and port:
@@ -120,6 +131,7 @@ class ChatGUI(tk.Tk):
             client_send_who(self.config)
 
     def _poll_queues(self):
+        """Pollt die Nachrichten- und Diskussionswarteschlangen und aktualisiert die GUI."""
         now = time.time()
         while True:
             try:
@@ -150,17 +162,20 @@ class ChatGUI(tk.Tk):
         self.after(100, self._poll_queues)
 
     def _update_peer_list(self):
+        """Aktualisiert die Liste der Peers in der GUI."""
         self.peer_list.delete(0, "end")
         for h in sorted(self.peers.keys()):
             self.peer_list.insert("end", h)
 
     def _append_text(self, text):
+        """Fügt Text in den Chat ein, formatiert und skaliert."""
         self.chat_text.configure(state="normal")
         self.chat_text.insert("end", text)
         self.chat_text.configure(state="disabled")
         self.chat_text.see("end")
 
     def _append_image(self, prefix, path):
+        """Fügt ein Bild in den Chat ein, skaliert es und fügt es hinzu."""
         try:
             img = Image.open(path)
             img.thumbnail((self.image_size, self.image_size))
@@ -177,6 +192,7 @@ class ChatGUI(tk.Tk):
             self._append_text(f"[Bild {prefix}] {path}\n")
 
     def _send_message(self):
+        """Sendet die Nachricht aus dem Textfeld."""
         self.last_activity = time.time()
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
@@ -185,10 +201,12 @@ class ChatGUI(tk.Tk):
         self.text_entry.delete("1.0", "end")
 
     def _send_message_event(self, event):
+        """Sendet die Nachricht bei Drücken der Eingabetaste."""
         self._send_message()
         return "break"
 
     def _on_resize(self, event):
+        """Skaliert die GUI-Elemente bei Größenänderung des Fensters."""
         if event.widget is not self:
             return
         new_scale = min(event.width / self.base_width, event.height / self.base_height)
@@ -197,6 +215,7 @@ class ChatGUI(tk.Tk):
             self._apply_scaling()
 
     def _apply_scaling(self):
+        """Wendet die Skalierung auf die GUI-Elemente an."""
         size = max(int(11 * self.scale), 8)
         self.base_font.configure(size=size)
         self.image_size = int(self.image_size_base * self.scale)
@@ -204,6 +223,7 @@ class ChatGUI(tk.Tk):
             self.peer_list.configure(font=self.base_font)
 
     def open_image_dialog(self):
+        """Öffnet einen Dialog zum Auswählen eines Bildes und sendet es."""
         sel = self.peer_list.curselection()
         if not sel:
             return
@@ -218,11 +238,13 @@ class ChatGUI(tk.Tk):
                     self._append_text("[Fehler] Datei nicht gefunden\n")
 
     def on_close(self):
+        """Behandelt das Schließen des Fensters."""
         if self.joined:
             client_send_leave(self.config)
         self.destroy()
 
 def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
+    """Startet die Chat-GUI."""
     app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
