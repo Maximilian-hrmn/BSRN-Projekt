@@ -196,8 +196,10 @@ class ChatGUI(tk.Tk):
         """Zeigt eine kurze Hilfestellung analog zur CLI an."""
         help_text = (
             "Verwendung:\n"
-            "- Empfänger in der Liste auswählen und Nachricht eingeben.\n"
-            "- Mit dem Kamerasymbol Bilder senden.\n"
+            "- Wenn du einen einzelnen Empfänger schreiben möchtest wähle"
+            " ihn in der Liste aus und gib eine Nachricht ein.\n"
+            "- Wenn du allen schreiben möchtest schreibe msgall vor deine Nachricht.\n"
+            "- Mit dem Kamerasymbol Bilder auswählen.\n"
             "- 'help' in das Textfeld schreiben, um diese Hilfe zu sehen."
         )
         messagebox.showinfo("Hilfe", help_text)
