@@ -243,8 +243,8 @@ class ChatGUI(tk.Tk):
             client_send_leave(self.config)
         self.destroy()
 
-def startGui(config, net_to_cli, disc_to_cli, cli_to_net):
+def startGui(config, net_to_interface, disc_to_interface, interface_to_net):
     """Startet die Chat-GUI."""
-    app = ChatGUI(config, net_to_cli, disc_to_cli, cli_to_net)
+    app = ChatGUI(config, net_to_interface, disc_to_interface, interface_to_net)
     app.protocol("WM_DELETE_WINDOW", app.on_close)
     app.mainloop()
