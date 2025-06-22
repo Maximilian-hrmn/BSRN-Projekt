@@ -7,6 +7,7 @@ import discovery_service # Discovery-Service für Peer-Erkennung
 import fcntl # Für Dateisperren (Locking)
 import server # Server-Modul für Netzwerkkommunikation
 from cli import ChatCLI # CLI-Modul für Kommandozeileninteraktion
+import os
 
 """
 @file main.py
@@ -48,7 +49,13 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     Discovery-Service als eigener Process(stellt sicher, dass pro Rechner nur eine Instanz des Discovery-Service läuft und aktiv ist)
     Lock-Datei dient somit als einfache gegenseitige Absicherung gegen doppelt gestartete Discovery-Services
     """
-    lock_file = open('/tmp/discovery.lock', 'w') # Lock-Datei für den Discovery-Service
+    # Verwende eine portspezifische Lock-Datei, damit mehrere Instanzen auf
+    # demselben Rechner parallel laufen können. Der Discovery-Service unterstützt
+    # dank SO_REUSEPORT mehrere Prozesse auf dem gleichen Port, daher reicht es,
+    # pro Instanz eine eigene Lock-Datei anzulegen.
+    lock_id = config['port'] if config['port'] != 0 else os.getpid()
+    lock_path = f"/tmp/discovery_{lock_id}.lock"
+    lock_file = open(lock_path, 'w')
     try:
         fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB) # Versucht, die Lock-Datei exklusiv zu sperren
         disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_interface)) # Discovery-Service starten
