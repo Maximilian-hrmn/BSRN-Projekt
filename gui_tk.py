@@ -1,7 +1,7 @@
 # gui_tk.py
 
 import tkinter as tk
-from tkinter import simpledialog, filedialog, font as tkfont
+from tkinter import simpledialog, filedialog, font as tkfont, messagebox
 from PIL import Image, ImageTk
 import queue
 import time
@@ -116,6 +116,7 @@ class ChatGUI(tk.Tk):
         self.send_btn.grid(row=0, column=2, sticky="nsew")
 
         self.text_entry.bind("<Return>", self._send_message_event)
+        self.bind("<F1>", lambda e: self._show_help())
 
     def _join_network(self):
         """Tritt dem Netzwerk bei, wenn der Benutzername und Port gesetzt sind."""
@@ -191,11 +192,25 @@ class ChatGUI(tk.Tk):
         except Exception:
             self._append_text(f"[Bild {prefix}] {path}\n")
 
+    def _show_help(self):
+        """Zeigt eine kurze Hilfestellung analog zur CLI an."""
+        help_text = (
+            "Verwendung:\n"
+            "- Empfänger in der Liste auswählen und Nachricht eingeben.\n"
+            "- Mit dem Kamerasymbol Bilder senden.\n"
+            "- 'help' in das Textfeld schreiben, um diese Hilfe zu sehen."
+        )
+        messagebox.showinfo("Hilfe", help_text)
+
     def _send_message(self):
         """Sendet die Nachricht aus dem Textfeld."""
         self.last_activity = time.time()
         text = self.text_entry.get("1.0", "end").strip()
         if not text:
+            return
+        if text.lower() == "help":
+            self._show_help()
+            self.text_entry.delete("1.0", "end")
             return
         sel = self.peer_list.curselection()
         if not sel:
