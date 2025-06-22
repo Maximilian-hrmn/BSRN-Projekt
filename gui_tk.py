@@ -61,6 +61,8 @@ class ChatGUI(tk.Tk):
 
     def _setup_ui(self):
         """Initialisiert die Benutzeroberfläche der Chat-GUI."""
+
+        #Alles in der folgenden Definition, trägt dazu bei wie die GUI aussieht
         self.title("Messenger")
         self.geometry("800x600")
         self.configure(bg="#2b2b2b")
@@ -337,14 +339,18 @@ class ChatGUI(tk.Tk):
         sel = self.peer_list.curselection()
         if not sel:
             return
+        # Öffne einen Dateiauswahldialog, um ein Bild auszuwählen
         filename = filedialog.askopenfilename(title="Bild auswählen", filetypes=[("Bilder", "*.png *.jpg *.jpeg *.bmp *.gif")])
         if filename:
             handle = self.peer_list.get(sel[0])
             if handle in self.peers:
                 host, port = self.peers[handle]
+                # Sende das Bild an den ausgewählten Peer
                 if client_send_img(host, port, self.config["handle"], filename):
+                    # Füge das Bild in den Chat ein
                     self._append_image(f"Du -> {handle}", filename)
                 else:
+                    # Wenn das Senden des Bildes fehlschlägt, zeige eine Fehlermeldung an
                     self._append_text("[Fehler] Datei nicht gefunden\n")
 
     def on_close(self):
