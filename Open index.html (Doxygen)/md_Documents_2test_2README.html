@@ -72,7 +72,7 @@ $(function() {
   <div class="headertitle"><div class="title">Peer-to-Peer LAN Messenger</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md0"></a> Ein einfacher Chat-Client für lokale Netzwerke (LAN), der sowohl eine <b>Kommandozeilen-Interface (CLI)</b> als auch eine <b>grafische Benutzeroberfläche (GUI)</b> unterstützt. Nachrichten und Bilder können direkt zwischen Peers ausgetauscht werden – ohne zentralen Server.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md0"></a> Ein einfacher Chat-Client, der sowohl eine <b>Kommandozeilen-Interface (CLI)</b> als auch eine <b>grafische Benutzeroberfläche (GUI)</b> unterstützt. Nachrichten und Bilder können direkt zwischen Peers ausgetauscht werden – ohne zentralen Server.</p>
 <hr  />
 <h1><a class="anchor" id="autotoc_md2"></a>
 Funktionen</h1>
@@ -87,7 +87,7 @@ Funktionen</h1>
 <h1><a class="anchor" id="autotoc_md4"></a>
 Voraussetzungen</h1>
 <ul>
-<li>Python 3.1+</li>
+<li>Python &gt;= 3.8</li>
 <li><p class="startli">Abhängigkeiten:</p>
 <div class="fragment"><div class="line">pip install tkinter toml pillow</div>
 </div><!-- fragment --></li>
@@ -98,7 +98,7 @@ Projektstruktur</h1>
 <div class="fragment"><div class="line">.</div>
 <div class="line">├── main.py              # Einstiegspunkt, wählt GUI oder CLI</div>
 <div class="line">├── cli.py               # Kommandozeilen-Oberfläche</div>
-<div class="line">├── gui_tk.py               # PyQt-basierte GUI</div>
+<div class="line">├── gui_tk.py            # Tkinter-basierte GUI</div>
 <div class="line">├── client.py            # Sendet Nachrichten (JOIN, MSG, IMG, etc.)</div>
 <div class="line">├── server.py            # Empfängt Nachrichten, speichert Bilder</div>
 <div class="line">├── discovery_service.py # Peer Discovery via UDP</div>
@@ -109,69 +109,50 @@ Projektstruktur</h1>
 <h1><a class="anchor" id="autotoc_md8"></a>
 Konfigurationsdatei (toml)</h1>
 <p>Beispiel:</p>
-<div class="fragment"><div class="line">handle = &quot;user_name&quot;</div>
-<div class="line">port = 5005</div>
-<div class="line">whoisport = 4000</div>
-<div class="line">broadcast = &quot;255.255.255.255&quot;</div>
-<div class="line">imagepath = &quot;./images&quot;</div>
-<div class="line">autoreply = &quot;Ich bin gerade nicht da. Ich melde mich später bei dir.&quot;</div>
-</div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md10"></a>
-Nutzung</h1>
-<h2><a class="anchor" id="autotoc_md11"></a>
-Starten:</h2>
-<div class="fragment"><div class="line">python main.py</div>
-</div><!-- fragment --><p>Dann wählen:</p><ul>
-<li><code>g</code> → GUI</li>
-<li><code>c</code> → CLI</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md12"></a>
-CLI-Befehle:</h2>
-<table class="markdownTable">
-<tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Befehl   </th><th class="markdownTableHeadNone">Beschreibung    </th></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>join &lt;name&gt;</code>   </td><td class="markdownTableBodyNone">Netzwerk beitreten    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>leave</code>   </td><td class="markdownTableBodyNone">Netzwerk verlassen    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>who</code>   </td><td class="markdownTableBodyNone">Peerliste anzeigen    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>msg &lt;user&gt; &lt;text&gt;</code>   </td><td class="markdownTableBodyNone">Nachricht an Benutzer senden    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>msgall &lt;text&gt;</code>   </td><td class="markdownTableBodyNone">Nachricht an alle senden    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>img &lt;user&gt; &lt;pfad&gt;</code>   </td><td class="markdownTableBodyNone">Bild senden    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>show_config</code>   </td><td class="markdownTableBodyNone">Aktuelle Konfiguration anzeigen    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>set_config &lt;key&gt; &lt;val&gt;</code>   </td><td class="markdownTableBodyNone">Konfigurationsparameter ändern    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>exit</code>   </td><td class="markdownTableBodyNone">Anwendung beenden   </td></tr>
-</table>
-<hr  />
-<h1><a class="anchor" id="autotoc_md14"></a>
-Textnachrichten senden</h1>
+<p>''toml'' handle = "user_name" port = 5005 whoisport = 4000 broadcast = "255.255.255.255" imagepath = "./images" autoreply = "Ich bin gerade nicht da. Ich melde mich später bei dir." </p><div class="fragment"><div class="line">---</div>
+<div class="line"> </div>
+<div class="line">## Nutzung</div>
+<div class="line"> </div>
+<div class="line">### Starten:</div>
+</div><!-- fragment --><p> python <a class="el" href="main_8py.html">main.py</a> </p><div class="fragment"><div class="line">Dann wählen:</div>
+<div class="line">- `g` → GUI</div>
+<div class="line">- `c` → CLI</div>
+<div class="line"> </div>
+<div class="line">### CLI-Befehle:</div>
+<div class="line"> </div>
+<div class="line">| Befehl                   | Beschreibung                    |</div>
+<div class="line">|--------------------------|---------------------------------|</div>
+<div class="line">| `join &lt;name&gt;`            | Netzwerk beitreten              |</div>
+<div class="line">| `leave`                  | Netzwerk verlassen              |</div>
+<div class="line">| `who`                    | Peerliste anzeigen              |</div>
+<div class="line">| `msg &lt;user&gt; &lt;text&gt;`      | Nachricht an Benutzer senden    |</div>
+<div class="line">| `msgall &lt;text&gt;`          | Nachricht an alle senden        |</div>
+<div class="line">| `img &lt;user&gt; &lt;pfad&gt;`      | Bild senden                     |</div>
+<div class="line">| `show_config`            | Aktuelle Konfiguration anzeigen |</div>
+<div class="line">| `set_config &lt;key&gt; &lt;val&gt;` | Konfigurationsparameter ändern  |</div>
+<div class="line">| `exit`                   | Anwendung beenden               |</div>
+<div class="line"> </div>
+<div class="line">---</div>
+<div class="line"> </div>
+<div class="line">## Textnachrichten senden</div>
+<div class="line"> </div>
+<div class="line">- In CLI via:</div>
+</div><!-- fragment --><p> msg Alice Hallo, wie geht’s? </p><div class="fragment"><div class="line">- In GUI: Nachricht in das Texteingabefeld schreiben → Empfänger auswählen → **„Senden“** klicken</div>
+<div class="line"> </div>
+<div class="line">---</div>
+<div class="line"> </div>
+<div class="line">## Bilder senden</div>
+<div class="line"> </div>
+<div class="line">- In CLI via:</div>
+</div><!-- fragment --><p> img Alice ./pfad/zum/bild.jpg ```</p>
 <ul>
-<li><p class="startli">In CLI via:</p>
-<div class="fragment"><div class="line">msg Alice Hallo, wie geht’s?</div>
-</div><!-- fragment --></li>
-<li>In GUI: Nachricht in das Texteingabefeld schreiben → Empfänger auswählen → <b>„Senden“</b> klicken</li>
-</ul>
-<hr  />
-<h1><a class="anchor" id="autotoc_md16"></a>
-Bilder senden</h1>
-<ul>
-<li><p class="startli">In CLI via:</p>
-<div class="fragment"><div class="line">img Alice ./pfad/zum/bild.jpg</div>
-</div><!-- fragment --></li>
 <li>In GUI: Kamera-Button anklicken → Bild auswählen</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md18"></a>
+<h1><a class="anchor" id="autotoc_md10"></a>
 Hinweise</h1>
 <ul>
-<li>Dieses Tool ist <b>nicht für produktiven Einsatz</b> oder über öffentliche Netzwerke gedacht.</li>
+<li>Dieser Client ist <b>nicht für produktiven Einsatz</b> oder über öffentliche Netzwerke gedacht.</li>
 <li>Die Nachrichten werden <b>nicht verschlüsselt</b> übertragen. </li>
 </ul>
 </div></div><!-- contents -->

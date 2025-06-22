@@ -13,6 +13,7 @@ var searchData=
   ['_5fsend_5fmessage_10',['_send_message',['../classgui__tk_1_1ChatGUI.html#a358b36a0bdd67db34cca90bdf3df1776',1,'gui_tk::ChatGUI']]],
   ['_5fsend_5fmessage_5fevent_11',['_send_message_event',['../classgui__tk_1_1ChatGUI.html#a8db588972c2e0ee9664600d71a016e09',1,'gui_tk.ChatGUI._send_message_event'],['../classgui__tk_1_1ChatGUI.html#a894ed11479b1fdd2c45722f1dc65b487',1,'gui_tk.ChatGUI._send_message_event(self, event)']]],
   ['_5fsetup_5fui_12',['_setup_ui',['../classgui__tk_1_1ChatGUI.html#a2cf37201e9218b2847e176f32615a9fc',1,'gui_tk::ChatGUI']]],
-  ['_5fstop_5fevent_13',['_stop_event',['../classcli_1_1ChatCLI.html#a248d0ed96f4e9985073734b97ad094b7',1,'cli::ChatCLI']]],
-  ['_5fupdate_5fpeer_5flist_14',['_update_peer_list',['../classgui__tk_1_1ChatGUI.html#a98614cb2f74631f0e60f9bd3aa4a8d2f',1,'gui_tk::ChatGUI']]]
+  ['_5fshow_5fhelp_13',['_show_help',['../classgui__tk_1_1ChatGUI.html#a5c007ba2fe36e496e990b685cf512155',1,'gui_tk::ChatGUI']]],
+  ['_5fstop_5fevent_14',['_stop_event',['../classcli_1_1ChatCLI.html#a248d0ed96f4e9985073734b97ad094b7',1,'cli::ChatCLI']]],
+  ['_5fupdate_5fpeer_5flist_15',['_update_peer_list',['../classgui__tk_1_1ChatGUI.html#a98614cb2f74631f0e60f9bd3aa4a8d2f',1,'gui_tk::ChatGUI']]]
 ];
