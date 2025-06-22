@@ -45,26 +45,11 @@ if __name__ == '__main__': # main.py wird direkt ausgeführt
     net_to_interface = Queue() # Queue für Kommunikation von Netzwerk zu CLI
     disc_to_interface = Queue() # Queue für Kommunikation von Discovery zu CLI
     
-    """
-    Discovery-Service als eigener Process(stellt sicher, dass pro Rechner nur eine Instanz des Discovery-Service läuft und aktiv ist)
-    Lock-Datei dient somit als einfache gegenseitige Absicherung gegen doppelt gestartete Discovery-Services
-    """
-    # Verwende eine portspezifische Lock-Datei, damit mehrere Instanzen auf
-    # demselben Rechner parallel laufen können. Der Discovery-Service unterstützt
-    # dank SO_REUSEPORT mehrere Prozesse auf dem gleichen Port, daher reicht es,
-    # pro Instanz eine eigene Lock-Datei anzulegen.
-    lock_id = config['port'] if config['port'] != 0 else os.getpid()
-    lock_path = f"/tmp/discovery_{lock_id}.lock"
-    lock_file = open(lock_path, 'w')
-    try:
-        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB) # Versucht, die Lock-Datei exklusiv zu sperren
-        disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_interface)) # Discovery-Service starten
-        disc_proc.daemon = True # Daemon-Prozess, der im Hintergrund läuft
-        disc_proc.start() # Discovery-Service starten
-        print("Discovery-Service gestartet") # Ausgabe, dass der Discovery-Service gestartet wurde
-    except BlockingIOError: # Wenn die Lock-Datei bereits gesperrt ist
-        disc_proc = None # Keine neuen Discovery-Prozess starten
-        print("Discovery-Service läuft bereits") # Ausgabe, dass der Discovery-Service bereits läuft
+    
+    disc_proc = Process(target=discovery_service.discovery_loop, args=(config, disc_to_interface)) # Discovery-Service starten
+    disc_proc.daemon = True # Daemon-Prozess, der im Hintergrund läuft
+    disc_proc.start() # Discovery-Service starten
+    print("Discovery-Service gestartet") # Ausgabe, dass der Discovery-Service gestartet wurde
 
     """Server/Network als eigener Process"""
     net_proc = Process(target=server.server_loop, args=(config, net_to_interface, interface_to_net)) # Netzwerk-Server starten
