@@ -200,7 +200,8 @@ class ChatGUI(tk.Tk):
             " ihn in der Liste aus und gib eine Nachricht ein.\n"
             "- Wenn du allen schreiben möchtest schreibe msgall vor deine Nachricht.\n"
             "- Mit dem Kamerasymbol Bilder auswählen und senden.\n"
-            "- 'help' in das Textfeld schreiben, um diese Hilfe zu sehen."
+            "- 'help' in das Textfeld schreiben, um diese Hilfe zu sehen.\n"
+            "- 'leave' um das Netzwerk zu verlassen.\n"
         )
         messagebox.showinfo("Hilfe", help_text)
 
@@ -212,6 +213,17 @@ class ChatGUI(tk.Tk):
             return
         if text.lower() == "help":
             self._show_help()
+            self.text_entry.delete("1.0", "end")
+            return
+        if text.lower() == "leave":
+            if not self.joined:
+                self._append_text("Du bist nicht eingeloggt.\n")
+            else:
+                client_send_leave(self.config)
+                self.joined = False
+                self._append_text("Du hast das Netzwerk verlassen.\n")
+                self.peers = {}
+                self._update_peer_list()
             self.text_entry.delete("1.0", "end")
             return
         if text.lower().startswith("msgall"):
